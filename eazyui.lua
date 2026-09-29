@@ -1,10 +1,9 @@
 local EZ = {}
-EZ.Version = "0.7.0"
+EZ.Version = "0.7.2"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
 local CoreGui = game:GetService("CoreGui")
 
 local function EZ_C(r, g, b) return Color3.fromRGB(r, g, b) end
@@ -53,7 +52,6 @@ local EZ_DiscordFile = "eazyui_discord.json"
 local EZ_GlobalTransparency = 0
 local EZ_AutoSave = true
 local EZ_BGRegistry = {}
-local EZ_BlurRef = nil
 
 local function EZ_RegBG(inst)
     table.insert(EZ_BGRegistry, inst)
@@ -282,9 +280,11 @@ local function EZ_ShowLoadingScreen(EZ_LTitle, EZ_LSubTitle, EZ_LDuration)
     EZ_LCard.Position = UDim2.new(0.5, 0, 0.5, 0)
     EZ_LCard.Size = UDim2.fromOffset(380 * 0.92, 170 * 0.92)
     EZ_LCard.BackgroundColor3 = EZ_Theme.Background
+    EZ_LCard.BackgroundTransparency = EZ_GlobalTransparency
     EZ_LCard.BorderSizePixel = 0
     EZ_LCard.Parent = EZ_LGui
     EZ_AddStroke(EZ_LCard, EZ_Theme.Border); EZ_AddRadius(EZ_LCard, EZ_Theme.RadiusWindow)
+    EZ_RegBG(EZ_LCard)
     TweenService:Create(EZ_LCard, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(380, 170) }):Play()
     local EZ_LTopLine = Instance.new("Frame")
     EZ_LTopLine.Size = UDim2.new(1, 0, 0, 2)
@@ -396,9 +396,11 @@ local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
     frame.Size = UDim2.fromOffset(400, 220)
     frame.Position = UDim2.new(0.5, -200, 0.5, -110)
     frame.BackgroundColor3 = EZ_Theme.Background
+    frame.BackgroundTransparency = EZ_GlobalTransparency
     frame.BorderSizePixel = 0
     frame.Parent = gui
     EZ_AddStroke(frame, EZ_Theme.Border); EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
+    EZ_RegBG(frame)
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 30)
     title.Position = UDim2.fromOffset(10, 15)
@@ -476,9 +478,11 @@ local function EZ_ShowKeyScreen(options, callback)
     frame.Size = UDim2.fromOffset(400, 240)
     frame.Position = UDim2.new(0.5, -200, 0.5, -120)
     frame.BackgroundColor3 = EZ_Theme.Background
+    frame.BackgroundTransparency = EZ_GlobalTransparency
     frame.BorderSizePixel = 0
     frame.Parent = gui
     EZ_AddStroke(frame, EZ_Theme.Border); EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
+    EZ_RegBG(frame)
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 30)
     title.Position = UDim2.fromOffset(10, 15)
@@ -503,6 +507,7 @@ local function EZ_ShowKeyScreen(options, callback)
     input.Size = UDim2.new(1, -20, 0, 32)
     input.Position = UDim2.fromOffset(10, 80)
     input.BackgroundColor3 = EZ_Theme.Card
+    input.BackgroundTransparency = EZ_GlobalTransparency
     input.BorderSizePixel = 0
     input.Text = ""
     input.PlaceholderText = "Enter key here..."
@@ -514,6 +519,7 @@ local function EZ_ShowKeyScreen(options, callback)
     input.ClearTextOnFocus = false
     input.Parent = frame
     local ist = EZ_AddStroke(input, EZ_Theme.Border); EZ_AddRadius(input, EZ_Theme.Radius)
+    EZ_RegBG(input)
     local ip = Instance.new("UIPadding")
     ip.PaddingLeft = UDim.new(0, 10); ip.PaddingRight = UDim.new(0, 10); ip.Parent = input
     input.Focused:Connect(function() ist.Color = EZ_Theme.Accent end)
@@ -647,6 +653,7 @@ function EZ:Notify(options)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(0.5, -3, 1, 0)
             btn.BackgroundColor3 = EZ_Theme.Background
+            btn.BackgroundTransparency = EZ_GlobalTransparency
             btn.BorderSizePixel = 0
             btn.Text = btnData.Title
             btn.Font = Enum.Font.Gotham
@@ -654,6 +661,7 @@ function EZ:Notify(options)
             btn.TextColor3 = EZ_Theme.Text
             btn.AutoButtonColor = false
             btn.Parent = btnRow
+            EZ_RegBG(btn)
             local bst = EZ_AddStroke(btn, EZ_Theme.Border); EZ_AddRadius(btn, 4)
             btn.MouseEnter:Connect(function() TweenService:Create(bst, TweenInfo.new(0.12), { Color = EZ_Theme.Accent }):Play() end)
             btn.MouseLeave:Connect(function() TweenService:Create(bst, TweenInfo.new(0.12), { Color = EZ_Theme.Border }):Play() end)
@@ -686,13 +694,6 @@ function EZ:CreateWindow(options)
     local EZ_ConfigId = options.ConfigId or tostring(game.PlaceId)
     EZ_KeyDurationGlobal = options.KeyDuration or 86400
     EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
-
-    if options.Acrylic then
-        EZ_BlurRef = Instance.new("BlurEffect")
-        EZ_BlurRef.Name = "EazyUI_Blur"
-        EZ_BlurRef.Size = 28
-        EZ_BlurRef.Parent = Lighting
-    end
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
@@ -853,7 +854,6 @@ function EZ:CreateWindow(options)
             if not frame.Parent then return end
             EZ_Window.Minimized = state
             frame.Visible = not state
-            if EZ_BlurRef then EZ_BlurRef.Enabled = not state end
         end
 
         minbtn.MouseEnter:Connect(function()
@@ -1293,6 +1293,7 @@ function EZ:CreateWindow(options)
                 box.Size = UDim2.fromOffset(160, 26)
                 box.Position = UDim2.new(1, -172, 0.5, -13)
                 box.BackgroundColor3 = EZ_Theme.Background
+                box.BackgroundTransparency = EZ_GlobalTransparency
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = Enum.Font.Code; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
@@ -1302,6 +1303,7 @@ function EZ:CreateWindow(options)
                 box.ClearTextOnFocus = false
                 box.Parent = row
                 local bst = EZ_AddStroke(box, EZ_Theme.Border); EZ_AddRadius(box, EZ_Theme.Radius)
+                EZ_RegBG(box)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 8); bpad.PaddingRight = UDim.new(0, 8); bpad.Parent = box
                 box.Focused:Connect(function() bst.Color = EZ_Theme.Accent end)
@@ -1349,6 +1351,7 @@ function EZ:CreateWindow(options)
                 box.Size = UDim2.new(1, -24, 0, 68)
                 box.Position = UDim2.fromOffset(12, 28)
                 box.BackgroundColor3 = EZ_Theme.Background
+                box.BackgroundTransparency = EZ_GlobalTransparency
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = Enum.Font.Code; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
@@ -1360,6 +1363,7 @@ function EZ:CreateWindow(options)
                 box.ClearTextOnFocus = false
                 box.Parent = row
                 local bst = EZ_AddStroke(box, EZ_Theme.Border); EZ_AddRadius(box, EZ_Theme.Radius)
+                EZ_RegBG(box)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 8); bpad.PaddingRight = UDim.new(0, 8)
                 bpad.PaddingTop = UDim.new(0, 8); bpad.PaddingBottom = UDim.new(0, 8); bpad.Parent = box
@@ -1454,9 +1458,11 @@ function EZ:CreateWindow(options)
                 panel.Position = UDim2.fromOffset(1, 44)
                 panel.Size = UDim2.new(1, -2, 0, 0)
                 panel.BackgroundColor3 = EZ_Theme.Background
+                panel.BackgroundTransparency = EZ_GlobalTransparency
                 panel.BorderSizePixel = 0
                 panel.ClipsDescendants = true
                 panel.Parent = row
+                EZ_RegBG(panel)
                 local play2 = Instance.new("UIListLayout"); play2.Padding = UDim.new(0, 8); play2.Parent = panel
                 local ppad2 = Instance.new("UIPadding")
                 ppad2.PaddingTop = UDim.new(0, 10); ppad2.PaddingBottom = UDim.new(0, 10)
@@ -1567,6 +1573,7 @@ function EZ:CreateWindow(options)
                 kl.Position = UDim2.new(1, -72, 0.5, -12)
                 kl.Size = UDim2.fromOffset(60, 24)
                 kl.BackgroundColor3 = EZ_Theme.Background
+                kl.BackgroundTransparency = EZ_GlobalTransparency
                 kl.BorderSizePixel = 0
                 kl.Text = obj.Value and obj.Value.Name or "None"
                 kl.Font = Enum.Font.Code
@@ -1574,6 +1581,7 @@ function EZ:CreateWindow(options)
                 kl.TextColor3 = EZ_Theme.TextDim
                 kl.TextXAlignment = Enum.TextXAlignment.Center
                 kl.Parent = row
+                EZ_RegBG(kl)
                 local klst = EZ_AddStroke(kl, EZ_Theme.Border)
                 EZ_AddRadius(kl, EZ_Theme.Radius)
                 UserInputService.InputBegan:Connect(function(input, processed)
@@ -1639,6 +1647,10 @@ function EZ:CreateWindow(options)
                     inst.BackgroundTransparency = EZ_GlobalTransparency
                 end
             end
+        end
+
+        function EZ_Window:SetMinimizeKey(key)
+            EZ_MinKey = key
         end
 
         function EZ_Window:SaveConfig()
@@ -1716,6 +1728,28 @@ function EZ:CreateWindow(options)
                     EZ:Notify({ Title = "Config", Content = "Config reset to defaults.", Style = "Warning", Duration = 2 })
                 end
             })
+            tab:AddKeybind({
+                Title = "Minimize Key",
+                Description = "Change the key to hide/show the hub",
+                Default = EZ_MinKey,
+                Callback = function(key)
+                    EZ_MinKey = key
+                    EZ:Notify({ Title = "Key Changed", Content = "Minimize key set to " .. key.Name, Style = "Success", Duration = 2 })
+                end
+            })
+            tab:AddSlider({
+                Title = "Window Transparency",
+                Description = "Adjust UI transparency live",
+                Min = 0,
+                Max = 90,
+                Default = math.floor(EZ_GlobalTransparency * 100),
+                Step = 5,
+                Callback = function(v) EZ_Window:SetTransparency(v / 100) end
+            })
+            tab:AddParagraph({
+                Title = "Themes",
+                Content = "Themes apply before the window is created. Call EZ:SetTheme(\"Ocean\") at the top of the script to switch. Available: Default, Pitch, Light, Ocean, Sunset."
+            })
         end
 
         EZ_Window.Frame = frame
@@ -1748,10 +1782,6 @@ end
 function EZ:Destroy()
     EZ_Gui:Destroy()
     EZ_NotifyGui:Destroy()
-    if EZ_BlurRef then
-        EZ_BlurRef:Destroy()
-        EZ_BlurRef = nil
-    end
     if getgenv then getgenv().EazyUI = nil end
 end
 
