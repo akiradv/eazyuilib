@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.4
+    Eazy UI v0.9.5
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.4"
+EZ.Version = "0.9.5"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -309,6 +309,136 @@ local function EZ_AddBrackets(parent, len, thick, inset)
     mk(UDim2.new(1, -inset - thick, 1, -inset - len), UDim2.new(0, thick, 0, len))
 end
 
+-- GLOBAL DROPDOWN MENU MANAGER (one popup for all dropdowns)
+local EZ_DropdownPopup = Instance.new("Frame")
+EZ_DropdownPopup.Name = "EZ_DropdownPopup"
+EZ_DropdownPopup.BackgroundColor3 = EZ_Theme.Background
+EZ_DropdownPopup.BorderSizePixel = 0
+EZ_DropdownPopup.ClipsDescendants = true
+EZ_DropdownPopup.Visible = false
+EZ_DropdownPopup.ZIndex = 60
+EZ_DropdownPopup.Parent = EZ_Gui
+local EZ_DropdownStroke = EZ_AddStroke(EZ_DropdownPopup, EZ_Theme.Border)
+EZ_AddRadius(EZ_DropdownPopup, EZ_Theme.Radius)
+EZ_RegTrans(EZ_DropdownPopup)
+EZ_Paint(function()
+    EZ_DropdownPopup.BackgroundColor3 = EZ_Theme.Background
+    EZ_DropdownStroke.Color = EZ_Theme.Border
+end)
+
+local EZ_DropdownList = Instance.new("Frame")
+EZ_DropdownList.Size = UDim2.new(1, 0, 1, 0)
+EZ_DropdownList.BackgroundTransparency = 1
+EZ_DropdownList.ClipsDescendants = true
+EZ_DropdownList.ZIndex = 61
+EZ_DropdownList.Parent = EZ_DropdownPopup
+
+local EZ_DropdownLayout = Instance.new("UIListLayout")
+EZ_DropdownLayout.Padding = UDim.new(0, 0)
+EZ_DropdownLayout.ZIndex = 61
+EZ_DropdownLayout.Parent = EZ_DropdownList
+
+local EZ_DropdownPad = Instance.new("UIPadding")
+EZ_DropdownPad.PaddingTop = UDim.new(0, 4)
+EZ_DropdownPad.PaddingBottom = UDim.new(0, 4)
+EZ_DropdownPad.Parent = EZ_DropdownList
+
+local EZ_DropdownCurrent = nil
+
+local function EZ_CloseDropdown()
+    if not EZ_DropdownCurrent then return end
+    local prev = EZ_DropdownCurrent
+    EZ_DropdownCurrent = nil
+    if prev.sign then
+        TweenService:Create(prev.sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
+    end
+    local w = EZ_DropdownPopup.Size.X.Offset
+    TweenService:Create(EZ_DropdownPopup, TweenInfo.new(0.15, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(w, 0) }):Play()
+    task.delay(0.16, function()
+        if not EZ_DropdownCurrent then EZ_DropdownPopup.Visible = false end
+    end)
+end
+
+local function EZ_OpenDropdown(entry)
+    if EZ_DropdownCurrent == entry then
+        EZ_CloseDropdown()
+        return
+    end
+    if EZ_DropdownCurrent and EZ_DropdownCurrent.sign then
+        TweenService:Create(EZ_DropdownCurrent.sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
+    end
+    EZ_DropdownCurrent = entry
+    for _, child in ipairs(EZ_DropdownList:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    local values = entry.getValues()
+    for _, v in ipairs(values) do
+        local op = Instance.new("TextButton")
+        op.Size = UDim2.new(1, 0, 0, 30)
+        op.BackgroundTransparency = 1
+        op.Text = tostring(v)
+        op.Font = EZ_Brand.FontBody
+        op.TextSize = 12
+        op.TextColor3 = (v == entry.getValue()) and EZ_Theme.Accent or EZ_Theme.TextDim
+        op.TextXAlignment = Enum.TextXAlignment.Left
+        op.AutoButtonColor = false
+        op.ZIndex = 61
+        op.Parent = EZ_DropdownList
+        local opp = Instance.new("UIPadding")
+        opp.PaddingLeft = UDim.new(0, 12)
+        opp.Parent = op
+        op.MouseEnter:Connect(function()
+            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text, BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
+        end)
+        op.MouseLeave:Connect(function()
+            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = (v == entry.getValue()) and EZ_Theme.Accent or EZ_Theme.TextDim, BackgroundTransparency = 1 }):Play()
+        end)
+        op.MouseButton1Click:Connect(function()
+            entry.pick(v)
+            EZ_CloseDropdown()
+        end)
+    end
+    local popH = math.min(#values * 30 + 8, 220)
+    local popW = entry.width or 150
+    local trigPos = entry.trigger.AbsolutePosition
+    local trigSize = entry.trigger.AbsoluteSize
+    local guiPos = EZ_Gui.AbsolutePosition
+    local winPos = entry.windowFrame.AbsolutePosition
+    local winSize = entry.windowFrame.AbsoluteSize
+    local winX = winPos.X - guiPos.X
+    local winY = winPos.Y - guiPos.Y
+    local x = trigPos.X - guiPos.X + trigSize.X - popW
+    local y = trigPos.Y - guiPos.Y + trigSize.Y + 4
+    if y + popH > winY + winSize.Y - 6 then
+        y = trigPos.Y - guiPos.Y - popH - 4
+    end
+    x = EZ_Clamp(x, winX + 6, winX + winSize.X - popW - 6)
+    y = EZ_Clamp(y, winY + 6, winY + winSize.Y - popH - 6)
+    EZ_DropdownPopup.Position = UDim2.fromOffset(x, y)
+    EZ_DropdownPopup.Visible = true
+    EZ_DropdownPopup.Size = UDim2.fromOffset(popW, 0)
+    if entry.sign then
+        TweenService:Create(entry.sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = 180 }):Play()
+    end
+    TweenService:Create(EZ_DropdownPopup, TweenInfo.new(0.18, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(popW, popH) }):Play()
+end
+
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if EZ_DropdownCurrent and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local pos = input.Position
+        local popPos = EZ_DropdownPopup.AbsolutePosition
+        local popSize = EZ_DropdownPopup.AbsoluteSize
+        local inPopup = pos.X >= popPos.X and pos.X <= popPos.X + popSize.X and pos.Y >= popPos.Y and pos.Y <= popPos.Y + popSize.Y
+        local trigPos = EZ_DropdownCurrent.trigger.AbsolutePosition
+        local trigSize = EZ_DropdownCurrent.trigger.AbsoluteSize
+        local inTrig = pos.X >= trigPos.X and pos.X <= trigPos.X + trigSize.X and pos.Y >= trigPos.Y and pos.Y <= trigPos.Y + trigSize.Y
+        if not inPopup and not inTrig then
+            EZ_CloseDropdown()
+        end
+    end
+end)
+
 local function EZ_MakeDraggable(frame, handle)
     local dragging, start, startPos = false, nil, nil
     handle.InputBegan:Connect(function(i)
@@ -356,10 +486,11 @@ local function EZ_NewRow(page, height)
     return row
 end
 
-local function EZ_RowTitle(row, text, desc, height)
+local function EZ_RowTitle(row, text, desc, height, rightPad)
+    local pad = rightPad or 130
     local l = Instance.new("TextLabel")
     l.Position = UDim2.fromOffset(12, desc and 8 or 0)
-    l.Size = UDim2.new(1, -130, 0, desc and 16 or (height or 44))
+    l.Size = UDim2.new(1, -pad, 0, desc and 16 or (height or 44))
     l.BackgroundTransparency = 1
     l.Text = text
     l.Font = EZ_Brand.FontBody
@@ -372,7 +503,7 @@ local function EZ_RowTitle(row, text, desc, height)
     if desc and desc ~= "" then
         local d = Instance.new("TextLabel")
         d.Position = UDim2.fromOffset(12, 26)
-        d.Size = UDim2.new(1, -130, 0, 14)
+        d.Size = UDim2.new(1, -pad, 0, 14)
         d.BackgroundTransparency = 1
         d.Text = desc
         d.Font = EZ_Brand.FontBody
@@ -1152,6 +1283,7 @@ function EZ:CreateWindow(options)
         local activeData = nil
 
         local function selectTab(target)
+            EZ_CloseDropdown()
             activeData = target
             for _, d in ipairs(registry) do
                 d.Active = (d == target)
@@ -1175,6 +1307,7 @@ function EZ:CreateWindow(options)
 
         local function setMinimized(state)
             if not frame.Parent then return end
+            EZ_CloseDropdown()
             EZ_Window.Minimized = state
             frame.Visible = not state
         end
@@ -1613,10 +1746,10 @@ function EZ:CreateWindow(options)
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
                 local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "dropdown", Default = o.Default }
                 local row = EZ_NewRow(page, 44)
-                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44)
+                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44, 160)
                 local trigger = Instance.new("TextButton")
-                trigger.Size = UDim2.fromOffset(114, 26)
-                trigger.Position = UDim2.new(1, -124, 0.5, -13)
+                trigger.Size = UDim2.fromOffset(140, 26)
+                trigger.Position = UDim2.new(1, -150, 0.5, -13)
                 trigger.BackgroundColor3 = EZ_Theme.CardHover
                 trigger.BorderSizePixel = 0
                 trigger.Text = ""
@@ -1625,16 +1758,19 @@ function EZ:CreateWindow(options)
                 EZ_AddStroke(trigger, EZ_Theme.Border)
                 EZ_AddRadius(trigger, EZ_Theme.Radius)
                 local trigText = Instance.new("TextLabel")
-                trigText.Size = UDim2.new(1, -28, 1, 0)
-                trigText.Position = UDim2.fromOffset(8, 0)
+                trigText.Size = UDim2.new(1, -30, 1, 0)
+                trigText.Position = UDim2.fromOffset(10, 0)
                 trigText.BackgroundTransparency = 1
                 trigText.Text = obj.Value and tostring(obj.Value) or "none"
-                trigText.Font = EZ_Brand.FontBody; trigText.TextSize = 12; trigText.TextColor3 = EZ_Theme.Text
-                trigText.TextXAlignment = Enum.TextXAlignment.Left; trigText.TextTruncate = Enum.TextTruncate.AtEnd
+                trigText.Font = EZ_Brand.FontBody
+                trigText.TextSize = 12
+                trigText.TextColor3 = EZ_Theme.Text
+                trigText.TextXAlignment = Enum.TextXAlignment.Left
+                trigText.TextTruncate = Enum.TextTruncate.AtEnd
                 trigText.Parent = trigger
                 local sign = Instance.new("ImageLabel")
                 sign.AnchorPoint = Vector2.new(1, 0.5)
-                sign.Position = UDim2.new(1, -6, 0.5, 0)
+                sign.Position = UDim2.new(1, -8, 0.5, 0)
                 sign.Size = UDim2.fromOffset(14, 14)
                 sign.BackgroundTransparency = 1
                 sign.Image = EZ_LucideIcons["chevron-down"]
@@ -1645,91 +1781,15 @@ function EZ:CreateWindow(options)
                     trigText.TextColor3 = EZ_Theme.Text
                     sign.ImageColor3 = EZ_Theme.TextDim
                 end)
-                local popup = Instance.new("Frame")
-                popup.Name = "DropdownPopup"
-                popup.BackgroundColor3 = EZ_Theme.Background
-                popup.BorderSizePixel = 0
-                popup.ClipsDescendants = true
-                popup.Visible = false
-                popup.ZIndex = 50
-                popup.Parent = EZ_Gui
-                EZ_AddStroke(popup, EZ_Theme.Border)
-                EZ_AddRadius(popup, EZ_Theme.Radius)
-                EZ_RegTrans(popup)
-                EZ_Paint(function() popup.BackgroundColor3 = EZ_Theme.Background end)
-                local popList = Instance.new("Frame")
-                popList.Size = UDim2.new(1, 0, 1, 0)
-                popList.BackgroundTransparency = 1
-                popList.ClipsDescendants = true
-                popList.Parent = popup
-                local llay = Instance.new("UIListLayout"); llay.Parent = popList
-                local lpad = Instance.new("UIPadding")
-                lpad.PaddingTop = UDim.new(0, 4); lpad.PaddingBottom = UDim.new(0, 4); lpad.Parent = popList
-                local open = false
-                local function buildOptions()
-                    for _, child in ipairs(popList:GetChildren()) do
-                        if child:IsA("TextButton") then child:Destroy() end
-                    end
-                    for _, v in ipairs(values) do
-                        local op = Instance.new("TextButton")
-                        op.Size = UDim2.new(1, 0, 0, 30)
-                        op.BackgroundTransparency = 1
-                        op.Text = tostring(v)
-                        op.Font = EZ_Brand.FontBody; op.TextSize = 12; op.TextColor3 = EZ_Theme.TextDim
-                        op.TextXAlignment = Enum.TextXAlignment.Left
-                        op.AutoButtonColor = false
-                        op.ZIndex = 51
-                        op.Parent = popList
-                        EZ_Paint(function()
-                            if op.Parent then op.TextColor3 = EZ_Theme.TextDim end
-                        end)
-                        local opp = Instance.new("UIPadding"); opp.PaddingLeft = UDim.new(0, 12); opp.Parent = op
-                        op.MouseEnter:Connect(function()
-                            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text, BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
-                        end)
-                        op.MouseLeave:Connect(function()
-                            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.TextDim, BackgroundTransparency = 1 }):Play()
-                        end)
-                        op.MouseButton1Click:Connect(function()
-                            obj:Set(v, false)
-                            setOpen(false)
-                        end)
-                    end
-                end
-                local function positionPopup()
-                    local itemH = 30
-                    local popH = math.min(#values * itemH + 8, 200)
-                    local rowPos = row.AbsolutePosition
-                    local rowSize = row.AbsoluteSize
-                    local guiPos = EZ_Gui.AbsolutePosition
-                    local winPos = frame.AbsolutePosition
-                    local winSize = frame.AbsoluteSize
-                    local winX = winPos.X - guiPos.X
-                    local winY = winPos.Y - guiPos.Y
-                    local x = rowPos.X - guiPos.X + rowSize.X - 114
-                    local y = rowPos.Y - guiPos.Y + rowSize.Y + 4
-                    if y + popH > winY + winSize.Y - 6 then
-                        y = rowPos.Y - guiPos.Y - popH - 4
-                    end
-                    x = EZ_Clamp(x, winX + 6, winX + winSize.X - 114 - 6)
-                    y = EZ_Clamp(y, winY + 6, winY + winSize.Y - popH - 6)
-                    popup.Position = UDim2.fromOffset(x, y)
-                    popup.Size = UDim2.fromOffset(114, popH)
-                    return popH
-                end
-                function setOpen(s)
-                    open = s
-                    TweenService:Create(sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = s and 180 or 0 }):Play()
-                    if s then
-                        local popH = positionPopup()
-                        popup.Visible = true
-                        popup.Size = UDim2.fromOffset(114, 0)
-                        TweenService:Create(popup, TweenInfo.new(0.18, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(114, popH) }):Play()
-                    else
-                        TweenService:Create(popup, TweenInfo.new(0.15, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(114, 0) }):Play()
-                        task.delay(0.16, function() if not open then popup.Visible = false end end)
-                    end
-                end
+                local entry = {
+                    trigger = trigger,
+                    sign = sign,
+                    windowFrame = frame,
+                    width = 150,
+                    getValues = function() return values end,
+                    getValue = function() return obj.Value end,
+                    pick = function(v) obj:Set(v, false) end,
+                }
                 function obj:Set(v, silent)
                     obj.Value = v
                     trigText.Text = tostring(v)
@@ -1743,27 +1803,13 @@ function EZ:CreateWindow(options)
                 end
                 function obj:SetValues(newValues)
                     values = newValues
-                    buildOptions()
-                    if open then positionPopup() end
-                end
-                buildOptions()
-                UserInputService.InputBegan:Connect(function(i, gp)
-                    if gp then return end
-                    if open and i.UserInputType == Enum.UserInputType.MouseButton1 then
-                        local pos = i.Position
-                        local popPos = popup.AbsolutePosition
-                        local popSize = popup.AbsoluteSize
-                        local trigPos = trigger.AbsolutePosition
-                        local trigSize = trigger.AbsoluteSize
-                        local inPopup = pos.X >= popPos.X and pos.X <= popPos.X + popSize.X and pos.Y >= popPos.Y and pos.Y <= popPos.Y + popSize.Y
-                        local inTrig = pos.X >= trigPos.X and pos.X <= trigPos.X + trigSize.X and pos.Y >= trigPos.Y and pos.Y <= trigPos.Y + trigSize.Y
-                        if not inPopup and not inTrig then setOpen(false) end
+                    if EZ_DropdownCurrent == entry then
+                        EZ_CloseDropdown()
                     end
+                end
+                trigger.MouseButton1Click:Connect(function()
+                    EZ_OpenDropdown(entry)
                 end)
-                page:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-                    if open then positionPopup() end
-                end)
-                trigger.MouseButton1Click:Connect(function() setOpen(not open) end)
                 if obj.Flag then table.insert(EZ_Window.Elements, obj) end
                 return obj
             end
@@ -1774,7 +1820,7 @@ function EZ:CreateWindow(options)
                 local id = o.Flag or o.Id or o.Title or "input_" .. os.clock()
                 local obj = { Value = o.Default or "", Id = id, Flag = o.Flag, Type = "input", Default = o.Default or "" }
                 local row = EZ_NewRow(page, 44)
-                EZ_RowTitle(row, o.Title or "Input", o.Description, 44)
+                EZ_RowTitle(row, o.Title or "Input", o.Description, 44, 190)
                 local box = Instance.new("TextBox")
                 box.Size = UDim2.fromOffset(160, 28)
                 box.Position = UDim2.new(1, -172, 0.5, -14)
@@ -1944,10 +1990,10 @@ function EZ:CreateWindow(options)
                 local open = false
                 local r, g, b = math.floor(def.R * 255), math.floor(def.G * 255), math.floor(def.B * 255)
                 local row = EZ_NewRow(page, 44)
-                EZ_RowTitle(row, o.Title or "Color", o.Description, 44)
+                EZ_RowTitle(row, o.Title or "Color", o.Description, 44, 90)
                 local sw = Instance.new("Frame")
                 sw.Size = UDim2.fromOffset(28, 28)
-                sw.Position = UDim2.new(1, -40, 0.5, -14)
+                sw.Position = UDim2.new(1, -50, 0.5, -14)
                 sw.BackgroundColor3 = obj.Value
                 sw.BorderSizePixel = 0
                 sw.Parent = row
@@ -2083,7 +2129,7 @@ function EZ:CreateWindow(options)
                 local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "keybind", Default = o.Default }
                 local listening = false
                 local row = EZ_NewRow(page, 44)
-                EZ_RowTitle(row, o.Title or "Keybind", o.Description, 44)
+                EZ_RowTitle(row, o.Title or "Keybind", o.Description, 44, 100)
                 local kl = Instance.new("TextButton")
                 kl.Position = UDim2.new(1, -82, 0.5, -13)
                 kl.Size = UDim2.fromOffset(70, 26)
@@ -2238,6 +2284,7 @@ function EZ:CreateWindow(options)
         end
 
         function EZ_Window:BuildConfigSection(tab)
+            local savedConfigsDropdown = nil
             tab:AddSection({ Title = "configuration" })
             tab:AddToggle({
                 Title = "Auto-Save",
@@ -2265,7 +2312,7 @@ function EZ:CreateWindow(options)
                     EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' saved.", Style = "Success", Duration = 2 })
                 end
             })
-            local savedConfigsDropdown = tab:AddDropdown({
+            savedConfigsDropdown = tab:AddDropdown({
                 Title = "Saved Configs",
                 Description = "Pick a saved config to load or delete",
                 Values = EZ_Window:ListConfigs(),
@@ -2291,7 +2338,9 @@ function EZ:CreateWindow(options)
                 Callback = function()
                     local name = EZ_Window.CurrentConfig
                     EZ_DeleteConfig(EZ_ConfigId, name)
-                    savedConfigsDropdown:SetValues(EZ_Window:ListConfigs())
+                    if savedConfigsDropdown then
+                        savedConfigsDropdown:SetValues(EZ_Window:ListConfigs())
+                    end
                     EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' deleted.", Style = "Warning", Duration = 2 })
                 end
             })
