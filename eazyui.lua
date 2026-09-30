@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.6
+    Eazy UI v0.9.7
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.6"
+EZ.Version = "0.9.7"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -277,6 +277,7 @@ local function EZ_AddStroke(parent, color, thickness)
     s.Thickness = thickness or 1
     s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     s.Parent = parent
+    EZ_Paint(function() s.Color = EZ_Theme.Border end)
     return s
 end
 
@@ -630,7 +631,6 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     EZ_AddRadius(card, EZ_Theme.RadiusWindow)
     EZ_RegTrans(card)
     EZ_Paint(function() card.BackgroundColor3 = EZ_Theme.Background end)
-    EZ_AddBrackets(card, 14, 2, 4)
     TweenService:Create(card, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(380, 180) }):Play()
     local logo = Instance.new("Frame")
     logo.AnchorPoint = Vector2.new(0.5, 0)
@@ -758,7 +758,6 @@ local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
     EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
     EZ_RegTrans(frame)
     EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
-    EZ_AddBrackets(frame, 14, 2, 4)
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 24)
     title.Position = UDim2.fromOffset(14, 16)
@@ -859,7 +858,6 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
     EZ_RegTrans(frame)
     EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
-    EZ_AddBrackets(frame, 14, 2, 4)
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 24)
     title.Position = UDim2.fromOffset(14, 16)
@@ -1136,7 +1134,6 @@ function EZ:CreateWindow(options)
         EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
         EZ_RegTrans(frame)
         EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
-        EZ_AddBrackets(frame, 16, 2, 4)
         TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = EZ_Size, Position = UDim2.new(0.5, -EZ_Size.X.Offset / 2, 0.5, -EZ_Size.Y.Offset / 2)
         }):Play()
@@ -1398,6 +1395,7 @@ function EZ:CreateWindow(options)
             page.BorderSizePixel = 0
             page.ScrollBarThickness = 3
             page.ScrollBarImageColor3 = EZ_Theme.BorderHover
+            EZ_Paint(function() page.ScrollBarImageColor3 = EZ_Theme.BorderHover end)
             page.CanvasSize = UDim2.new(0, 0, 0, 0)
             page.AutomaticCanvasSize = Enum.AutomaticSize.Y
             page.ScrollingDirection = Enum.ScrollingDirection.Y
