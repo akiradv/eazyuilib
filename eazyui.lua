@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.1
+    Eazy UI v0.9.2
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.1"
+EZ.Version = "0.9.2"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -32,8 +32,8 @@ local EZ_Theme = {
     TextDim = EZ_C(132, 132, 132),
     Accent = EZ_C(16, 185, 129),
     AccentDim = EZ_C(12, 139, 97),
-    Radius = 6,
-    RadiusWindow = 10,
+    Radius = 8,
+    RadiusWindow = 12,
     Success = EZ_C(16, 185, 129),
     Warning = EZ_C(245, 158, 11),
     Error = EZ_C(239, 68, 68),
@@ -86,6 +86,10 @@ local EZ_Reg = {
     textDim = {},
     accent = {},
     track = {},
+    buttonBg = {},  -- For button backgrounds (Accent color)
+    buttonText = {}, -- For button text (black on accent)
+    icon = {},       -- For ImageLabels
+    input = {},      -- For TextBox backgrounds
 }
 
 local function EZ_RegAdd(cat, inst)
@@ -142,12 +146,24 @@ local function EZ_ApplyThemeToAll()
     for _, inst in ipairs(EZ_Reg.track) do
         if inst.Parent then inst.BackgroundColor3 = EZ_Theme.BorderHover end
     end
+    for _, inst in ipairs(EZ_Reg.buttonBg) do
+        if inst.Parent then inst.BackgroundColor3 = EZ_Theme.Accent end
+    end
+    for _, inst in ipairs(EZ_Reg.buttonText) do
+        if inst.Parent then inst.TextColor3 = EZ_Theme.Background end
+    end
+    for _, inst in ipairs(EZ_Reg.icon) do
+        if inst.Parent then inst.ImageColor3 = EZ_Theme.TextDim end
+    end
+    for _, inst in ipairs(EZ_Reg.input) do
+        if inst.Parent then inst.BackgroundColor3 = EZ_Theme.Background end
+    end
 end
 
 local function EZ_ApplyTheme(name)
     local t = EZ_Themes[name] or EZ_Themes.Default
     for k, v in pairs(t) do EZ_Theme[k] = v end
-    EZ_Theme.Radius = 6; EZ_Theme.RadiusWindow = 10
+    EZ_Theme.Radius = 8; EZ_Theme.RadiusWindow = 12
 end
 
 function EZ:SetTheme(name)
@@ -424,31 +440,52 @@ local function EZ_RowTitle(row, text, desc, height)
     return l
 end
 
--- CONFIG PERSISTENCE
-local function EZ_SaveConfig(placeId, data)
+-- CONFIG PERSISTENCE - Now with named configs
+local function EZ_SaveConfig(placeId, configName, data)
     if not writefile then return false end
     return pcall(function()
         if not isfolder(EZ_ConfigFolder) then makefolder(EZ_ConfigFolder) end
-        writefile(EZ_ConfigFolder .. "/" .. tostring(placeId) .. ".json", HttpService:JSONEncode(data))
+        local filename = EZ_ConfigFolder .. "/" .. tostring(placeId) .. "_" .. configName .. ".json"
+        writefile(filename, HttpService:JSONEncode(data))
     end)
 end
 
-local function EZ_LoadConfig(placeId)
+local function EZ_LoadConfig(placeId, configName)
     if not readfile or not isfile then return nil end
     local ok, data = pcall(function()
-        local p = EZ_ConfigFolder .. "/" .. tostring(placeId) .. ".json"
+        local p = EZ_ConfigFolder .. "/" .. tostring(placeId) .. "_" .. configName .. ".json"
         if isfile(p) then return HttpService:JSONDecode(readfile(p)) end
         return nil
     end)
     return ok and data or nil
 end
 
-local function EZ_DeleteConfig(placeId)
+local function EZ_DeleteConfig(placeId, configName)
     if not delfile or not isfile then return false end
     return pcall(function()
-        local p = EZ_ConfigFolder .. "/" .. tostring(placeId) .. ".json"
+        local p = EZ_ConfigFolder .. "/" .. tostring(placeId) .. "_" .. configName .. ".json"
         if isfile(p) then delfile(p) end
     end)
+end
+
+local function EZ_ListConfigs(placeId)
+    if not listfiles or not isfolder then return {} end
+    local configs = {}
+    local ok, files = pcall(function()
+        if isfolder(EZ_ConfigFolder) then
+            return listfiles(EZ_ConfigFolder)
+        end
+        return {}
+    end)
+    if not ok then return {} end
+    local prefix = tostring(placeId) .. "_"
+    for _, file in ipairs(files) do
+        local name = file:match(prefix .. "(.+)%.json$")
+        if name then
+            table.insert(configs, name)
+        end
+    end
+    return configs
 end
 
 local function EZ_SaveKey(key, duration, filename)
@@ -751,11 +788,12 @@ local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
     join.Text = "Join"
     join.Font = EZ_Brand.FontBody
     join.TextSize = 13
-    join.TextColor3 = EZ_C(0, 0, 0)
+    join.TextColor3 = EZ_Theme.Background
     join.AutoButtonColor = false
     join.Parent = frame
     EZ_AddRadius(join, EZ_Theme.Radius)
-    EZ_RegAdd('accent', join)
+    EZ_RegAdd('buttonBg', join)
+    EZ_RegAdd('buttonText', join)
     
     local skip = Instance.new("TextButton")
     skip.Size = UDim2.new(0.48, 0, 0, 38)
@@ -871,11 +909,12 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     submit.Text = "Submit"
     submit.Font = EZ_Brand.FontBody
     submit.TextSize = 13
-    submit.TextColor3 = EZ_C(0, 0, 0)
+    submit.TextColor3 = EZ_Theme.Background
     submit.AutoButtonColor = false
     submit.Parent = frame
     EZ_AddRadius(submit, EZ_Theme.Radius)
-    EZ_RegAdd('accent', submit)
+    EZ_RegAdd('buttonBg', submit)
+    EZ_RegAdd('buttonText', submit)
     
     local cancel = Instance.new("TextButton")
     cancel.Size = UDim2.new(0.48, 0, 0, 38)
@@ -1046,7 +1085,7 @@ function EZ:CreateWindow(options)
     local EZ_MinKey = options.MinimizeKey or Enum.KeyCode.RightControl
     local EZ_ConfigId = options.ConfigId or tostring(game.PlaceId)
     EZ_KeyDurationGlobal = options.KeyDuration or 86400
-    EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
+    EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.6)  -- Max 0.6 for readability
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
@@ -1074,6 +1113,7 @@ function EZ:CreateWindow(options)
     EZ_Window.Minimized = false
     EZ_Window.ConfigData = {}
     EZ_Window.Elements = {}
+    EZ_Window.CurrentConfig = "default"
 
     local function EZ_BuildWindow()
         local frame = Instance.new("Frame")
@@ -1312,7 +1352,7 @@ function EZ:CreateWindow(options)
                 iconLbl.Image = tabIcon
                 iconLbl.ImageColor3 = EZ_Theme.TextDim
                 iconLbl.Parent = btn
-                EZ_RegAdd('textDim', iconLbl)
+                EZ_RegAdd('icon', iconLbl)
                 iconOffset = 42
             end
 
@@ -1507,7 +1547,7 @@ function EZ:CreateWindow(options)
                     TweenService:Create(track, TweenInfo.new(0.15), { BackgroundColor3 = on and EZ_Theme.Accent or EZ_Theme.BorderHover }):Play()
                     TweenService:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quint), { 
                         Position = UDim2.fromOffset(on and 21 or 3, 3),
-                        BackgroundColor3 = on and EZ_C(255,255,255) or EZ_Theme.TextDim
+                        BackgroundColor3 = on and EZ_Theme.Background or EZ_Theme.TextDim
                     }):Play()
                 end
                 function obj:Set(state, silent)
@@ -1517,7 +1557,7 @@ function EZ:CreateWindow(options)
                         cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "toggle", value = obj.Value }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -1543,11 +1583,12 @@ function EZ:CreateWindow(options)
                 act.Text = o.ButtonText or "Run"
                 act.Font = EZ_Brand.FontBody
                 act.TextSize = 12
-                act.TextColor3 = EZ_C(0, 0, 0)
+                act.TextColor3 = EZ_Theme.Background
                 act.AutoButtonColor = false
                 act.Parent = row
                 EZ_AddRadius(act, EZ_Theme.Radius)
-                EZ_RegAdd('accent', act)
+                EZ_RegAdd('buttonBg', act)
+                EZ_RegAdd('buttonText', act)
                 act.MouseEnter:Connect(function()
                     TweenService:Create(act, TweenInfo.new(0.12), { BackgroundColor3 = EZ_Theme.AccentDim }):Play()
                 end)
@@ -1640,7 +1681,7 @@ function EZ:CreateWindow(options)
                         cb(v)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "slider", value = v }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -1707,7 +1748,7 @@ function EZ:CreateWindow(options)
                 sign.BackgroundTransparency = 1
                 sign.Image = EZ_LucideIcons["chevron-down"]
                 sign.ImageColor3 = EZ_Theme.TextDim
-                EZ_RegAdd('textDim', sign)
+                EZ_RegAdd('icon', sign)
                 sign.Parent = trigger
                 
                 -- Floating popup (parented to main GUI, not the row)
@@ -1775,7 +1816,7 @@ function EZ:CreateWindow(options)
                         cb(v)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "dropdown", value = v }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -1864,7 +1905,7 @@ function EZ:CreateWindow(options)
                 box.Parent = row
                 local bst = EZ_AddStroke(box, EZ_Theme.Border)
                 EZ_AddRadius(box, EZ_Theme.Radius)
-                EZ_RegAdd('bg', box)
+                EZ_RegAdd('input', box)
                 EZ_RegAdd('text', box)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 10); bpad.PaddingRight = UDim.new(0, 10); bpad.Parent = box
@@ -1880,7 +1921,7 @@ function EZ:CreateWindow(options)
                         cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "input", value = t }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -1928,7 +1969,7 @@ function EZ:CreateWindow(options)
                 box.Parent = row
                 local bst = EZ_AddStroke(box, EZ_Theme.Border)
                 EZ_AddRadius(box, EZ_Theme.Radius)
-                EZ_RegAdd('bg', box)
+                EZ_RegAdd('input', box)
                 EZ_RegAdd('text', box)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 10); bpad.PaddingRight = UDim.new(0, 10)
@@ -1945,7 +1986,7 @@ function EZ:CreateWindow(options)
                         cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "textarea", value = t }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -2025,7 +2066,7 @@ function EZ:CreateWindow(options)
                 sign.Image = EZ_LucideIcons["chevron-down"]
                 sign.ImageColor3 = EZ_Theme.TextDim
                 sign.Parent = row
-                EZ_RegAdd('textDim', sign)
+                EZ_RegAdd('icon', sign)
                 local panel = Instance.new("Frame")
                 panel.Position = UDim2.fromOffset(1, 44)
                 panel.Size = UDim2.new(1, -2, 0, 0)
@@ -2045,7 +2086,7 @@ function EZ:CreateWindow(options)
                         cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
                             EZ_Window.ConfigData[id] = { type = "color", value = { r, g, b } }
-                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.ConfigData)
+                            EZ_SaveConfig(EZ_ConfigId, EZ_Window.CurrentConfig, EZ_Window.ConfigData)
                         end
                     end
                 end
@@ -2215,7 +2256,7 @@ function EZ:CreateWindow(options)
         EZ_Window.CreateTab = EZ_Window.AddTab
 
         function EZ_Window:SetTransparency(t)
-            EZ_GlobalTransparency = EZ_Clamp(t, 0, 0.9)
+            EZ_GlobalTransparency = EZ_Clamp(t, 0, 0.6)
             for _, cat in pairs(EZ_Reg) do
                 for _, inst in ipairs(cat) do
                     if inst.Parent and inst:IsA("Frame") then
@@ -2229,7 +2270,8 @@ function EZ:CreateWindow(options)
             EZ_MinKey = key
         end
 
-        function EZ_Window:SaveConfig()
+        function EZ_Window:SaveConfig(configName)
+            configName = configName or EZ_Window.CurrentConfig
             local data = {}
             for _, el in ipairs(EZ_Window.Elements) do
                 if el.Flag then
@@ -2241,11 +2283,12 @@ function EZ:CreateWindow(options)
                 end
             end
             EZ_Window.ConfigData = data
-            return EZ_SaveConfig(EZ_ConfigId, data)
+            return EZ_SaveConfig(EZ_ConfigId, configName, data)
         end
 
-        function EZ_Window:LoadConfig()
-            local data = EZ_LoadConfig(EZ_ConfigId)
+        function EZ_Window:LoadConfig(configName)
+            configName = configName or EZ_Window.CurrentConfig
+            local data = EZ_LoadConfig(EZ_ConfigId, configName)
             if not data then return false end
             for _, el in ipairs(EZ_Window.Elements) do
                 local d = data[el.Id]
@@ -2257,11 +2300,13 @@ function EZ:CreateWindow(options)
                     end
                 end
             end
+            EZ_Window.CurrentConfig = configName
             return true
         end
 
-        function EZ_Window:ResetConfig()
-            EZ_DeleteConfig(EZ_ConfigId)
+        function EZ_Window:ResetConfig(configName)
+            configName = configName or EZ_Window.CurrentConfig
+            EZ_DeleteConfig(EZ_ConfigId, configName)
             EZ_Window.ConfigData = {}
             for _, el in ipairs(EZ_Window.Elements) do
                 if el.Default ~= nil then el:Set(el.Default, true) end
@@ -2269,11 +2314,15 @@ function EZ:CreateWindow(options)
             return true
         end
 
+        function EZ_Window:ListConfigs()
+            return EZ_ListConfigs(EZ_ConfigId)
+        end
+
         function EZ_Window:BuildConfigSection(tab)
             tab:AddSection({ Title = "configuration" })
             tab:AddParagraph({
-                Title = "Config File",
-                Content = "Saved as " .. EZ_ConfigId .. ".json in the " .. EZ_ConfigFolder .. " folder."
+                Title = "Config System",
+                Content = "Create, save and load multiple configurations with custom names."
             })
             tab:AddToggle({
                 Title = "Auto-Save",
@@ -2281,33 +2330,67 @@ function EZ:CreateWindow(options)
                 Default = true,
                 Callback = function(s) EZ_AutoSave = s end
             })
+            
+            local configNameInput = tab:AddInput({
+                Title = "Config Name",
+                Description = "Enter a name for your configuration",
+                Placeholder = "default",
+                Default = "default",
+                Callback = function(name)
+                    EZ_Window.CurrentConfig = name
+                end
+            })
+            
             tab:AddButton({
                 Title = "Save Config",
-                Description = "Force save current settings to disk",
+                Description = "Save current settings with the name above",
                 ButtonText = "Save",
                 Callback = function()
-                    EZ_Window:SaveConfig()
-                    EZ:Notify({ Title = "Config", Content = "Config saved.", Style = "Success", Duration = 2 })
+                    local name = configNameInput.Value or "default"
+                    EZ_Window:SaveConfig(name)
+                    EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' saved.", Style = "Success", Duration = 2 })
                 end
             })
+            
+            local configs = EZ_Window:ListConfigs()
+            if #configs > 0 then
+                tab:AddDropdown({
+                    Title = "Load Config",
+                    Description = "Select a saved configuration",
+                    Values = configs,
+                    Default = configs[1],
+                    Callback = function(name)
+                        EZ_Window:LoadConfig(name)
+                        EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' loaded.", Style = "Success", Duration = 2 })
+                    end
+                })
+                
+                tab:AddButton({
+                    Title = "Delete Config",
+                    Description = "Delete the selected configuration",
+                    ButtonText = "Delete",
+                    Callback = function()
+                        local name = EZ_Window.CurrentConfig
+                        EZ_Window:ResetConfig(name)
+                        EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' deleted.", Style = "Warning", Duration = 2 })
+                    end
+                })
+            end
+            
             tab:AddButton({
-                Title = "Reload Config",
-                Description = "Load saved settings from file",
-                ButtonText = "Reload",
-                Callback = function()
-                    local ok = EZ_Window:LoadConfig()
-                    EZ:Notify({ Title = "Config", Content = ok and "Config loaded." or "No config file found.", Style = ok and "Success" or "Warning", Duration = 2 })
-                end
-            })
-            tab:AddButton({
-                Title = "Reset Config",
-                Description = "Delete file and restore defaults",
+                Title = "Reset to Defaults",
+                Description = "Reset all settings to their default values",
                 ButtonText = "Reset",
                 Callback = function()
-                    EZ_Window:ResetConfig()
-                    EZ:Notify({ Title = "Config", Content = "Config reset to defaults.", Style = "Warning", Duration = 2 })
+                    for _, el in ipairs(EZ_Window.Elements) do
+                        if el.Default ~= nil then el:Set(el.Default, true) end
+                    end
+                    EZ:Notify({ Title = "Config", Content = "All settings reset to defaults.", Style = "Warning", Duration = 2 })
                 end
             })
+            
+            tab:AddSection({ Title = "appearance" })
+            
             tab:AddKeybind({
                 Title = "Minimize Key",
                 Description = "Key to hide/show the hub",
@@ -2319,12 +2402,14 @@ function EZ:CreateWindow(options)
                     end
                 end
             })
+            
             tab:AddSlider({
                 Title = "Window Transparency",
-                Description = "Adjust UI transparency live",
-                Min = 0, Max = 90, Default = math.floor(EZ_GlobalTransparency * 100), Step = 5,
+                Description = "Adjust UI transparency (0-60%)",
+                Min = 0, Max = 60, Default = math.floor(EZ_GlobalTransparency * 100), Step = 5,
                 Callback = function(v) EZ_Window:SetTransparency(v / 100) end
             })
+            
             tab:AddDropdown({
                 Title = "Theme",
                 Description = "Change the UI theme (applies instantly)",
@@ -2343,7 +2428,7 @@ function EZ:CreateWindow(options)
         EZ_Window.Content = content
         EZ_Window.SetMinimized = setMinimized
 
-        local saved = EZ_LoadConfig(EZ_ConfigId)
+        local saved = EZ_LoadConfig(EZ_ConfigId, "default")
         if saved then
             EZ_Window.ConfigData = saved
             for _, el in ipairs(EZ_Window.Elements) do
