@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.5
+    Eazy UI v0.9.6
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.5"
+EZ.Version = "0.9.6"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -335,7 +335,6 @@ EZ_DropdownList.Parent = EZ_DropdownPopup
 
 local EZ_DropdownLayout = Instance.new("UIListLayout")
 EZ_DropdownLayout.Padding = UDim.new(0, 0)
-EZ_DropdownLayout.ZIndex = 61
 EZ_DropdownLayout.Parent = EZ_DropdownList
 
 local EZ_DropdownPad = Instance.new("UIPadding")
