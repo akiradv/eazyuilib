@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.10
+    Eazy UI v0.9.11
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.10"
+EZ.Version = "0.9.11
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1215,7 +1215,7 @@ function EZ:CreateWindow(options)
         tabsContainer.Parent = sidebar
 
         local slay = Instance.new("UIListLayout")
-        slay.Padding = UDim2.new(0, 2)
+        slay.Padding = UDim.new(0, 2)
         slay.Parent = tabsContainer
 
         local spad = Instance.new("UIPadding")
