@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.11
+    Eazy UI v0.9.12
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.11"
+EZ.Version = "0.9.12"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -21,27 +21,23 @@ local EZ_Brand = {
     FontMono = Enum.Font.Code,
 }
 
-local EZ_Theme = {
-    Background = EZ_C(22, 22, 22),
-    Card = EZ_C(29, 29, 29),
-    CardHover = EZ_C(37, 37, 37),
-    Border = EZ_C(46, 46, 46),
-    BorderHover = EZ_C(72, 72, 72),
-    TabActive = EZ_C(20, 40, 33),
-    Text = EZ_C(238, 238, 238),
-    TextDim = EZ_C(132, 132, 132),
-    Accent = EZ_C(16, 185, 129),
-    AccentDim = EZ_C(12, 139, 97),
-    Radius = 8,
-    RadiusWindow = 12,
-    Success = EZ_C(16, 185, 129),
-    Warning = EZ_C(245, 158, 11),
-    Error = EZ_C(239, 68, 68),
-    Info = EZ_C(59, 130, 246),
-}
-
 local EZ_Themes = {
-    Default = EZ_Theme,
+    Default = {
+        Background = EZ_C(22, 22, 22),
+        Card = EZ_C(29, 29, 29),
+        CardHover = EZ_C(37, 37, 37),
+        Border = EZ_C(46, 46, 46),
+        BorderHover = EZ_C(72, 72, 72),
+        TabActive = EZ_C(20, 40, 33),
+        Text = EZ_C(238, 238, 238),
+        TextDim = EZ_C(132, 132, 132),
+        Accent = EZ_C(16, 185, 129),
+        AccentDim = EZ_C(12, 139, 97),
+        Success = EZ_C(16, 185, 129),
+        Warning = EZ_C(245, 158, 11),
+        Error = EZ_C(239, 68, 68),
+        Info = EZ_C(59, 130, 246),
+    },
     Pitch = {
         Background = EZ_C(10, 10, 10), Card = EZ_C(17, 17, 17), CardHover = EZ_C(24, 24, 24),
         Border = EZ_C(34, 34, 34), BorderHover = EZ_C(58, 58, 58), TabActive = EZ_C(17, 34, 28),
@@ -73,6 +69,11 @@ local EZ_Themes = {
         Accent = EZ_C(238, 238, 238), AccentDim = EZ_C(179, 179, 179),
     },
 }
+
+local EZ_Theme = {}
+for k, v in pairs(EZ_Themes.Default) do EZ_Theme[k] = v end
+EZ_Theme.Radius = 8
+EZ_Theme.RadiusWindow = 12
 
 local EZ_ThemeAliases = {
     default = "Default", padrao = "Default",
@@ -116,7 +117,8 @@ local function EZ_ApplyThemeAndRepaint(name)
     local t = EZ_Themes[resolved] or EZ_Themes.Default
     EZ_CurrentThemeName = resolved
     for k, v in pairs(t) do EZ_Theme[k] = v end
-    EZ_Theme.Radius = 8; EZ_Theme.RadiusWindow = 12
+    EZ_Theme.Radius = 8
+    EZ_Theme.RadiusWindow = 12
     EZ_Repaint()
     for _, fn in ipairs(EZ_ThemeListeners) do
         pcall(fn, EZ_CurrentThemeName)
@@ -240,11 +242,11 @@ end
 
 local function EZ_Normalize(a, b)
     if type(a) == "string" then
-        b = b or {}
+        b = type(b) == "table" and b or {}
         b.Title = b.Title or a
         return b
     end
-    return a or {}
+    return type(a) == "table" and a or {}
 end
 
 if getgenv and getgenv().EazyUI then
@@ -335,7 +337,7 @@ local function EZ_CloseDropdown()
     if not EZ_DropdownCurrent then return end
     local prev = EZ_DropdownCurrent
     EZ_DropdownCurrent = nil
-    if prev.sign then
+    if prev.sign and prev.sign.Parent then
         TweenService:Create(prev.sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
     end
     local w = EZ_DropdownPopup.Size.X.Offset
@@ -346,11 +348,12 @@ local function EZ_CloseDropdown()
 end
 
 local function EZ_OpenDropdown(entry)
+    if not entry or not entry.trigger or not entry.trigger.Parent then return end
     if EZ_DropdownCurrent == entry then
         EZ_CloseDropdown()
         return
     end
-    if EZ_DropdownCurrent and EZ_DropdownCurrent.sign then
+    if EZ_DropdownCurrent and EZ_DropdownCurrent.sign and EZ_DropdownCurrent.sign.Parent then
         TweenService:Create(EZ_DropdownCurrent.sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = 0 }):Play()
     end
     EZ_DropdownCurrent = entry
@@ -412,12 +415,18 @@ end
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if EZ_DropdownCurrent and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local current = EZ_DropdownCurrent
+        if not current.trigger or not current.trigger.Parent then
+            EZ_DropdownCurrent = nil
+            EZ_DropdownPopup.Visible = false
+            return
+        end
         local pos = input.Position
         local popPos = EZ_DropdownPopup.AbsolutePosition
         local popSize = EZ_DropdownPopup.AbsoluteSize
         local inPopup = pos.X >= popPos.X and pos.X <= popPos.X + popSize.X and pos.Y >= popPos.Y and pos.Y <= popPos.Y + popSize.Y
-        local trigPos = EZ_DropdownCurrent.trigger.AbsolutePosition
-        local trigSize = EZ_DropdownCurrent.trigger.AbsoluteSize
+        local trigPos = current.trigger.AbsolutePosition
+        local trigSize = current.trigger.AbsoluteSize
         local inTrig = pos.X >= trigPos.X and pos.X <= trigPos.X + trigSize.X and pos.Y >= trigPos.Y and pos.Y <= trigPos.Y + trigSize.Y
         if not inPopup and not inTrig then
             EZ_CloseDropdown()
@@ -537,10 +546,12 @@ local function EZ_ListConfigs(placeId)
         return {}
     end)
     if not ok then return {} end
-    local prefix = tostring(placeId) .. "_"
+    local base = tostring(placeId) .. "_"
     for _, file in ipairs(files) do
-        local name = file:match(prefix .. "(.+)%.json$")
-        if name then table.insert(configs, name) end
+        local name = file:match("([^/\\]+)$") or file
+        if name:sub(1, #base) == base and name:sub(-5) == ".json" then
+            table.insert(configs, name:sub(#base + 1, #name - 5))
+        end
     end
     return configs
 end
@@ -606,21 +617,18 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     gui.DisplayOrder = 300
     gui.Parent = EZ_GuiParent()
     EZ_Hide(gui)
-
     local holder = Instance.new("Frame")
     holder.AnchorPoint = Vector2.new(0.5, 0.5)
     holder.Position = UDim2.new(0.5, 0, 0.5, 0)
     holder.Size = UDim2.fromOffset(420, 150)
     holder.BackgroundTransparency = 1
     holder.Parent = gui
-
     local lay = Instance.new("UIListLayout")
     lay.FillDirection = Enum.FillDirection.Vertical
     lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
     lay.VerticalAlignment = Enum.VerticalAlignment.Center
     lay.Padding = UDim.new(0, 10)
     lay.Parent = holder
-
     local letter = Instance.new("TextLabel")
     letter.Size = UDim2.fromOffset(60, 60)
     letter.BackgroundTransparency = 1
@@ -631,7 +639,6 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     letter.TextTransparency = 1
     letter.Parent = holder
     EZ_Paint(function() letter.TextColor3 = EZ_Theme.Accent end)
-
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.fromOffset(420, 24)
     titleLabel.BackgroundTransparency = 1
@@ -644,7 +651,6 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     titleLabel.TextTransparency = 1
     titleLabel.Parent = holder
     EZ_Paint(function() titleLabel.TextColor3 = EZ_Theme.Text end)
-
     local subLabel = Instance.new("TextLabel")
     subLabel.Size = UDim2.fromOffset(420, 18)
     subLabel.BackgroundTransparency = 1
@@ -657,14 +663,11 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     subLabel.TextTransparency = 1
     subLabel.Parent = holder
     EZ_Paint(function() subLabel.TextColor3 = EZ_Theme.TextDim end)
-
     local fadeInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     TweenService:Create(letter, fadeInfo, { TextTransparency = 0 }):Play()
     TweenService:Create(titleLabel, fadeInfo, { TextTransparency = 0 }):Play()
     TweenService:Create(subLabel, fadeInfo, { TextTransparency = 0 }):Play()
-
     task.wait(duration or 2)
-
     local outInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
     TweenService:Create(letter, outInfo, { TextTransparency = 1 }):Play()
     TweenService:Create(titleLabel, outInfo, { TextTransparency = 1 }):Play()
@@ -1180,6 +1183,7 @@ function EZ:CreateWindow(options)
         sidebar.BackgroundColor3 = EZ_Theme.Card
         sidebar.BackgroundTransparency = EZ_GlobalTransparency
         sidebar.BorderSizePixel = 0
+        sidebar.ClipsDescendants = true
         sidebar.Parent = frame
         EZ_AddRadius(sidebar, EZ_Theme.RadiusWindow)
         EZ_RegTrans(sidebar)
@@ -1282,6 +1286,10 @@ function EZ:CreateWindow(options)
         local function setMinimized(state)
             if not frame.Parent then return end
             EZ_CloseDropdown()
+            if state then
+                local focused = UserInputService:GetFocusedTextBox()
+                if focused then focused:ReleaseFocus() end
+            end
             EZ_Window.Minimized = state
             frame.Visible = not state
         end
@@ -1998,16 +2006,21 @@ function EZ:CreateWindow(options)
                 local ppad2 = Instance.new("UIPadding")
                 ppad2.PaddingTop = UDim.new(0, 10); ppad2.PaddingBottom = UDim.new(0, 10)
                 ppad2.PaddingLeft = UDim.new(0, 14); ppad2.PaddingRight = UDim.new(0, 14); ppad2.Parent = panel
+                local updateScheduled = false
                 local function update(silent)
                     obj.Value = Color3.fromRGB(r, g, b)
                     sw.BackgroundColor3 = obj.Value
-                    if not silent then
+                    if silent then return end
+                    if updateScheduled then return end
+                    updateScheduled = true
+                    task.delay(0.08, function()
+                        updateScheduled = false
                         cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
-                            EZ_Window.ConfigData[id] = { type = "color", value = { r, g, b } }
+                            EZ_Window.ConfigData[id] = { type = "color", value = { math.floor(obj.Value.R * 255), math.floor(obj.Value.G * 255), math.floor(obj.Value.B * 255) } }
                             EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
                         end
-                    end
+                    end)
                 end
                 local function channel(letter, get, set)
                     local holder = Instance.new("Frame")
@@ -2226,6 +2239,16 @@ function EZ:CreateWindow(options)
             configName = configName or EZ_Window.CurrentConfig
             local data = EZ_LoadConfig(EZ_ConfigId, configName)
             if not data then return false end
+            local ignored = 0
+            for key, _ in pairs(data) do
+                if key ~= "_meta" then
+                    local found = false
+                    for _, el in ipairs(EZ_Window.Elements) do
+                        if el.Id == key then found = true break end
+                    end
+                    if not found then ignored = ignored + 1 end
+                end
+            end
             if data._meta then
                 if data._meta.theme then
                     EZ_ApplyThemeAndRepaint(data._meta.theme)
@@ -2245,6 +2268,11 @@ function EZ:CreateWindow(options)
                 end
             end
             EZ_Window.CurrentConfig = configName
+            if ignored > 0 then
+                task.spawn(function()
+                    EZ:Notify({ Title = "Config", Content = ignored .. " saved field(s) no longer exist and were skipped.", Style = "Warning", Duration = 3 })
+                end)
+            end
             return true
         end
 
@@ -2263,6 +2291,8 @@ function EZ:CreateWindow(options)
         end
 
         function EZ_Window:BuildConfigSection(tab)
+            if tab._ezConfigBuilt then return end
+            tab._ezConfigBuilt = true
             local savedConfigsDropdown = nil
             local themeDropdown = nil
             local function persistAppearance()
@@ -2422,8 +2452,12 @@ function EZ:CreateWindow(options)
 end
 
 function EZ:Destroy()
+    EZ_CloseDropdown()
     EZ_Gui:Destroy()
     EZ_NotifyGui:Destroy()
+    table.clear(EZ_Painters)
+    table.clear(EZ_TransSurf)
+    table.clear(EZ_ThemeListeners)
     if getgenv then getgenv().EazyUI = nil end
 end
 
