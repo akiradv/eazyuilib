@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.13
+    Eazy UI v0.9.14
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.13"
+EZ.Version = "0.9.14"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -147,56 +147,31 @@ EZ.Compat = {
 }
 
 local EZ_LucideIcons = {
-    home = "rbxassetid://109841253338329",
-    settings = "rbxassetid://106205298246017",
-    cog = "rbxassetid://123222732420633",
-    zap = "rbxassetid://109718589733073",
-    eye = "rbxassetid://127234874352422",
-    user = "rbxassetid://114567720540659",
-    users = "rbxassetid://85332511060401",
-    star = "rbxassetid://72669221096319",
-    shield = "rbxassetid://106509993556171",
-    key = "rbxassetid://83474888140571",
-    bell = "rbxassetid://84691420588185",
-    code = "rbxassetid://75851496262862",
-    lock = "rbxassetid://119765975153029",
-    unlock = "rbxassetid://110263656507369",
-    heart = "rbxassetid://88525382655929",
-    check = "rbxassetid://86817768619372",
-    x = "rbxassetid://116396312853810",
-    plus = "rbxassetid://101123124881873",
-    minus = "rbxassetid://95070996149109",
-    ["chevron-right"] = "rbxassetid://101007429951147",
-    ["chevron-left"] = "rbxassetid://102314312897830",
-    ["chevron-down"] = "rbxassetid://71457658246709",
-    ["chevron-up"] = "rbxassetid://98648581502859",
-    search = "rbxassetid://72296609649861",
-    download = "rbxassetid://118488857289315",
-    save = "rbxassetid://122894934359450",
-    trash = "rbxassetid://94712995845562",
-    edit = "rbxassetid://99195778697194",
-    terminal = "rbxassetid://102379915564176",
-    folder = "rbxassetid://137249944163344",
-    info = "rbxassetid://109792483526167",
-    warning = "rbxassetid://112102474509324",
-    error = "rbxassetid://111132030834422",
-    success = "rbxassetid://105979545056636",
-    power = "rbxassetid://89331085993646",
-    menu = "rbxassetid://135438142591878",
-    close = "rbxassetid://106305483906363",
-    palette = "rbxassetid://95424916372879",
-    refresh = "rbxassetid://106497040962250",
-    sliders = "rbxassetid://105166722651208",
-    target = "rbxassetid://121091323240554",
-    crosshair = "rbxassetid://78822043673501",
-    compass = "rbxassetid://73836660434977",
-    globe = "rbxassetid://139232691165198",
-    link = "rbxassetid://102194562745333",
-    discord = "rbxassetid://90424880717042",
-    github = "rbxassetid://131077252082543",
-    trophy = "rbxassetid://113055182645565",
-    crown = "rbxassetid://78791133479661",
-    gamepad = "rbxassetid://81793486260595",
+    home = "rbxassetid://109841253338329", settings = "rbxassetid://106205298246017",
+    cog = "rbxassetid://123222732420633", zap = "rbxassetid://109718589733073",
+    eye = "rbxassetid://127234874352422", user = "rbxassetid://114567720540659",
+    users = "rbxassetid://85332511060401", star = "rbxassetid://72669221096319",
+    shield = "rbxassetid://106509993556171", key = "rbxassetid://83474888140571",
+    bell = "rbxassetid://84691420588185", code = "rbxassetid://75851496262862",
+    lock = "rbxassetid://119765975153029", unlock = "rbxassetid://110263656507369",
+    heart = "rbxassetid://88525382655929", check = "rbxassetid://86817768619372",
+    x = "rbxassetid://116396312853810", plus = "rbxassetid://101123124881873",
+    minus = "rbxassetid://95070996149109", ["chevron-right"] = "rbxassetid://101007429951147",
+    ["chevron-left"] = "rbxassetid://102314312897830", ["chevron-down"] = "rbxassetid://71457658246709",
+    ["chevron-up"] = "rbxassetid://98648581502859", search = "rbxassetid://72296609649861",
+    download = "rbxassetid://118488857289315", save = "rbxassetid://122894934359450",
+    trash = "rbxassetid://94712995845562", edit = "rbxassetid://99195778697194",
+    terminal = "rbxassetid://102379915564176", folder = "rbxassetid://137249944163344",
+    info = "rbxassetid://109792483526167", warning = "rbxassetid://112102474509324",
+    error = "rbxassetid://111132030834422", success = "rbxassetid://105979545056636",
+    power = "rbxassetid://89331085993646", menu = "rbxassetid://135438142591878",
+    close = "rbxassetid://106305483906363", palette = "rbxassetid://95424916372879",
+    refresh = "rbxassetid://106497040962250", sliders = "rbxassetid://105166722651208",
+    target = "rbxassetid://121091323240554", crosshair = "rbxassetid://78822043673501",
+    compass = "rbxassetid://73836660434977", globe = "rbxassetid://139232691165198",
+    link = "rbxassetid://102194562745333", discord = "rbxassetid://90424880717042",
+    github = "rbxassetid://131077252082543", trophy = "rbxassetid://113055182645565",
+    crown = "rbxassetid://78791133479661", gamepad = "rbxassetid://81793486260595",
 }
 
 local function EZ_GetIcon(icon)
@@ -287,9 +262,17 @@ local function EZ_AddStroke(parent, color, thickness)
     s.Color = color or EZ_Theme.Border
     s.Thickness = thickness or 1
     local isTextObj = parent:IsA("TextBox") or parent:IsA("TextLabel") or parent:IsA("TextButton")
-	s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
+    s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
-    EZ_Paint(function() s.Color = EZ_Theme.Border end)
+    EZ_Paint(function()
+        if isTextObj and parent:IsA("TextBox") then
+            if UserInputService:GetFocusedTextBox() ~= parent then
+                s.Color = EZ_Theme.Border
+            end
+        else
+            s.Color = EZ_Theme.Border
+        end
+    end)
     return s
 end
 
@@ -313,7 +296,6 @@ EZ_AddRadius(EZ_DropdownPopup, EZ_Theme.Radius)
 EZ_RegTrans(EZ_DropdownPopup)
 EZ_Paint(function()
     EZ_DropdownPopup.BackgroundColor3 = EZ_Theme.Background
-    EZ_DropdownStroke.Color = EZ_Theme.Border
 end)
 
 local EZ_DropdownList = Instance.new("Frame")
@@ -598,7 +580,7 @@ local function EZ_SaveDiscordJoined(invite)
     return pcall(function() writefile(EZ_DiscordFile, HttpService:JSONEncode({ joined = invite, timestamp = os.time() })) end)
 end
 
-local function EZ_CheckDiscordJoined(invite)
+local function EZ_checkDiscordJoined(invite)
     if not readfile or not isfile then return false end
     local ok, data = pcall(function()
         if isfile(EZ_DiscordFile) then
@@ -678,7 +660,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
 end
 
 local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
-    if rememberJoins and EZ_CheckDiscordJoined(invite) then callback(true) return end
+    if rememberJoins and EZ_checkDiscordJoined(invite) then callback(true) return end
     local gui = Instance.new("ScreenGui")
     gui.Name = EZ_RandName("Discord")
     gui.ResetOnSpawn = false
@@ -1029,7 +1011,7 @@ function EZ:CreateWindow(options)
     local EZ_MinKey = options.MinimizeKey or Enum.KeyCode.RightControl
     local EZ_ConfigId = options.ConfigId or tostring(game.PlaceId)
     EZ_KeyDurationGlobal = options.KeyDuration or 86400
-    EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.6)
+    EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
@@ -1639,10 +1621,10 @@ function EZ:CreateWindow(options)
                 vl.Position = UDim2.new(1, -12, 0, 10)
                 vl.Size = UDim2.fromOffset(80, 16)
                 vl.BackgroundTransparency = 1
-                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Text
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Accent
                 vl.TextXAlignment = Enum.TextXAlignment.Right
                 vl.Parent = row
-                EZ_Paint(function() vl.TextColor3 = EZ_Theme.Text end)
+                EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end)
                 local track = Instance.new("Frame")
                 track.Position = UDim2.fromOffset(12, 38)
                 track.Size = UDim2.new(1, -24, 0, 6)
@@ -1730,10 +1712,10 @@ function EZ:CreateWindow(options)
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
                 local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "dropdown", Default = o.Default }
                 local row = EZ_NewRow(page, 44)
-                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44, 160)
+                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44, 190)
                 local trigger = Instance.new("TextButton")
-                trigger.Size = UDim2.fromOffset(140, 26)
-                trigger.Position = UDim2.new(1, -150, 0.5, -13)
+                trigger.Size = UDim2.fromOffset(160, 28)
+                trigger.Position = UDim2.new(1, -172, 0.5, -14)
                 trigger.BackgroundColor3 = EZ_Theme.CardHover
                 trigger.BorderSizePixel = 0
                 trigger.Text = ""
@@ -1769,7 +1751,7 @@ function EZ:CreateWindow(options)
                     trigger = trigger,
                     sign = sign,
                     windowFrame = frame,
-                    width = 150,
+                    width = 172,
                     getValues = function() return values end,
                     getValue = function() return obj.Value end,
                     pick = function(v) obj:Set(v, false) end,
@@ -1811,7 +1793,7 @@ function EZ:CreateWindow(options)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
-                box.Font = EZ_Brand.FontBody
+                box.Font = EZ_Brand.FontMono
                 box.TextSize = 12
                 box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
@@ -1879,7 +1861,7 @@ function EZ:CreateWindow(options)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
-                box.Font = EZ_Brand.FontBody; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
+                box.Font = EZ_Brand.FontMono; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
                 box.PlaceholderColor3 = EZ_Theme.TextDim
                 box.TextXAlignment = Enum.TextXAlignment.Left
@@ -1937,11 +1919,11 @@ function EZ:CreateWindow(options)
                 vl.Position = UDim2.new(1, -12, 0, 10)
                 vl.Size = UDim2.fromOffset(60, 16)
                 vl.BackgroundTransparency = 1
-                vl.Font = EZ_Brand.FontMono; vl.TextSize = 12; vl.TextColor3 = EZ_Theme.Text
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 12; vl.TextColor3 = EZ_Theme.Accent
                 vl.TextXAlignment = Enum.TextXAlignment.Right
                 vl.Text = tostring(obj.Value) .. "%"
                 vl.Parent = row
-                EZ_Paint(function() vl.TextColor3 = EZ_Theme.Text end)
+                EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end)
                 local track = Instance.new("Frame")
                 track.Position = UDim2.fromOffset(12, 32)
                 track.Size = UDim2.new(1, -24, 0, 6)
@@ -2205,7 +2187,7 @@ function EZ:CreateWindow(options)
         EZ_Window.CreateTab = EZ_Window.AddTab
 
         function EZ_Window:SetTransparency(t)
-            EZ_GlobalTransparency = EZ_Clamp(t, 0, 0.6)
+            EZ_GlobalTransparency = EZ_Clamp(t, 0, 0.9)
             for _, inst in ipairs(EZ_TransSurf) do
                 if inst.Parent then
                     inst.BackgroundTransparency = EZ_GlobalTransparency
@@ -2219,7 +2201,7 @@ function EZ:CreateWindow(options)
 
         function EZ_Window:SaveConfig(configName)
             configName = configName or EZ_Window.CurrentConfig
-            local data = { _meta = { theme = EZ_CurrentThemeName, transparency = EZ_GlobalTransparency } }
+            local data = { _meta = { theme = EZ_CurrentThemeName, transparency = EZ_GlobalTransparency, autoSave = EZ_AutoSave } }
             for _, el in ipairs(EZ_Window.Elements) do
                 if el.Flag then
                     if el.Type == "color" then
@@ -2255,6 +2237,7 @@ function EZ:CreateWindow(options)
                     EZ_ApplyThemeAndRepaint(data._meta.theme)
                 end
                 if data._meta.transparency then EZ_Window:SetTransparency(data._meta.transparency) end
+                if data._meta.autoSave ~= nil then EZ_AutoSave = data._meta.autoSave end
             end
             for _, el in ipairs(EZ_Window.Elements) do
                 local d = data[el.Id]
@@ -2305,8 +2288,11 @@ function EZ:CreateWindow(options)
             tab:AddToggle({
                 Title = "Auto-Save",
                 Description = "Save settings automatically when changed",
-                Default = true,
-                Callback = function(s) EZ_AutoSave = s end
+                Default = EZ_AutoSave,
+                Callback = function(s)
+                    EZ_AutoSave = s
+                    persistAppearance()
+                end
             })
             local configNameInput = tab:AddInput({
                 Title = "Config Name",
@@ -2387,8 +2373,8 @@ function EZ:CreateWindow(options)
             })
             tab:AddSlider({
                 Title = "Window Transparency",
-                Description = "Adjust UI transparency (0-60%)",
-                Min = 0, Max = 60, Default = math.floor(EZ_GlobalTransparency * 100), Step = 5,
+                Description = "Adjust UI transparency (0-90%)",
+                Min = 0, Max = 90, Default = math.floor(EZ_GlobalTransparency * 100), Step = 5,
                 Callback = function(v)
                     EZ_Window:SetTransparency(v / 100)
                     persistAppearance()
@@ -2426,7 +2412,8 @@ function EZ:CreateWindow(options)
                 if saved._meta.theme then
                     EZ_ApplyThemeAndRepaint(saved._meta.theme)
                 end
-                if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.6) end
+                if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.9) end
+                if saved._meta.autoSave ~= nil then EZ_AutoSave = saved._meta.autoSave end
             end
             for _, el in ipairs(EZ_Window.Elements) do
                 local d = saved[el.Id]
