@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.7
+    Eazy UI v0.9.8
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.7"
+EZ.Version = "0.9.8"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -104,18 +104,18 @@ local function EZ_Repaint()
     end
 end
 
-local function EZ_ApplyTheme(name)
+local function EZ_ApplyThemeAndRepaint(name)
     local clean = tostring(name):lower():gsub("^%s+", ""):gsub("%s+$", "")
     local resolved = EZ_ThemeAliases[clean] or name
     local t = EZ_Themes[resolved] or EZ_Themes.Default
     EZ_CurrentThemeName = resolved
     for k, v in pairs(t) do EZ_Theme[k] = v end
     EZ_Theme.Radius = 8; EZ_Theme.RadiusWindow = 12
+    EZ_Repaint()
 end
 
 function EZ:SetTheme(name)
-    EZ_ApplyTheme(name)
-    EZ_Repaint()
+    EZ_ApplyThemeAndRepaint(name)
 end
 
 function EZ:SetAccent(color)
@@ -275,7 +275,7 @@ local function EZ_AddStroke(parent, color, thickness)
     local s = Instance.new("UIStroke")
     s.Color = color or EZ_Theme.Border
     s.Thickness = thickness or 1
-    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
     EZ_Paint(function() s.Color = EZ_Theme.Border end)
     return s
@@ -288,29 +288,7 @@ local function EZ_AddRadius(parent, radius)
     return c
 end
 
-local function EZ_AddBrackets(parent, len, thick, inset)
-    len = len or 12; thick = thick or 2; inset = inset or 4
-    local function mk(pos, size)
-        local f = Instance.new("Frame")
-        f.BackgroundColor3 = EZ_Theme.Accent
-        f.BorderSizePixel = 0
-        f.Position = pos
-        f.Size = size
-        f.Parent = parent
-        EZ_Paint(function() f.BackgroundColor3 = EZ_Theme.Accent end)
-        return f
-    end
-    mk(UDim2.new(0, inset, 0, inset), UDim2.new(0, len, 0, thick))
-    mk(UDim2.new(0, inset, 0, inset), UDim2.new(0, thick, 0, len))
-    mk(UDim2.new(1, -inset - len, 0, inset), UDim2.new(0, len, 0, thick))
-    mk(UDim2.new(1, -inset - thick, 0, inset), UDim2.new(0, thick, 0, len))
-    mk(UDim2.new(0, inset, 1, -inset - thick), UDim2.new(0, len, 0, thick))
-    mk(UDim2.new(0, inset, 1, -inset - len), UDim2.new(0, thick, 0, len))
-    mk(UDim2.new(1, -inset - len, 1, -inset - thick), UDim2.new(0, len, 0, thick))
-    mk(UDim2.new(1, -inset - thick, 1, -inset - len), UDim2.new(0, thick, 0, len))
-end
-
--- GLOBAL DROPDOWN MENU MANAGER (one popup for all dropdowns)
+-- GLOBAL DROPDOWN MENU MANAGER
 local EZ_DropdownPopup = Instance.new("Frame")
 EZ_DropdownPopup.Name = "EZ_DropdownPopup"
 EZ_DropdownPopup.BackgroundColor3 = EZ_Theme.Background
@@ -647,7 +625,6 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     letter.TextColor3 = EZ_Theme.Accent
     letter.Parent = logo
     EZ_Paint(function() letter.TextColor3 = EZ_Theme.Accent end)
-    EZ_AddBrackets(logo, 10, 2, 0)
     local titleLabel = Instance.new("TextLabel")
     titleLabel.AnchorPoint = Vector2.new(0.5, 0)
     titleLabel.Position = UDim2.new(0.5, 0, 0, 58)
@@ -1169,7 +1146,6 @@ function EZ:CreateWindow(options)
         logoLetter.TextColor3 = EZ_Theme.Accent
         logoLetter.Parent = logoHolder
         EZ_Paint(function() logoLetter.TextColor3 = EZ_Theme.Accent end)
-        EZ_AddBrackets(logoHolder, 8, 2, 0)
 
         local tholder = Instance.new("Frame")
         tholder.BackgroundTransparency = 1
@@ -2247,7 +2223,9 @@ function EZ:CreateWindow(options)
             local data = EZ_LoadConfig(EZ_ConfigId, configName)
             if not data then return false end
             if data._meta then
-                if data._meta.theme then EZ:SetTheme(data._meta.theme) end
+                if data._meta.theme then 
+                    EZ_ApplyThemeAndRepaint(data._meta.theme)
+                end
                 if data._meta.transparency then EZ_Window:SetTransparency(data._meta.transparency) end
             end
             for _, el in ipairs(EZ_Window.Elements) do
@@ -2394,7 +2372,9 @@ function EZ:CreateWindow(options)
             EZ_Window.ConfigData = saved
             EZ_Window.CurrentConfig = "default"
             if saved._meta then
-                if saved._meta.theme then EZ_ApplyTheme(saved._meta.theme) end
+                if saved._meta.theme then 
+                    EZ_ApplyThemeAndRepaint(saved._meta.theme)
+                end
                 if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.6) end
             end
             for _, el in ipairs(EZ_Window.Elements) do
