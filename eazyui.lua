@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.12
+    Eazy UI v0.9.13
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.12"
+EZ.Version = "0.9.13"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -286,7 +286,8 @@ local function EZ_AddStroke(parent, color, thickness)
     local s = Instance.new("UIStroke")
     s.Color = color or EZ_Theme.Border
     s.Thickness = thickness or 1
-    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+    local isTextObj = parent:IsA("TextBox") or parent:IsA("TextLabel") or parent:IsA("TextButton")
+	s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
     EZ_Paint(function() s.Color = EZ_Theme.Border end)
     return s
