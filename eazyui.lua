@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.9
+    Eazy UI v0.9.10
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.9"
+EZ.Version = "0.9.10"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1191,6 +1191,7 @@ function EZ:CreateWindow(options)
         sbFillTop.BackgroundColor3 = EZ_Theme.Card
         sbFillTop.BackgroundTransparency = EZ_GlobalTransparency
         sbFillTop.BorderSizePixel = 0
+        sbFillTop.ZIndex = 10
         sbFillTop.Parent = sidebar
         EZ_RegTrans(sbFillTop)
         EZ_Paint(function() sbFillTop.BackgroundColor3 = EZ_Theme.Card end)
@@ -1201,15 +1202,28 @@ function EZ:CreateWindow(options)
         sbFillRight.BackgroundColor3 = EZ_Theme.Card
         sbFillRight.BackgroundTransparency = EZ_GlobalTransparency
         sbFillRight.BorderSizePixel = 0
+        sbFillRight.ZIndex = 10
         sbFillRight.Parent = sidebar
         EZ_RegTrans(sbFillRight)
         EZ_Paint(function() sbFillRight.BackgroundColor3 = EZ_Theme.Card end)
 
+        local tabsContainer = Instance.new("Frame")
+        tabsContainer.Size = UDim2.new(1, -EZ_Theme.RadiusWindow, 1, 0)
+        tabsContainer.Position = UDim2.new(0, 0, 0, 0)
+        tabsContainer.BackgroundTransparency = 1
+        tabsContainer.ClipsDescendants = true
+        tabsContainer.Parent = sidebar
+
         local slay = Instance.new("UIListLayout")
-        slay.Padding = UDim.new(0, 2); slay.Parent = sidebar
+        slay.Padding = UDim2.new(0, 2)
+        slay.Parent = tabsContainer
+
         local spad = Instance.new("UIPadding")
-        spad.PaddingTop = UDim.new(0, 10); spad.PaddingBottom = UDim.new(0, 10)
-        spad.PaddingLeft = UDim.new(0, 8); spad.PaddingRight = UDim.new(0, 8); spad.Parent = sidebar
+        spad.PaddingTop = UDim.new(0, 10)
+        spad.PaddingBottom = UDim.new(0, 10)
+        spad.PaddingLeft = UDim.new(0, 8)
+        spad.PaddingRight = UDim.new(0, 8)
+        spad.Parent = tabsContainer
 
         local sline = Instance.new("Frame")
         sline.Size = UDim2.new(0, 1, 1, -EZ_TITLEBAR_HEIGHT)
@@ -1302,7 +1316,7 @@ function EZ:CreateWindow(options)
             btn.BackgroundTransparency = 1
             btn.Text = ""
             btn.AutoButtonColor = false
-            btn.Parent = sidebar
+            btn.Parent = tabsContainer
             EZ_AddRadius(btn, 6)
 
             local indicator = Instance.new("Frame")
