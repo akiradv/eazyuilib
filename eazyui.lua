@@ -5,7 +5,7 @@
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.11
+EZ.Version = "0.9.11"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
