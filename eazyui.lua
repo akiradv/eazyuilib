@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.14
+    Eazy UI v0.9.15
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.14"
+EZ.Version = "0.9.15"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -147,31 +147,57 @@ EZ.Compat = {
 }
 
 local EZ_LucideIcons = {
-    home = "rbxassetid://109841253338329", settings = "rbxassetid://106205298246017",
-    cog = "rbxassetid://123222732420633", zap = "rbxassetid://109718589733073",
-    eye = "rbxassetid://127234874352422", user = "rbxassetid://114567720540659",
-    users = "rbxassetid://85332511060401", star = "rbxassetid://72669221096319",
-    shield = "rbxassetid://106509993556171", key = "rbxassetid://83474888140571",
-    bell = "rbxassetid://84691420588185", code = "rbxassetid://75851496262862",
-    lock = "rbxassetid://119765975153029", unlock = "rbxassetid://110263656507369",
-    heart = "rbxassetid://88525382655929", check = "rbxassetid://86817768619372",
-    x = "rbxassetid://116396312853810", plus = "rbxassetid://101123124881873",
-    minus = "rbxassetid://95070996149109", ["chevron-right"] = "rbxassetid://101007429951147",
-    ["chevron-left"] = "rbxassetid://102314312897830", ["chevron-down"] = "rbxassetid://71457658246709",
-    ["chevron-up"] = "rbxassetid://98648581502859", search = "rbxassetid://72296609649861",
-    download = "rbxassetid://118488857289315", save = "rbxassetid://122894934359450",
-    trash = "rbxassetid://94712995845562", edit = "rbxassetid://99195778697194",
-    terminal = "rbxassetid://102379915564176", folder = "rbxassetid://137249944163344",
-    info = "rbxassetid://109792483526167", warning = "rbxassetid://112102474509324",
-    error = "rbxassetid://111132030834422", success = "rbxassetid://105979545056636",
-    power = "rbxassetid://89331085993646", menu = "rbxassetid://135438142591878",
-    close = "rbxassetid://106305483906363", palette = "rbxassetid://95424916372879",
-    refresh = "rbxassetid://106497040962250", sliders = "rbxassetid://105166722651208",
-    target = "rbxassetid://121091323240554", crosshair = "rbxassetid://78822043673501",
-    compass = "rbxassetid://73836660434977", globe = "rbxassetid://139232691165198",
-    link = "rbxassetid://102194562745333", discord = "rbxassetid://90424880717042",
-    github = "rbxassetid://131077252082543", trophy = "rbxassetid://113055182645565",
-    crown = "rbxassetid://78791133479661", gamepad = "rbxassetid://81793486260595",
+    home = "rbxassetid://93110857987859",
+    settings = "rbxassetid://85241284670779",
+    cog = "rbxassetid://100080055332619",
+    zap = "rbxassetid://130551565616516",
+    eye = "rbxassetid://114138575379582",
+    ["eye-off"] = "rbxassetid://79889764896824",
+    user = "rbxassetid://81589895647169",
+    users = "rbxassetid://115398113982385",
+    star = "rbxassetid://136141469398409",
+    shield = "rbxassetid://77608084747459",
+    key = "rbxassetid://79141369700910",
+    bell = "rbxassetid://97392696311902",
+    code = "rbxassetid://127982530911179",
+    lock = "rbxassetid://96647376545703",
+    unlock = "rbxassetid://104449445248964",
+    heart = "rbxassetid://128062038995140",
+    ["heart-crack"] = "rbxassetid://87343101077175",
+    check = "rbxassetid://93898873302694",
+    x = "rbxassetid://110786993356448",
+    plus = "rbxassetid://74188213166406",
+    minus = "rbxassetid://97918467462219",
+    ["chevron-right"] = "rbxassetid://132956012132591",
+    ["chevron-left"] = "rbxassetid://73764397981677",
+    ["chevron-down"] = "rbxassetid://134243273101015",
+    ["chevron-up"] = "rbxassetid://73526580552431",
+    search = "rbxassetid://90429033607373",
+    download = "rbxassetid://123411060281846",
+    save = "rbxassetid://85888910775066",
+    trash = "rbxassetid://106723740584310",
+    edit = "rbxassetid://81811754321385",
+    terminal = "rbxassetid://106783148545356",
+    folder = "rbxassetid://122945524502470",
+    info = "rbxassetid://92425452073561",
+    warning = "rbxassetid://125920361880643",
+    error = "rbxassetid://114497774613488",
+    success = "rbxassetid://103617236554419",
+    power = "rbxassetid://88300581903213",
+    menu = "rbxassetid://90119697969636",
+    close = "rbxassetid://110786993356448",
+    palette = "rbxassetid://114665132072871",
+    refresh = "rbxassetid://109128258237016",
+    sliders = "rbxassetid://132977703952271",
+    target = "rbxassetid://87563802520297",
+    crosshair = "rbxassetid://103220493099356",
+    globe = "rbxassetid://129809231789785",
+    link = "rbxassetid://131112011281089",
+    github = "rbxassetid://102424727138621",
+    trophy = "rbxassetid://131545003268773",
+    crown = "rbxassetid://79944002922676",
+    gamepad = "rbxassetid://94845607019445",
+    ["gamepad-2"] = "rbxassetid://114397333122561",
 }
 
 local function EZ_GetIcon(icon)
@@ -190,7 +216,6 @@ local EZ_SIDEBAR_WIDTH = 180
 local EZ_NOTIFY_WIDTH = 300
 local EZ_ConfigFolder = "EazyUI_Configs"
 local EZ_KeyFile = "eazyui_key.json"
-local EZ_DiscordFile = "eazyui_discord.json"
 
 local EZ_GlobalTransparency = 0
 local EZ_AutoSave = true
@@ -575,23 +600,6 @@ local function EZ_ValidateKey(key, validator)
     return false
 end
 
-local function EZ_SaveDiscordJoined(invite)
-    if not writefile then return false end
-    return pcall(function() writefile(EZ_DiscordFile, HttpService:JSONEncode({ joined = invite, timestamp = os.time() })) end)
-end
-
-local function EZ_checkDiscordJoined(invite)
-    if not readfile or not isfile then return false end
-    local ok, data = pcall(function()
-        if isfile(EZ_DiscordFile) then
-            local d = HttpService:JSONDecode(readfile(EZ_DiscordFile))
-            return d.joined == invite
-        end
-        return false
-    end)
-    return ok and data or false
-end
-
 local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local gui = Instance.new("ScreenGui")
     gui.Name = EZ_RandName("Loading")
@@ -659,8 +667,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     gui:Destroy()
 end
 
-local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
-    if rememberJoins and EZ_checkDiscordJoined(invite) then callback(true) return end
+local function EZ_ShowDiscordPrompt(invite, callback)
     local gui = Instance.new("ScreenGui")
     gui.Name = EZ_RandName("Discord")
     gui.ResetOnSpawn = false
@@ -668,43 +675,69 @@ local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
     gui.DisplayOrder = 250
     gui.Parent = EZ_GuiParent()
     EZ_Hide(gui)
+    
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.fromOffset(420, 230)
+    frame.Size = UDim2.fromOffset(460, 280)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.Position = UDim2.new(0.5, 0, 0.5, 0)
     frame.BackgroundColor3 = EZ_Theme.Background
     frame.BorderSizePixel = 0
     frame.Parent = gui
-    EZ_AddStroke(frame, EZ_Theme.Border)
+    EZ_AddStroke(frame, EZ_Theme.Accent, 2)
     EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
     EZ_RegTrans(frame)
     EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
+    
+    local iconFrame = Instance.new("Frame")
+    iconFrame.Size = UDim2.fromOffset(48, 48)
+    iconFrame.Position = UDim2.new(0.5, -24, 0, 20)
+    iconFrame.BackgroundColor3 = EZ_Theme.Accent
+    iconFrame.BorderSizePixel = 0
+    iconFrame.Parent = frame
+    EZ_AddRadius(iconFrame, 12)
+    EZ_Paint(function() iconFrame.BackgroundColor3 = EZ_Theme.Accent end)
+    
+    local iconLetter = Instance.new("TextLabel")
+    iconLetter.Size = UDim2.new(1, 0, 1, 0)
+    iconLetter.BackgroundTransparency = 1
+    iconLetter.Text = "D"
+    iconLetter.Font = EZ_Brand.Font
+    iconLetter.TextSize = 28
+    iconLetter.TextColor3 = EZ_Theme.Background
+    iconLetter.Parent = iconFrame
+    EZ_Paint(function() iconLetter.TextColor3 = EZ_Theme.Background end)
+    
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 24)
-    title.Position = UDim2.fromOffset(14, 16)
+    title.Size = UDim2.new(1, -40, 0, 24)
+    title.Position = UDim2.new(0.5, 0, 0, 80)
+    title.AnchorPoint = Vector2.new(0.5, 0)
     title.BackgroundTransparency = 1
     title.Text = "Join our Discord"
     title.Font = EZ_Brand.Font
-    title.TextSize = 14
+    title.TextSize = 18
     title.TextColor3 = EZ_Theme.Text
-    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.TextXAlignment = Enum.TextXAlignment.Center
     title.Parent = frame
     EZ_Paint(function() title.TextColor3 = EZ_Theme.Text end)
+    
     local sub = Instance.new("TextLabel")
-    sub.Size = UDim2.new(1, -20, 0, 36)
-    sub.Position = UDim2.fromOffset(14, 46)
+    sub.Size = UDim2.new(1, -40, 0, 36)
+    sub.Position = UDim2.new(0.5, 0, 0, 110)
+    sub.AnchorPoint = Vector2.new(0.5, 0)
     sub.BackgroundTransparency = 1
-    sub.Text = "Join our Discord server for updates, support and exclusive content."
+    sub.Text = "Get updates, support and exclusive features.\nCopy the invite link below to join."
     sub.Font = EZ_Brand.FontBody
     sub.TextSize = 12
     sub.TextColor3 = EZ_Theme.TextDim
-    sub.TextXAlignment = Enum.TextXAlignment.Left
+    sub.TextXAlignment = Enum.TextXAlignment.Center
     sub.TextWrapped = true
     sub.Parent = frame
     EZ_Paint(function() sub.TextColor3 = EZ_Theme.TextDim end)
+    
     local inviteLabel = Instance.new("Frame")
-    inviteLabel.Size = UDim2.new(1, -20, 0, 38)
-    inviteLabel.Position = UDim2.fromOffset(14, 95)
+    inviteLabel.Size = UDim2.new(1, -40, 0, 44)
+    inviteLabel.Position = UDim2.new(0.5, 0, 0, 156)
+    inviteLabel.AnchorPoint = Vector2.new(0.5, 0)
     inviteLabel.BackgroundColor3 = EZ_Theme.Card
     inviteLabel.BorderSizePixel = 0
     inviteLabel.Parent = frame
@@ -712,52 +745,76 @@ local function EZ_ShowDiscordPrompt(invite, rememberJoins, callback)
     EZ_AddRadius(inviteLabel, EZ_Theme.Radius)
     EZ_RegTrans(inviteLabel)
     EZ_Paint(function() inviteLabel.BackgroundColor3 = EZ_Theme.Card end)
+    
     local inviteText = Instance.new("TextLabel")
     inviteText.Size = UDim2.new(1, -20, 1, 0)
     inviteText.BackgroundTransparency = 1
     inviteText.Text = "discord.gg/" .. invite
     inviteText.Font = EZ_Brand.FontMono
-    inviteText.TextSize = 13
-    inviteText.TextColor3 = EZ_Theme.Text
+    inviteText.TextSize = 14
+    inviteText.TextColor3 = EZ_Theme.Accent
     inviteText.TextXAlignment = Enum.TextXAlignment.Center
     inviteText.Parent = inviteLabel
-    EZ_Paint(function() inviteText.TextColor3 = EZ_Theme.Text end)
-    local join = Instance.new("TextButton")
-    join.Size = UDim2.new(0.48, 0, 0, 38)
-    join.Position = UDim2.new(0.03, 0, 0, 150)
-    join.BackgroundColor3 = EZ_Theme.Accent
-    join.BorderSizePixel = 0
-    join.Text = "Join"
-    join.Font = EZ_Brand.FontBody
-    join.TextSize = 13
-    join.TextColor3 = EZ_Theme.Background
-    join.AutoButtonColor = false
-    join.Parent = frame
-    EZ_AddRadius(join, EZ_Theme.Radius)
-    EZ_Paint(function() join.BackgroundColor3 = EZ_Theme.Accent; join.TextColor3 = EZ_Theme.Background end)
-    local skip = Instance.new("TextButton")
-    skip.Size = UDim2.new(0.48, 0, 0, 38)
-    skip.Position = UDim2.new(0.52, 0, 0, 150)
-    skip.BackgroundColor3 = EZ_Theme.CardHover
-    skip.BorderSizePixel = 0
-    skip.Text = "Skip"
-    skip.Font = EZ_Brand.FontBody
-    skip.TextSize = 13
-    skip.TextColor3 = EZ_Theme.TextDim
-    skip.AutoButtonColor = false
-    skip.Parent = frame
-    local skipst = EZ_AddStroke(skip, EZ_Theme.Border)
-    EZ_AddRadius(skip, EZ_Theme.Radius)
-    EZ_Paint(function() skip.BackgroundColor3 = EZ_Theme.CardHover; skip.TextColor3 = EZ_Theme.TextDim end)
-    skip.MouseEnter:Connect(function() TweenService:Create(skipst, TweenInfo.new(0.12), { Color = EZ_Theme.Accent }):Play() end)
-    skip.MouseLeave:Connect(function() TweenService:Create(skipst, TweenInfo.new(0.12), { Color = EZ_Theme.Border }):Play() end)
-    join.MouseButton1Click:Connect(function()
-        if request then request({ Url = "https://discord.gg/" .. invite, Method = "GET" }) end
-        if rememberJoins then EZ_SaveDiscordJoined(invite) end
+    EZ_Paint(function() inviteText.TextColor3 = EZ_Theme.Accent end)
+    
+    local copyBtn = Instance.new("TextButton")
+    copyBtn.Size = UDim2.new(0.48, 0, 0, 42)
+    copyBtn.Position = UDim2.new(0.02, 0, 0, 216)
+    copyBtn.BackgroundColor3 = EZ_Theme.Accent
+    copyBtn.BorderSizePixel = 0
+    copyBtn.Text = "Copy Link"
+    copyBtn.Font = EZ_Brand.FontBody
+    copyBtn.TextSize = 14
+    copyBtn.TextColor3 = EZ_Theme.Background
+    copyBtn.AutoButtonColor = false
+    copyBtn.Parent = frame
+    EZ_AddRadius(copyBtn, EZ_Theme.Radius)
+    EZ_Paint(function() copyBtn.BackgroundColor3 = EZ_Theme.Accent; copyBtn.TextColor3 = EZ_Theme.Background end)
+    
+    local skipBtn = Instance.new("TextButton")
+    skipBtn.Size = UDim2.new(0.48, 0, 0, 42)
+    skipBtn.Position = UDim2.new(0.52, 0, 0, 216)
+    skipBtn.BackgroundColor3 = EZ_Theme.CardHover
+    skipBtn.BorderSizePixel = 0
+    skipBtn.Text = "Skip"
+    skipBtn.Font = EZ_Brand.FontBody
+    skipBtn.TextSize = 14
+    skipBtn.TextColor3 = EZ_Theme.TextDim
+    skipBtn.AutoButtonColor = false
+    skipBtn.Parent = frame
+    local skipSt = EZ_AddStroke(skipBtn, EZ_Theme.Border)
+    EZ_AddRadius(skipBtn, EZ_Theme.Radius)
+    EZ_Paint(function() skipBtn.BackgroundColor3 = EZ_Theme.CardHover; skipBtn.TextColor3 = EZ_Theme.TextDim end)
+    
+    skipBtn.MouseEnter:Connect(function() TweenService:Create(skipSt, TweenInfo.new(0.12), { Color = EZ_Theme.Accent }):Play() end)
+    skipBtn.MouseLeave:Connect(function() TweenService:Create(skipSt, TweenInfo.new(0.12), { Color = EZ_Theme.Border }):Play() end)
+    
+    copyBtn.MouseButton1Click:Connect(function()
+        local link = "https://discord.gg/" .. invite
+        local copied = false
+        if setclipboard then
+            setclipboard(link)
+            copied = true
+        elseif toclipboard then
+            toclipboard(link)
+            copied = true
+        end
+        if copied then
+            copyBtn.Text = "Copied!"
+            task.delay(1.5, function()
+                if copyBtn.Parent then copyBtn.Text = "Copy Link" end
+            end)
+        else
+            copyBtn.Text = link
+            task.delay(3, function()
+                if copyBtn.Parent then copyBtn.Text = "Copy Link" end
+            end)
+        end
         gui:Destroy()
         callback(true)
     end)
-    skip.MouseButton1Click:Connect(function() gui:Destroy(); callback(false) end)
+    
+    skipBtn.MouseButton1Click:Connect(function() gui:Destroy(); callback(false) end)
 end
 
 local function EZ_ShowKeyScreen(options, validator, callback)
@@ -1012,13 +1069,14 @@ function EZ:CreateWindow(options)
     local EZ_ConfigId = options.ConfigId or tostring(game.PlaceId)
     EZ_KeyDurationGlobal = options.KeyDuration or 86400
     EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
+    local EZ_AutoLoad = options.AutoLoad ~= false
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
     end
     if options.Discord and options.Discord.Enabled then
         local resolved = false
-        EZ_ShowDiscordPrompt(options.Discord.Invite, options.Discord.RememberJoins, function() resolved = true end)
+        EZ_ShowDiscordPrompt(options.Discord.Invite, function() resolved = true end)
         while not resolved do task.wait(0.1) end
     end
     if options.KeySystem and options.KeySystem.Enabled then
@@ -2404,32 +2462,34 @@ function EZ:CreateWindow(options)
         EZ_Window.Content = content
         EZ_Window.SetMinimized = setMinimized
 
-        local saved = EZ_LoadConfig(EZ_ConfigId, "default")
-        if saved then
-            EZ_Window.ConfigData = saved
-            EZ_Window.CurrentConfig = "default"
-            if saved._meta then
-                if saved._meta.theme then
-                    EZ_ApplyThemeAndRepaint(saved._meta.theme)
+        if EZ_AutoLoad then
+            local saved = EZ_LoadConfig(EZ_ConfigId, "default")
+            if saved then
+                EZ_Window.ConfigData = saved
+                EZ_Window.CurrentConfig = "default"
+                if saved._meta then
+                    if saved._meta.theme then
+                        EZ_ApplyThemeAndRepaint(saved._meta.theme)
+                    end
+                    if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.9) end
+                    if saved._meta.autoSave ~= nil then EZ_AutoSave = saved._meta.autoSave end
                 end
-                if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.9) end
-                if saved._meta.autoSave ~= nil then EZ_AutoSave = saved._meta.autoSave end
-            end
-            for _, el in ipairs(EZ_Window.Elements) do
-                local d = saved[el.Id]
-                if d then
-                    if d.type == "color" then
-                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
-                    elseif d.type == "keybind" then
-                        el:Set(d.value and Enum.KeyCode[d.value] or nil, true)
-                    else
-                        el:Set(d.value, true)
+                for _, el in ipairs(EZ_Window.Elements) do
+                    local d = saved[el.Id]
+                    if d then
+                        if d.type == "color" then
+                            el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
+                        elseif d.type == "keybind" then
+                            el:Set(d.value and Enum.KeyCode[d.value] or nil, true)
+                        else
+                            el:Set(d.value, true)
+                        end
                     end
                 end
-            end
-            EZ_Repaint()
-            for _, inst in ipairs(EZ_TransSurf) do
-                if inst.Parent then inst.BackgroundTransparency = EZ_GlobalTransparency end
+                EZ_Repaint()
+                for _, inst in ipairs(EZ_TransSurf) do
+                    if inst.Parent then inst.BackgroundTransparency = EZ_GlobalTransparency end
+                end
             end
         end
 

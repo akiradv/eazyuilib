@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eazy UI</title>
+<meta name="description" content="Eazy UI is an open source Roblox GUI library by Akira Dev. One file, zero dependencies.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="#about" class="logo">
+            <span class="logo-mark">E</span>
+            <span class="logo-name">Eazy UI</span>
+            <span class="version">v0.9.15</span>
+        </a>
+        <span class="logo-sub">docs</span>
+    </div>
+    <nav class="nav" id="nav">
+        <div class="nav-group">
+            <h4>Introducing</h4>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#credits">Credits</a>
+        </div>
+        <div class="nav-group">
+            <h4>Setup</h4>
+            <a href="#install">Installation</a>
+            <a href="#quickstart">Quick Start</a>
+        </div>
+        <div class="nav-group">
+            <h4>UI</h4>
+            <a href="#window">Window</a>
+            <a href="#tabs">Tabs</a>
+            <a href="#themes">Themes</a>
+            <a href="#configs">Configs</a>
+            <a href="#keysystem">Key System</a>
+            <a href="#discord">Discord Prompt</a>
+            <a href="#notify">Notifications</a>
+        </div>
+        <div class="nav-group">
+            <h4>Elements</h4>
+            <a href="#el-section">Section</a>
+            <a href="#el-divider">Divider</a>
+            <a href="#el-paragraph">Paragraph</a>
+            <a href="#el-label">Label</a>
+            <a href="#el-toggle">Toggle</a>
+            <a href="#el-button">Button</a>
+            <a href="#el-slider">Slider</a>
+            <a href="#el-dropdown">Dropdown</a>
+            <a href="#el-input">Input</a>
+            <a href="#el-textarea">Text Area</a>
+            <a href="#el-progress">Progress Bar</a>
+            <a href="#el-color">Color Picker</a>
+            <a href="#el-keybind">Keybind</a>
+        </div>
+        <div class="nav-group">
+            <h4>Reference</h4>
+            <a href="#utilities">Utilities</a>
+            <a href="#compat">Compatibility</a>
+            <a href="#showcase">Showcase</a>
+            <a href="#full">Full Example</a>
+            <a href="#changelog">Changelog</a>
+        </div>
+    </nav>
+</aside>
+
+<div class="topbar">
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="search" placeholder="Search docs..." autocomplete="off">
+    </div>
+    <div class="topbar-actions">
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        </button>
+        <a class="icon-btn" href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.84 1.23 1.84 1.23 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.23-3.22-.12-.31-.53-1.52.12-3.17 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.65 1.65.24 2.86.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .3"/>
+            </svg>
+        </a>
+        <a class="icon-btn" href="https://discord.gg/9VE4PXFDSg" target="_blank" rel="noopener" aria-label="Discord">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.32 4.37A19.8 19.8 0 0 0 15.43 3l-.22.44c1.77.42 3.42 1.15 4.89 2.17a18.5 18.5 0 0 0-16.2 0A17 17 0 0 1 8.79 3.44L8.57 3a19.8 19.8 0 0 0-4.9 1.37A20.7 20.7 0 0 0 .1 18.17a20 20 0 0 0 6.06 3.07c.49-.66.92-1.37 1.29-2.11a12.7 12.7 0 0 1-2.04-.98c.17-.12.34-.26.5-.38 3.9 1.82 8.12 1.82 11.98 0 .17.13.33.26.5.38-.65.39-1.33.72-2.04.98.37.74.8 1.45 1.29 2.1a20 20 0 0 0 6.06-3.06 20.6 20.6 0 0 0-3.44-13.8zM8 15.27c-1.18 0-2.15-1.08-2.15-2.41 0-1.33.95-2.42 2.15-2.42 1.21 0 2.18 1.1 2.15 2.42 0 1.33-.95 2.41-2.15 2.41zm8 0c-1.18 0-2.15-1.08-2.15-2.41 0-1.33.95-2.42 2.15-2.42 1.21 0 2.18 1.1 2.15 2.42 0 1.33-.94 2.41-2.15 2.41z"/>
+            </svg>
+        </a>
+    </div>
+</div>
+
+<main class="main" id="main">
+
+<section class="page" id="about">
+    <div class="page-hero">
+        <span class="eyebrow">Introducing</span>
+        <h1>Eazy UI</h1>
+        <p class="lead">One file. One loadstring. Zero dependencies.</p>
+        <div class="hero-badges">
+            <span class="badge badge-green">v0.9.15</span>
+            <span class="badge">Single file</span>
+            <span class="badge">Open source</span>
+            <span class="badge">MIT</span>
+        </div>
+    </div>
+
+    <p>Eazy UI is a Lua library that ships the entire UI stack in a single file. You get a draggable window, a sidebar with tabs, thirteen interactive elements, six themes, persistent configs, a key system, a Discord prompt and a notification system.</p>
+
+    <p>You load it, create a window, add your elements. That is it. The code is open source and hosted on <a href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener">GitHub</a>.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-hello">Copy</button>
+        </div>
+        <pre><code id="code-hello">local EZ = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"
+))()
+
+local Window = EZ:CreateWindow({
+    Name = "My Hub",
+    SubTitle = "by you",
+    AutoLoad = true,
+    Discord = {
+        Enabled = true,
+        Invite = "9VE4PXFDSg",
+    },
+})
+
+local Tab = Window:AddTab({ Title = "Main", Icon = "home" })
+Tab:AddToggle({
+    Title = "My first toggle",
+    Default = true,
+    Callback = print
+})</code></pre>
+    </div>
+
+    <div class="callout callout-tip">
+        <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <div class="callout-body">The instance is also exposed at <code>getgenv().EazyUI</code>. Loading the library again auto destroys the previous instance, so script reloads work cleanly.</div>
+    </div>
+</section>
+
+<section class="page" id="features">
+    <div class="page-hero">
+        <span class="eyebrow">Introducing</span>
+        <h1>Features</h1>
+        <p class="lead">What is inside the file.</p>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>6 themes</h3>
+            <p>Default, Pitch, Light, Ocean, Sunset and Mono. Applied live to every open element and saved with configs.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Config system</h3>
+            <p>Auto save, named configs, load, delete and reset. Orphan fields from older configs are reported instead of ignored silently.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Key system</h3>
+            <p>Key screen with your own validator function, local cache with expiry and a logout call. Works with any HTTP key provider.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Notifications</h3>
+            <p>Toasts in four styles with optional action buttons and open and close callbacks.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Global dropdown</h3>
+            <p>One popup shared by every dropdown. Flips up near the bottom edge, clamps inside the window, closes on outside click and tab switch.</p>
+        </div>
+        <div class="feature-card">
+            <h3>13 elements</h3>
+            <p>Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section and Divider.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Discord prompt</h3>
+            <p>Full screen prompt with accent stroke that copies the invite link to the clipboard instead of just opening the browser.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Auto load</h3>
+            <p>Configs load automatically on script start. Disable per window with <code>AutoLoad = false</code> when you need manual control.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Executor safe</h3>
+            <p>Filesystem, HTTP and hook calls are capability checked through <code>EZ.Compat</code>. Missing support disables the feature instead of crashing.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Window extras</h3>
+            <p>Drag, minimize hotkey, transparency from 0 to 90 percent and loading screen.</p>
+        </div>
+    </div>
+</section>
+
+<section class="page" id="credits">
+    <div class="page-hero">
+        <span class="eyebrow">Introducing</span>
+        <h1>Credits</h1>
+        <p class="lead">Who made this.</p>
+    </div>
+
+    <p>Eazy UI was built solo by <a href="https://github.com/akiradv" target="_blank" rel="noopener">Akira Dev</a>. There is no team and no company behind it. One person writing and testing every line.</p>
+
+    <p>Third party assets used by the library:</p>
+
+    <ul class="credit-list">
+        <li><strong>Lucide Icons</strong> by WindUI. Icon set used for tabs and buttons, loaded as Roblox asset ids.</li>
+        <li><strong>Roblox TweenService</strong>. Engine service used for every animation.</li>
+    </ul>
+
+    <p>Found a bug or want a feature? Open an issue on <a href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener">GitHub</a> or ping on <a href="https://discord.gg/9VE4PXFDSg" target="_blank" rel="noopener">Discord</a>.</p>
+</section>
+
+<section class="page" id="install">
+    <div class="page-hero">
+        <span class="eyebrow">Setup</span>
+        <h1>Installation</h1>
+        <p class="lead">One line.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-install">Copy</button>
+        </div>
+        <pre><code id="code-install">local EZ = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"
+))()</code></pre>
+    </div>
+
+    <p>The call returns the library table. The same instance is available globally:</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-genv">Copy</button>
+        </div>
+        <pre><code id="code-genv">local EZ = getgenv().EazyUI
+print(EZ.Version)</code></pre>
+    </div>
+
+    <div class="callout callout-tip">
+        <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <div class="callout-body">Read <code>EZ.Compat</code> before relying on configs, keys or HTTP features. See <a href="#compat">Compatibility</a>.</div>
+    </div>
+</section>
+
+<section class="page" id="quickstart">
+    <div class="page-hero">
+        <span class="eyebrow">Setup</span>
+        <h1>Quick Start</h1>
+        <p class="lead">A working hub in twenty lines.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-quick">Copy</button>
+        </div>
+        <pre><code id="code-quick">local EZ = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"
+))()
+
+local Window = EZ:CreateWindow({
+    Name = "Eazy Demo",
+    SubTitle = "quick start",
+    ConfigId = "EazyDemo",
+    MinimizeKey = Enum.KeyCode.RightShift,
+    AutoLoad = true,
+    Discord = {
+        Enabled = true,
+        Invite = "9VE4PXFDSg",
+    },
+})
+
+local Main = Window:AddTab({ Title = "Main", Icon = "home" })
+
+Main:AddToggle({
+    Title = "Auto Farm",
+    Description = "Farms automatically",
+    Default = false,
+    Flag = "AutoFarm",
+    Callback = function(on) print("farm:", on) end,
+})
+
+Main:AddSlider({
+    Title = "Speed",
+    Min = 1, Max = 100, Default = 16, Step = 1,
+    Flag = "Speed",
+})
+
+local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+Window:BuildConfigSection(Settings)
+
+EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>ConfigId</code><span>"EazyDemo"</span></div>
+        <div class="param"><code>MinimizeKey</code><span>RightShift</span></div>
+        <div class="param"><code>AutoLoad</code><span>true, loads saved config on start</span></div>
+        <div class="param"><code>Discord</code><span>shows prompt with copy link</span></div>
+    </div>
+
+    <p>Run that and you have a draggable window, themed elements, auto saved configs and a complete settings tab. No boilerplate required.</p>
+</section>
+
+<section class="page" id="window">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Window</h1>
+        <p class="lead"><code>EZ:CreateWindow(options)</code> returns the window object.</p>
+    </div>
+
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Name</code></td><td>string</td><td><code>"Eazy UI"</code></td><td>Titlebar title.</td></tr>
+            <tr><td><code>SubTitle</code></td><td>string</td><td><code>""</code></td><td>Text after the dot separator.</td></tr>
+            <tr><td><code>Size</code></td><td>UDim2</td><td><code>620x440</code></td><td>Window size in offsets.</td></tr>
+            <tr><td><code>MinimizeKey</code></td><td>KeyCode</td><td><code>RightControl</code></td><td>Hotkey that hides and shows the window.</td></tr>
+            <tr><td><code>ConfigId</code></td><td>string</td><td><code>PlaceId</code></td><td>Prefix of config files. Fix it to keep configs across places.</td></tr>
+            <tr><td><code>AutoLoad</code></td><td>boolean</td><td><code>true</code></td><td>Loads the "default" config automatically on script start.</td></tr>
+            <tr><td><code>Transparency</code></td><td>number</td><td><code>0</code></td><td>Initial transparency, 0 to 0.9.</td></tr>
+            <tr><td><code>LoadingTitle</code></td><td>string</td><td><code>nil</code></td><td>Shows the loading screen when set.</td></tr>
+            <tr><td><code>LoadingSubtitle</code></td><td>string</td><td><code>""</code></td><td>Loading screen subtitle.</td></tr>
+            <tr><td><code>LoadingDuration</code></td><td>number</td><td><code>2</code></td><td>Loading screen duration in seconds.</td></tr>
+            <tr><td><code>KeyDuration</code></td><td>number</td><td><code>86400</code></td><td>How long an accepted key stays cached, in seconds.</td></tr>
+            <tr><td><code>Discord</code></td><td>table</td><td><code>nil</code></td><td>See <a href="#discord">Discord Prompt</a>.</td></tr>
+            <tr><td><code>KeySystem</code></td><td>table</td><td><code>nil</code></td><td>See <a href="#keysystem">Key System</a>.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Example</h3>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-window">Copy</button>
+        </div>
+        <pre><code id="code-window">local Window = EZ:CreateWindow({
+    Name = "FTF Premium Hub",
+    SubTitle = "by AkiraDev",
+    Size = UDim2.fromOffset(580, 460),
+    MinimizeKey = Enum.KeyCode.RightShift,
+    ConfigId = "FTF_Premium",
+    AutoLoad = true,
+    LoadingTitle = "FTF Premium",
+    LoadingSubtitle = "Loading your hub...",
+    Discord = {
+        Enabled = true,
+        Invite = "9VE4PXFDSg",
+    },
+})</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Name</code><span>"FTF Premium Hub"</span></div>
+        <div class="param"><code>SubTitle</code><span>"by AkiraDev"</span></div>
+        <div class="param"><code>Size</code><span>UDim2.fromOffset(580, 460)</span></div>
+        <div class="param"><code>MinimizeKey</code><span>Enum.KeyCode.RightShift</span></div>
+        <div class="param"><code>ConfigId</code><span>"FTF_Premium"</span></div>
+        <div class="param"><code>AutoLoad</code><span>true</span></div>
+        <div class="param"><code>LoadingTitle</code><span>"FTF Premium"</span></div>
+        <div class="param"><code>LoadingSubtitle</code><span>"Loading your hub..."</span></div>
+        <div class="param"><code>Discord.Invite</code><span>"9VE4PXFDSg"</span></div>
+    </div>
+
+    <p>The window object exposes <code>AddTab</code>, <code>BuildConfigSection</code>, <code>SaveConfig</code>, <code>LoadConfig</code>, <code>ResetConfig</code>, <code>ListConfigs</code>, <code>SetTransparency</code>, <code>SetMinimizeKey</code>, <code>SetMinimized</code> and the raw references <code>Frame</code>, <code>Titlebar</code>, <code>Sidebar</code>, <code>Content</code>.</p>
+</section>
+
+<section class="page" id="tabs">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Tabs</h1>
+        <p class="lead"><code>Window:AddTab({ Title, Icon })</code> returns a tab. Every element method lives on it.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-tabs">Copy</button>
+        </div>
+        <pre><code id="code-tabs">local Main = Window:AddTab({ Title = "Main", Icon = "zap" })
+local Visual = Window:AddTab({ Title = "Visual", Icon = "eye" })
+local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>string, required</span></div>
+        <div class="param"><code>Icon</code><span>string or number, optional</span></div>
+    </div>
+
+    <h3>Built in icon names</h3>
+    <div class="icon-grid">
+        <span class="ic">home</span>
+        <span class="ic">settings</span>
+        <span class="ic">cog</span>
+        <span class="ic">zap</span>
+        <span class="ic">eye</span>
+        <span class="ic">user</span>
+        <span class="ic">users</span>
+        <span class="ic">star</span>
+        <span class="ic">shield</span>
+        <span class="ic">key</span>
+        <span class="ic">bell</span>
+        <span class="ic">code</span>
+        <span class="ic">lock</span>
+        <span class="ic">unlock</span>
+        <span class="ic">heart</span>
+        <span class="ic">check</span>
+        <span class="ic">x</span>
+        <span class="ic">plus</span>
+        <span class="ic">minus</span>
+        <span class="ic">search</span>
+        <span class="ic">download</span>
+        <span class="ic">save</span>
+        <span class="ic">trash</span>
+        <span class="ic">edit</span>
+        <span class="ic">terminal</span>
+        <span class="ic">folder</span>
+        <span class="ic">info</span>
+        <span class="ic">warning</span>
+        <span class="ic">error</span>
+        <span class="ic">success</span>
+        <span class="ic">power</span>
+        <span class="ic">menu</span>
+        <span class="ic">close</span>
+        <span class="ic">palette</span>
+        <span class="ic">refresh</span>
+        <span class="ic">sliders</span>
+        <span class="ic">target</span>
+        <span class="ic">crosshair</span>
+        <span class="ic">globe</span>
+        <span class="ic">link</span>
+        <span class="ic">github</span>
+        <span class="ic">trophy</span>
+        <span class="ic">crown</span>
+        <span class="ic">gamepad</span>
+    </div>
+
+    <p>You can also pass any asset directly: <code>Icon = "rbxassetid://123456"</code> or <code>Icon = 123456</code>.</p>
+</section>
+
+<section class="page" id="themes">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Themes</h1>
+        <p class="lead">Six themes, applied live to everything on screen.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-theme">Copy</button>
+        </div>
+        <pre><code id="code-theme">EZ:SetTheme("Ocean")
+EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>name</code><span>string, required. One of the themes below.</span></div>
+        <div class="param"><code>color</code><span>Color3, required for SetAccent.</span></div>
+    </div>
+
+    <table class="options-table">
+        <thead>
+            <tr><th>Theme</th><th>Look</th><th>Aliases</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Default</code></td><td>Dark with green accent</td><td><code>default</code>, <code>padrao</code></td></tr>
+            <tr><td><code>Pitch</code></td><td>Near black, OLED friendly</td><td><code>pitch</code>, <code>dark</code>, <code>escuro</code></td></tr>
+            <tr><td><code>Light</code></td><td>Clean light mode</td><td><code>light</code>, <code>claro</code></td></tr>
+            <tr><td><code>Ocean</code></td><td>Deep blue</td><td><code>ocean</code>, <code>oceano</code></td></tr>
+            <tr><td><code>Sunset</code></td><td>Warm pink</td><td><code>sunset</code></td></tr>
+            <tr><td><code>Mono</code></td><td>Grayscale</td><td><code>mono</code></td></tr>
+        </tbody>
+    </table>
+
+    <p>SetAccent recomputes the dimmed accent variant and repaints every registered surface. The active theme is stored in the config meta block, so the hub reopens exactly how the user left it.</p>
+</section>
+
+<section class="page" id="configs">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Configs</h1>
+        <p class="lead">Files live in <code>EazyUI_Configs</code> as <code>{ConfigId}_{name}.json</code>.</p>
+    </div>
+
+    <p>Every element with a <code>Flag</code> is persisted automatically. A meta block also stores the theme, transparency and auto save preference.</p>
+
+    <h3>The ready made settings tab</h3>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-cfg-build">Copy</button>
+        </div>
+        <pre><code id="code-cfg-build">local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+Window:BuildConfigSection(Settings)</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>tab</code><span>the tab object returned by AddTab</span></div>
+    </div>
+
+    <p>That single call builds the auto save toggle, config name input, save, load, delete and reset buttons, the saved configs dropdown, the minimize keybind, the transparency slider and the theme dropdown. Calling it twice on the same tab does nothing.</p>
+
+    <h3>Auto load behavior</h3>
+
+    <p>By default, <code>CreateWindow</code> loads the config named "default" right after the window is built. This happens after all elements are registered, so every toggle, slider and keybind restores its saved value.</p>
+
+    <p>To disable auto load for a specific window:</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-cfg-noload">Copy</button>
+        </div>
+        <pre><code id="code-cfg-noload">local Window = EZ:CreateWindow({
+    Name = "Manual Hub",
+    AutoLoad = false,
+})</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>AutoLoad</code><span>false, config must be loaded manually</span></div>
+    </div>
+
+    <h3>Manual API</h3>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-cfg-manual">Copy</button>
+        </div>
+        <pre><code id="code-cfg-manual">Window:SaveConfig("pvp")
+Window:LoadConfig("pvp")
+Window:ResetConfig("pvp")
+local names = Window:ListConfigs()</code></pre>
+    </div>
+
+    <div class="callout callout-warn">
+        <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+            <path d="M12 9v4M12 17h.01"/>
+        </svg>
+        <div class="callout-body">Loading a config saved by an older build of your hub skips unknown fields and shows a warning notification with the count.</div>
+    </div>
+</section>
+
+<section class="page" id="keysystem">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Key System</h1>
+        <p class="lead">Gate the hub behind your own validator.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-key">Copy</button>
+        </div>
+        <pre><code id="code-key">local Window = EZ:CreateWindow({
+    Name = "Gated Hub",
+    KeySystem = {
+        Enabled = true,
+        Title = "Enter Key",
+        Subtitle = "Get your key on the Discord",
+        Note = "Keys expire after 24 hours",
+        FileName = "myhub_key.json",
+        validator = function(key)
+            return key == "EAZY-1234"
+        end,
+    },
+    KeyDuration = 86400,
+})</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Enabled</code><span>boolean, turns the screen on</span></div>
+        <div class="param"><code>Title</code><span>string, header text</span></div>
+        <div class="param"><code>Subtitle</code><span>string, helper line</span></div>
+        <div class="param"><code>Note</code><span>string, small note below the input</span></div>
+        <div class="param"><code>FileName</code><span>string, where the key is cached</span></div>
+        <div class="param"><code>validator</code><span>function(key) returning boolean</span></div>
+        <div class="param"><code>KeyDuration</code><span>number, cache TTL in seconds</span></div>
+    </div>
+
+    <h3>HTTP validator</h3>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-key-http">Copy</button>
+        </div>
+        <pre><code id="code-key-http">validator = function(key)
+    local ok, res = pcall(function()
+        return request({
+            Url = "https://your.api/validate?key=" .. key,
+            Method = "GET",
+        })
+    end)
+    if not ok then return false end
+    local data = game:GetService("HttpService"):JSONDecode(res.Body)
+    return data.valid == true
+end</code></pre>
+    </div>
+
+    <p>Accepted keys are cached locally until expiry. A wrong key keeps the screen open with an error line. Cancelling makes <code>CreateWindow</code> return <code>nil</code>, so the rest of your script never runs.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-key-logout">Copy</button>
+        </div>
+        <pre><code id="code-key-logout">EZ:Logout()</code></pre>
+    </div>
+</section>
+
+<section class="page" id="discord">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Discord Prompt</h1>
+        <p class="lead">Full screen prompt that copies the invite link to the clipboard.</p>
+    </div>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-dc">Copy</button>
+        </div>
+        <pre><code id="code-dc">local Window = EZ:CreateWindow({
+    Name = "Social Hub",
+    Discord = {
+        Enabled = true,
+        Invite = "9VE4PXFDSg",
+    },
+})</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Enabled</code><span>boolean, turns the screen on</span></div>
+        <div class="param"><code>Invite</code><span>string, code only, no full URL</span></div>
+    </div>
+
+    <p>The prompt shows before the main window opens. It has an accent stroke, a big "D" icon, the invite code displayed in mono font and two buttons: <strong>Copy Link</strong> and <strong>Skip</strong>.</p>
+
+    <p>Copy Link uses <code>setclipboard</code> or <code>toclipboard</code> to put the full invite URL (<code>https://discord.gg/...</code>) into the user clipboard. The button text flips to "Copied!" for a second to confirm. If the executor has no clipboard function, the URL is shown directly on the button so the user can copy it manually.</p>
+
+    <p>Skip just closes the prompt and lets the window open. Every click advances the prompt, so there is no hanging state.</p>
+
+    <div class="callout callout-tip">
+        <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <div class="callout-body">The user still needs to paste the link in a browser or Discord. The prompt does not auto open the invite.</div>
+    </div>
+</section>
+
+<section class="page" id="notify">
+    <div class="page-hero">
+        <span class="eyebrow">UI</span>
+        <h1>Notifications</h1>
+        <p class="lead"><code>EZ:Notify(options)</code> shows a toast at the bottom right.</p>
+    </div>
+
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td><code>"Eazy UI"</code></td><td>Bold line.</td></tr>
+            <tr><td><code>Content</code></td><td>string</td><td><code>""</code></td><td>Body text, wraps on its own.</td></tr>
+            <tr><td><code>Duration</code></td><td>number</td><td><code>3</code></td><td>Seconds on screen. 0 keeps it until dismissed by code.</td></tr>
+            <tr><td><code>Style</code></td><td>string</td><td><code>"Info"</code></td><td>Info, Success, Warning, Error.</td></tr>
+            <tr><td><code>Buttons</code></td><td>table</td><td><code>{}</code></td><td>List of <code>{ Title, Callback }</code>, up to two.</td></tr>
+            <tr><td><code>OnOpen</code></td><td>function</td><td><code>nil</code></td><td>Fires when the toast appears.</td></tr>
+            <tr><td><code>OnClose</code></td><td>function</td><td><code>nil</code></td><td>Receives "Timeout" or "Action".</td></tr>
+        </tbody>
+    </table>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-notify">Copy</button>
+        </div>
+        <pre><code id="code-notify">EZ:Notify({
+    Title = "Config",
+    Content = "Saved.",
+    Style = "Success",
+    Duration = 2,
+})
+
+EZ:Notify({
+    Title = "Update",
+    Content = "v2 is out. Update now?",
+    Style = "Warning",
+    Duration = 10,
+    Buttons = {
+        { Title = "Update", Callback = function() print("updating") end },
+        { Title = "Later", Callback = function() end },
+    },
+})</code></pre>
+    </div>
+
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Config", "Update"</span></div>
+        <div class="param"><code>Content</code><span>short message body</span></div>
+        <div class="param"><code>Style</code><span>Success, Warning</span></div>
+        <div class="param"><code>Duration</code><span>2 and 10 seconds</span></div>
+        <div class="param"><code>Buttons</code><span>array of action objects</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-section">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Section</h1>
+        <p class="lead">Uppercase header with side lines to split a tab into blocks.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-sec">Copy</button>
+        </div>
+        <pre><code id="code-el-sec">local sec = Tab:AddSection({ Title = "combat" })
+sec:Set("visuals")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>string, required</span></div>
+        <div class="param"><code>Set(text)</code><span>rename later</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-divider">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Divider</h1>
+        <p class="lead">A thin horizontal line.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-div">Copy</button>
+        </div>
+        <pre><code id="code-el-div">local div = Tab:AddDivider()
+div:Set(false)</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Set(bool)</code><span>show or hide</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-paragraph">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Paragraph</h1>
+        <p class="lead">Card with optional title and wrapped content.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-para">Copy</button>
+        </div>
+        <pre><code id="code-el-para">local info = Tab:AddParagraph({
+    Title = "Welcome",
+    Content = "This hub is free and open source.",
+})
+info:Set("Updated text")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>string, optional</span></div>
+        <div class="param"><code>Content</code><span>string, optional</span></div>
+        <div class="param"><code>Set(text)</code><span>replaces the content line</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-label">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Label</h1>
+        <p class="lead">Plain wrapped text, no card. Good for status lines.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-lab">Copy</button>
+        </div>
+        <pre><code id="code-el-lab">local status = Tab:AddLabel("Status: offline")
+status:Set("Status: connected")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>text</code><span>string, required</span></div>
+        <div class="param"><code>Set(text)</code><span>replace the text</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-toggle">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Toggle</h1>
+        <p class="lead">Animated switch. The whole row is clickable.</p>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td>Row title.</td></tr>
+            <tr><td><code>Description</code></td><td>string</td><td>Optional second line.</td></tr>
+            <tr><td><code>Default</code></td><td>boolean</td><td>Initial state.</td></tr>
+            <tr><td><code>Flag</code></td><td>string</td><td>Enables config saving and acts as the element id.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(on)</td><td>Fires on user change.</td></tr>
+        </tbody>
+    </table>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-tog">Copy</button>
+        </div>
+        <pre><code id="code-el-tog">local toggle = Tab:AddToggle({
+    Title = "ESP",
+    Description = "Highlight players",
+    Default = false,
+    Flag = "ESP",
+    Callback = function(on) print(on) end,
+})
+toggle:Set(true, true)</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"ESP"</span></div>
+        <div class="param"><code>Description</code><span>"Highlight players"</span></div>
+        <div class="param"><code>Default</code><span>false</span></div>
+        <div class="param"><code>Flag</code><span>"ESP"</span></div>
+        <div class="param"><code>Callback</code><span>prints the new state</span></div>
+        <div class="param"><code>Set(bool, silent)</code><span>second arg silences callback and save</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-button">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Button</h1>
+        <p class="lead">Accent action button with press animation.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-btn">Copy</button>
+        </div>
+        <pre><code id="code-el-btn">local btn = Tab:AddButton({
+    Title = "Teleport",
+    Description = "Go to the safe zone",
+    ButtonText = "Go",
+    Callback = function() print("teleported") end,
+})
+btn:Fire()
+btn:SetTitle("Done")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Teleport"</span></div>
+        <div class="param"><code>Description</code><span>"Go to the safe zone"</span></div>
+        <div class="param"><code>ButtonText</code><span>"Go" (defaults to "Run")</span></div>
+        <div class="param"><code>Callback</code><span>fires on click or Fire()</span></div>
+        <div class="param"><code>SetTitle(text)</code><span>rename the button</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-slider">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Slider</h1>
+        <p class="lead">Drag or click the track. The value label updates live.</p>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td><code>"Slider"</code></td><td>Row title.</td></tr>
+            <tr><td><code>Min / Max</code></td><td>number</td><td><code>0 / 100</code></td><td>Range.</td></tr>
+            <tr><td><code>Step</code></td><td>number</td><td><code>1</code></td><td>Snap step. Decimals show one decimal place.</td></tr>
+            <tr><td><code>Default</code></td><td>number</td><td><code>Min</code></td><td>Initial value.</td></tr>
+            <tr><td><code>Flag</code></td><td>string</td><td><code>nil</code></td><td>Enables config saving.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(v)</td><td><code>nil</code></td><td>Fires on change.</td></tr>
+        </tbody>
+    </table>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-sli">Copy</button>
+        </div>
+        <pre><code id="code-el-sli">local slider = Tab:AddSlider({
+    Title = "Walk Speed",
+    Min = 16, Max = 200, Default = 16, Step = 2,
+    Flag = "WalkSpeed",
+    Callback = function(v) print(v) end,
+})
+slider:Set(100)</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Walk Speed"</span></div>
+        <div class="param"><code>Min</code><span>16</span></div>
+        <div class="param"><code>Max</code><span>200</span></div>
+        <div class="param"><code>Default</code><span>16</span></div>
+        <div class="param"><code>Step</code><span>2</span></div>
+        <div class="param"><code>Flag</code><span>"WalkSpeed"</span></div>
+        <div class="param"><code>Set(number, silent)</code><span>programmatic value</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-dropdown">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Dropdown</h1>
+        <p class="lead">Backed by the global popup: flips, clamps and closes on outside click.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-drop">Copy</button>
+        </div>
+        <pre><code id="code-el-drop">local drop = Tab:AddDropdown({
+    Title = "Target",
+    Description = "Who to aim at",
+    Values = { "Closest", "Lowest HP", "Random" },
+    Default = "Closest",
+    Flag = "Target",
+    Callback = function(v) print(v) end,
+})
+drop:Set("Random")
+drop:SetValues({ "Closest", "Strongest" })</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Target"</span></div>
+        <div class="param"><code>Description</code><span>"Who to aim at"</span></div>
+        <div class="param"><code>Values</code><span>array of options</span></div>
+        <div class="param"><code>Default</code><span>"Closest"</span></div>
+        <div class="param"><code>Flag</code><span>"Target"</span></div>
+        <div class="param"><code>Set(value)</code><span>programmatic pick</span></div>
+        <div class="param"><code>SetValues(array)</code><span>replace options at runtime</span></div>
+    </div>
+    <p>SetValues closes the popup first if it is open with the old list.</p>
+</section>
+
+<section class="page" id="el-input">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Input</h1>
+        <p class="lead">Single line text box in mono font. Commits on Enter or focus loss.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-inp">Copy</button>
+        </div>
+        <pre><code id="code-el-inp">local input = Tab:AddInput({
+    Title = "Username",
+    Placeholder = "type here...",
+    Default = "",
+    Flag = "Username",
+    Callback = function(text) print(text) end,
+})
+input:Set("akiradv")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Username"</span></div>
+        <div class="param"><code>Placeholder</code><span>"type here..."</span></div>
+        <div class="param"><code>Default</code><span>""</span></div>
+        <div class="param"><code>Flag</code><span>"Username"</span></div>
+        <div class="param"><code>Set(text, silent)</code><span>programmatic value</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-textarea">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Text Area</h1>
+        <p class="lead">Multi line box inside its own card, for lists and code.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-ta">Copy</button>
+        </div>
+        <pre><code id="code-el-ta">local area = Tab:AddTextArea({
+    Title = "Blacklist",
+    Placeholder = "one name per line",
+    Default = "",
+    Flag = "Blacklist",
+    Callback = function(text) print(text) end,
+})
+area:Set("player1\nplayer2")</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Blacklist"</span></div>
+        <div class="param"><code>Placeholder</code><span>"one name per line"</span></div>
+        <div class="param"><code>Default</code><span>""</span></div>
+        <div class="param"><code>Flag</code><span>"Blacklist"</span></div>
+        <div class="param"><code>Set(text, silent)</code><span>programmatic value</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-progress">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Progress Bar</h1>
+        <p class="lead">Read only animated bar with a percentage label.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-pb">Copy</button>
+        </div>
+        <pre><code id="code-el-pb">local bar = Tab:AddProgressBar({ Title = "Loading assets", Default = 0 })
+bar:Set(42)</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Loading assets"</span></div>
+        <div class="param"><code>Default</code><span>0</span></div>
+        <div class="param"><code>Set(0..100)</code><span>tweens to value</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-color">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Color Picker</h1>
+        <p class="lead">Swatch that expands into R, G and B sliders. Callbacks are debounced at 80ms.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-col">Copy</button>
+        </div>
+        <pre><code id="code-el-col">local picker = Tab:AddColorPicker({
+    Title = "ESP Color",
+    Default = Color3.fromRGB(16, 185, 129),
+    Flag = "ESPColor",
+    Callback = function(c3) print(c3) end,
+})
+picker:Set(Color3.fromRGB(255, 0, 0))</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"ESP Color"</span></div>
+        <div class="param"><code>Default</code><span>Color3, defaults to white</span></div>
+        <div class="param"><code>Flag</code><span>"ESPColor"</span></div>
+        <div class="param"><code>Set(Color3, silent)</code><span>programmatic color</span></div>
+    </div>
+</section>
+
+<section class="page" id="el-keybind">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Keybind</h1>
+        <p class="lead">Click, press a key, done. Escape cancels. The bind fires globally, ignored while typing.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-kb">Copy</button>
+        </div>
+        <pre><code id="code-el-kb">local bind = Tab:AddKeybind({
+    Title = "Toggle Hub",
+    Default = Enum.KeyCode.RightControl,
+    Flag = "HubBind",
+    Callback = function(key) print("pressed", key.Name) end,
+})
+bind:Set(Enum.KeyCode.F1)</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Toggle Hub"</span></div>
+        <div class="param"><code>Default</code><span>KeyCode or nil</span></div>
+        <div class="param"><code>Flag</code><span>"HubBind"</span></div>
+        <div class="param"><code>Set(KeyCode, silent)</code><span>programmatic bind</span></div>
+    </div>
+</section>
+
+<section class="page" id="utilities">
+    <div class="page-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Utilities</h1>
+        <p class="lead">The rest of the public surface.</p>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Member</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>EZ.Version</code></td><td>Version string, also printed in the window corner.</td></tr>
+            <tr><td><code>EZ.Compat</code></td><td>Capability table, see <a href="#compat">Compatibility</a>.</td></tr>
+            <tr><td><code>EZ:SetTheme(name)</code></td><td>Applies a theme instantly, aliases accepted.</td></tr>
+            <tr><td><code>EZ:SetAccent(color)</code></td><td>Overrides the accent, recomputes the dim variant, repaints.</td></tr>
+            <tr><td><code>EZ:Notify(options)</code></td><td>Shows a notification.</td></tr>
+            <tr><td><code>EZ:Destroy()</code></td><td>Closes the dropdown, destroys both GUIs, clears painters, listeners and registries, unsets the global.</td></tr>
+            <tr><td><code>EZ:Logout()</code></td><td>Clears the cached key system key.</td></tr>
+            <tr><td><code>getgenv().EazyUI</code></td><td>Global instance, replaced safely on reload.</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="page" id="compat">
+    <div class="page-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Compatibility</h1>
+        <p class="lead">The library never assumes the executor can do something.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-compat">Copy</button>
+        </div>
+        <pre><code id="code-compat">if not EZ.Compat.files then
+    warn("configs disabled: no file support")
+end
+
+if not EZ.Compat.http then
+    warn("key system disabled: no HTTP support")
+end</code></pre>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Flag</th><th>Used by</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>files</code></td><td>Configs, key cache</td></tr>
+            <tr><td><code>folders</code></td><td>Creating the config folder</td></tr>
+            <tr><td><code>list</code></td><td><code>Window:ListConfigs()</code></td></tr>
+            <tr><td><code>hui</code></td><td>Preferred GUI parent</td></tr>
+            <tr><td><code>protect</code></td><td>GUI protection from detection</td></tr>
+            <tr><td><code>http</code></td><td>HTTP validators and invite opener</td></tr>
+            <tr><td><code>hooks</code></td><td>Metamethod hooks, when your hub needs them</td></tr>
+        </tbody>
+    </table>
+    <p>The Discord prompt also checks for <code>setclipboard</code> or <code>toclipboard</code>. If neither exists, the button falls back to showing the URL as text.</p>
+</section>
+
+<section class="page" id="showcase">
+    <div class="page-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Showcase</h1>
+        <p class="lead">Real hubs running on Eazy UI, built by Akira Dev.</p>
+    </div>
+
+    <div class="showcase-card">
+        <div class="showcase-info">
+            <span class="badge badge-green">Built with Eazy UI</span>
+            <h3>FTF Premium Hub</h3>
+            <p>Full hub for Flee The Facility on Roblox. Auto hack with double server side protection, ESPs, teleports, anti AFK, rejoin and a complete config system. The same hub used to test every library release.</p>
+            <div class="showcase-links">
+                <a class="btn" href="https://github.com/akiradv/scriptsroblox" target="_blank" rel="noopener">View source</a>
+                <a class="btn btn-ghost" href="https://discord.gg/2ksQSAnnW6" target="_blank" rel="noopener">Discord</a>
+            </div>
+        </div>
+    </div>
+
+    <h3>Run the example</h3>
+    <p id="showcase-status" class="showcase-status">Checking example.lua in the repository...</p>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-showcase">Copy</button>
+        </div>
+        <pre><code id="code-showcase">loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/akiradv/eazyuilib/main/example.lua"
+))()</code></pre>
+    </div>
+
+    <p>That loadstring runs the full showcase hub straight from the repository root. Want your hub listed here too? Send it on the <a href="https://discord.gg/9VE4PXFDSg" target="_blank" rel="noopener">Discord</a>.</p>
+</section>
+
+<section class="page" id="full">
+    <div class="page-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Full Example</h1>
+        <p class="lead">Every element in one script. Same content as <code>example.lua</code> at the repository root.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-full">Copy</button>
+        </div>
+        <pre><code id="code-full">local EZ = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"
+))()
+
+local Window = EZ:CreateWindow({
+    Name = "Eazy Showcase",
+    SubTitle = "example.lua",
+    Size = UDim2.fromOffset(620, 480),
+    ConfigId = "EazyShowcase",
+    MinimizeKey = Enum.KeyCode.RightShift,
+    AutoLoad = true,
+    Discord = {
+        Enabled = true,
+        Invite = "9VE4PXFDSg",
+    },
+    LoadingTitle = "Eazy Showcase",
+    LoadingSubtitle = "Building interface...",
+    LoadingDuration = 1.5,
+})
+
+local Main = Window:AddTab({ Title = "Main", Icon = "home" })
+Main:AddSection({ Title = "general" })
+Main:AddParagraph({
+    Title = "Welcome",
+    Content = "Every element of Eazy UI, live in one tab.",
+})
+Main:AddLabel("Status: ready")
+Main:AddDivider()
+Main:AddToggle({
+    Title = "Master Switch",
+    Description = "Gate for everything below",
+    Default = true,
+    Flag = "EX_Master",
+    Callback = print,
+})
+Main:AddSlider({
+    Title = "Walk Speed",
+    Min = 16, Max = 200, Default = 16, Step = 2,
+    Flag = "EX_Speed",
+    Callback = print,
+})
+Main:AddDropdown({
+    Title = "Server Region",
+    Values = { "Auto", "NA", "EU", "BR" },
+    Default = "Auto",
+    Flag = "EX_Region",
+    Callback = print,
+})
+Main:AddInput({
+    Title = "Username",
+    Placeholder = "guest",
+    Flag = "EX_Name",
+    Callback = print,
+})
+Main:AddButton({
+    Title = "Ping Server",
+    ButtonText = "Ping",
+    Callback = function()
+        EZ:Notify({ Title = "Network", Content = "42ms", Style = "Success", Duration = 2 })
+    end,
+})
+
+local Visual = Window:AddTab({ Title = "Visual", Icon = "eye" })
+Visual:AddSection({ Title = "world" })
+Visual:AddToggle({ Title = "Fullbright", Flag = "EX_Fullbright", Callback = print })
+Visual:AddColorPicker({
+    Title = "Ambient Color",
+    Default = Color3.fromRGB(16, 185, 129),
+    Flag = "EX_Ambient",
+    Callback = print,
+})
+Visual:AddProgressBar({ Title = "Shader Warmup", Default = 35 })
+Visual:AddTextArea({
+    Title = "Custom Shader",
+    Placeholder = "paste code here",
+    Flag = "EX_Shader",
+})
+
+local Combat = Window:AddTab({ Title = "Combat", Icon = "crosshair" })
+Combat:AddSection({ Title = "aim" })
+Combat:AddToggle({ Title = "Silent Aim", Flag = "EX_Aim", Callback = print })
+Combat:AddSlider({
+    Title = "Hit Chance",
+    Min = 0, Max = 100, Default = 85, Step = 5,
+    Flag = "EX_Chance",
+})
+Combat:AddKeybind({
+    Title = "Panic Key",
+    Default = Enum.KeyCode.K,
+    Flag = "EX_Panic",
+    Callback = function() Window:SetMinimized(true) end,
+})
+
+local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+Window:BuildConfigSection(Settings)
+
+EZ:Notify({
+    Title = "Eazy UI",
+    Content = "Showcase loaded. Check every tab.",
+    Style = "Info",
+    Duration = 4,
+})</code></pre>
+    </div>
+</section>
+
+<section class="page" id="changelog">
+    <div class="page-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Changelog</h1>
+        <p class="lead">Release history.</p>
+    </div>
+
+    <h3>v0.9.15</h3>
+    <ul>
+        <li>Discord prompt redesigned: accent stroke, big icon, copy link button instead of open in browser.</li>
+        <li>New <code>AutoLoad</code> option on <code>CreateWindow</code>, defaults to true.</li>
+        <li>Removed <code>RememberJoins</code> from the Discord prompt.</li>
+        <li>example.lua moved to the repository root; Showcase loadstring and live check now point to it.</li>
+    </ul>
+
+    <h3>v0.9.14</h3>
+    <ul>
+        <li>Strokes on text objects outline the box, never the glyphs.</li>
+        <li>Focus aware stroke repaint: theme changes no longer reset the accent border while typing.</li>
+        <li>Dropdown popup repaint deduplicated.</li>
+        <li>Transparency range extended to 90 percent, slider and clamp aligned.</li>
+        <li>Auto save preference persisted in config meta.</li>
+        <li>Inputs and text areas use mono font, slider and progress values use the accent color.</li>
+        <li>Dropdown trigger resized to match inputs.</li>
+        <li>Config listing hardened for Windows style paths.</li>
+    </ul>
+
+    <h3>v0.9.12 to v0.9.13</h3>
+    <ul>
+        <li>Default theme became an independent table, switching back now applies for real.</li>
+        <li>Global dropdown popup manager, idempotent BuildConfigSection, orphan field warnings, color picker debounce, destroy cleanup.</li>
+    </ul>
+
+    <h3>v0.9.5 to v0.9.11</h3>
+    <ul>
+        <li>Dropdown manager rewrite, stroke and corner fixes, sidebar layout rebuild, loading screen redesign.</li>
+    </ul>
+</section>
+
+<nav class="pager" id="pager"></nav>
+
+<footer class="footer">
+    <div class="footer-grid">
+        <div class="footer-col footer-brand">
+            <div class="footer-logo">
+                <span class="logo-mark">E</span>
+                <span class="logo-name">Eazy UI</span>
+            </div>
+            <p>Open source Roblox GUI library. One file, zero dependencies. Built to keep scripting easy.</p>
+            <span class="badge badge-green">v0.9.15</span>
+        </div>
+        <div class="footer-col">
+            <h5>Docs</h5>
+            <a href="#about">About</a>
+            <a href="#install">Installation</a>
+            <a href="#quickstart">Quick Start</a>
+            <a href="#window">Window</a>
+            <a href="#themes">Themes</a>
+            <a href="#configs">Configs</a>
+        </div>
+        <div class="footer-col">
+            <h5>Elements</h5>
+            <a href="#el-toggle">Toggle</a>
+            <a href="#el-slider">Slider</a>
+            <a href="#el-dropdown">Dropdown</a>
+            <a href="#el-input">Input</a>
+            <a href="#el-color">Color Picker</a>
+            <a href="#el-keybind">Keybind</a>
+        </div>
+        <div class="footer-col">
+            <h5>Resources</h5>
+            <a href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://raw.githubusercontent.com/akiradv/eazyuilib/main/example.lua" target="_blank" rel="noopener">example.lua</a>
+            <a href="https://discord.gg/9VE4PXFDSg" target="_blank" rel="noopener">Discord</a>
+            <a href="#showcase">Showcase</a>
+            <a href="#changelog">Changelog</a>
+        </div>
+        <div class="footer-col">
+            <h5>Credit</h5>
+            <p>Eazy UI is built and maintained by one person: <a href="https://github.com/akiradv" target="_blank" rel="noopener">Akira Dev</a>. No team, no company.</p>
+            <p class="footer-small">Icons by Lucide via WindUI. MIT License.</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>2026 Akira Dev. Eazy UI v0.9.15.</span>
+        <span>Not affiliated with Roblox Corporation.</span>
+    </div>
+</footer>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
