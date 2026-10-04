@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.18
+    Eazy UI v0.9.19
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.18"
+EZ.Version = "0.9.19"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -2001,7 +2001,7 @@ function EZ:CreateWindow(options)
                 box.Size = UDim2.new(1, -28, 0, 74)
                 box.Position = UDim2.fromOffset(14, 32)
                 box.BackgroundColor3 = EZ_Theme.Background
-                box.BorderSizePixel = 0
+                box.BackgroundTransparency = EZ_GlobalTransparency
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
