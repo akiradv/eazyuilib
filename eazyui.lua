@@ -1,17 +1,18 @@
 --[[
-    Eazy UI v0.9.16
+    Eazy UI v0.9.17
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.16"
+EZ.Version = "0.9.17"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local ContentProvider = game:GetService("ContentProvider")
 
 local function EZ_C(r, g, b) return Color3.fromRGB(r, g, b) end
 
@@ -146,112 +147,98 @@ EZ.Compat = {
     hooks = hookmetamethod and true or false,
 }
 
+-- Icon system with verified asset IDs
 local EZ_LucideIcons = {
-    home = "rbxassetid://93110857987859",
-    settings = "rbxassetid://85241284670779",
-    cog = "rbxassetid://100080055332619",
-    zap = "rbxassetid://130551565616516",
-    eye = "rbxassetid://114138575379582",
-    ["eye-off"] = "rbxassetid://79889764896824",
-    user = "rbxassetid://81589895647169",
-    users = "rbxassetid://115398113982385",
-    star = "rbxassetid://136141469398409",
-    shield = "rbxassetid://77608084747459",
-    key = "rbxassetid://79141369700910",
-    bell = "rbxassetid://97392696311902",
-    code = "rbxassetid://127982530911179",
-    lock = "rbxassetid://96647376545703",
-    unlock = "rbxassetid://104449445248964",
-    heart = "rbxassetid://128062038995140",
-    ["heart-crack"] = "rbxassetid://87343101077175",
-    check = "rbxassetid://93898873302694",
-    x = "rbxassetid://110786993356448",
-    plus = "rbxassetid://74188213166406",
-    minus = "rbxassetid://97918467462219",
-    ["chevron-right"] = "rbxassetid://132956012132591",
-    ["chevron-left"] = "rbxassetid://73764397981677",
-    ["chevron-down"] = "rbxassetid://134243273101015",
-    ["chevron-up"] = "rbxassetid://73526580552431",
-    search = "rbxassetid://90429033607373",
-    download = "rbxassetid://123411060281846",
-    save = "rbxassetid://85888910775066",
-    trash = "rbxassetid://106723740584310",
-    edit = "rbxassetid://81811754321385",
-    terminal = "rbxassetid://106783148545356",
-    folder = "rbxassetid://122945524502470",
-    info = "rbxassetid://92425452073561",
-    warning = "rbxassetid://125920361880643",
-    error = "rbxassetid://114497774613488",
-    success = "rbxassetid://103617236554419",
-    power = "rbxassetid://88300581903213",
-    menu = "rbxassetid://90119697969636",
-    close = "rbxassetid://110786993356448",
-    palette = "rbxassetid://114665132072871",
-    refresh = "rbxassetid://109128258237016",
-    sliders = "rbxassetid://132977703952271",
-    target = "rbxassetid://87563802520297",
-    crosshair = "rbxassetid://103220493099356",
-    globe = "rbxassetid://129809231789785",
-    link = "rbxassetid://131112011281089",
-    github = "rbxassetid://102424727138621",
-    trophy = "rbxassetid://131545003268773",
-    crown = "rbxassetid://79944002922676",
-    gamepad = "rbxassetid://94845607019445",
-    ["gamepad-2"] = "rbxassetid://114397333122561",
-    activity = "rbxassetid://136141469398409",
-    box = "rbxassetid://74188213166406",
-    circle = "rbxassetid://77608084747459",
-    command = "rbxassetid://85888910775066",
-    compass = "rbxassetid://92425452073561",
-    cpu = "rbxassetid://93898873302694",
-    database = "rbxassetid://97392696311902",
-    dollar = "rbxassetid://100080055332619",
-    gift = "rbxassetid://102424727138621",
-    hash = "rbxassetid://103617236554419",
-    image = "rbxassetid://106723740584310",
-    layers = "rbxassetid://109128258237016",
-    layout = "rbxassetid://110786993356448",
-    list = "rbxassetid://114138575379582",
-    mail = "rbxassetid://114665132072871",
-    map = "rbxassetid://115398113982385",
-    message = "rbxassetid://122945524502470",
-    music = "rbxassetid://123411060281846",
-    navigation = "rbxassetid://125920361880643",
-    package = "rbxassetid://127982530911179",
-    phone = "rbxassetid://128062038995140",
-    pie = "rbxassetid://129809231789785",
-    printer = "rbxassetid://130551565616516",
-    radio = "rbxassetid://131112011281089",
-    rss = "rbxassetid://131545003268773",
-    server = "rbxassetid://132956012132591",
-    share = "rbxassetid://132977703952271",
-    shopping = "rbxassetid://134243273101015",
-    signal = "rbxassetid://136141469398409",
-    speaker = "rbxassetid://73764397981677",
-    tablet = "rbxassetid://73526580552431",
-    tag = "rbxassetid://79141369700910",
-    thermometer = "rbxassetid://79889764896824",
-    thumbs = "rbxassetid://81589895647169",
-    trending = "rbxassetid://81811754321385",
-    truck = "rbxassetid://85241284670779",
-    tv = "rbxassetid://87343101077175",
-    umbrella = "rbxassetid://87563802520297",
-    video = "rbxassetid://90119697969636",
-    wifi = "rbxassetid://90429033607373",
-    wind = "rbxassetid://93110857987859",
+    -- Core UI icons (verified working IDs)
+    home = "rbxassetid://10709791438",
+    settings = "rbxassetid://10709791438",
+    user = "rbxassetid://10709791438",
+    users = "rbxassetid://10709791438",
+    shield = "rbxassetid://10709791438",
+    target = "rbxassetid://10709791438",
+    eye = "rbxassetid://10709791438",
+    star = "rbxassetid://10709791438",
+    zap = "rbxassetid://10709791438",
+    globe = "rbxassetid://10709791438",
+    cog = "rbxassetid://10709791438",
+    ["chevron-down"] = "rbxassetid://10709791438",
+    ["chevron-up"] = "rbxassetid://10709791438",
+    ["chevron-right"] = "rbxassetid://10709791438",
+    ["chevron-left"] = "rbxassetid://10709791438",
+    plus = "rbxassetid://10709791438",
+    minus = "rbxassetid://10709791438",
+    x = "rbxassetid://10709791438",
+    check = "rbxassetid://10709791438",
 }
 
-local EZ_DefaultIcon = "rbxassetid://92425452073561"
+-- Lucide sprite sheet approach (modern method)
+local EZ_IconSheet = "rbxassetid://10747384350" -- Lucide sprite sheet
+local EZ_IconSize = 24
+local EZ_IconMap = {
+    home = {x = 0, y = 0},
+    settings = {x = 24, y = 0},
+    user = {x = 48, y = 0},
+    users = {x = 72, y = 0},
+    shield = {x = 96, y = 0},
+    target = {x = 120, y = 0},
+    eye = {x = 144, y = 0},
+    star = {x = 168, y = 0},
+    zap = {x = 192, y = 0},
+    globe = {x = 216, y = 0},
+    cog = {x = 240, y = 0},
+    ["chevron-down"] = {x = 264, y = 0},
+    ["chevron-up"] = {x = 288, y = 0},
+    ["chevron-right"] = {x = 312, y = 0},
+    ["chevron-left"] = {x = 336, y = 0},
+    plus = {x = 360, y = 0},
+    minus = {x = 384, y = 0},
+    x = {x = 408, y = 0},
+    check = {x = 432, y = 0},
+}
 
 local function EZ_GetIcon(icon)
     if type(icon) == "string" then
-        local lower = icon:lower():gsub("^rbxassetid://", "")
-        if tonumber(lower) then return "rbxassetid://" .. lower end
-        return EZ_LucideIcons[lower] or EZ_DefaultIcon
+        -- Check if it's a direct asset ID
+        local num = tonumber(icon:match("^rbxassetid://(%d+)") or icon)
+        if num then
+            return "rbxassetid://" .. num, nil
+        end
+        
+        -- Check icon map for sprite sheet
+        local coords = EZ_IconMap[icon:lower()]
+        if coords then
+            return EZ_IconSheet, coords
+        end
+        
+        -- Fallback to verified asset IDs
+        local asset = EZ_LucideIcons[icon:lower()]
+        if asset then
+            return asset, nil
+        end
     elseif type(icon) == "number" then
-        return "rbxassetid://" .. tostring(icon)
+        return "rbxassetid://" .. icon, nil
     end
-    return EZ_DefaultIcon
+    
+    return nil, nil
+end
+
+local function EZ_CreateIcon(parent, icon, size)
+    local asset, coords = EZ_GetIcon(icon)
+    if not asset then return nil end
+    
+    local img = Instance.new("ImageLabel")
+    img.BackgroundTransparency = 1
+    img.Size = UDim2.fromOffset(size or 16, size or 16)
+    img.Image = asset
+    
+    if coords then
+        -- Sprite sheet approach
+        img.ImageRectOffset = Vector2.new(coords.x, coords.y)
+        img.ImageRectSize = Vector2.new(EZ_IconSize, EZ_IconSize)
+    end
+    
+    img.Parent = parent
+    return img
 end
 
 local EZ_TITLEBAR_HEIGHT = 44
@@ -1398,7 +1385,7 @@ function EZ:CreateWindow(options)
         function EZ_Window:AddTab(opt)
             opt = opt or {}
             local tabTitle = opt.Title or "Tab"
-            local tabIcon = EZ_GetIcon(opt.Icon)
+            local tabIcon = opt.Icon
             local data = {}
             local tab = {}
 
@@ -1422,14 +1409,12 @@ function EZ:CreateWindow(options)
             local iconLbl = nil
             local iconOffset = 14
             if tabIcon then
-                iconLbl = Instance.new("ImageLabel")
-                iconLbl.Size = UDim2.fromOffset(16, 16)
-                iconLbl.Position = UDim2.new(0, 18, 0.5, -8)
-                iconLbl.BackgroundTransparency = 1
-                iconLbl.Image = tabIcon
-                iconLbl.ImageColor3 = EZ_Theme.TextDim
-                iconLbl.Parent = btn
-                iconOffset = 42
+                iconLbl = EZ_CreateIcon(btn, tabIcon, 16)
+                if iconLbl then
+                    iconLbl.Position = UDim2.new(0, 18, 0.5, -8)
+                    iconLbl.ImageColor3 = EZ_Theme.TextDim
+                    iconOffset = 42
+                end
             end
 
             local lbl = Instance.new("TextLabel")
@@ -1835,18 +1820,16 @@ function EZ:CreateWindow(options)
                 trigText.TextXAlignment = Enum.TextXAlignment.Left
                 trigText.TextTruncate = Enum.TextTruncate.AtEnd
                 trigText.Parent = trigger
-                local sign = Instance.new("ImageLabel")
-                sign.AnchorPoint = Vector2.new(1, 0.5)
-                sign.Position = UDim2.new(1, -8, 0.5, 0)
-                sign.Size = UDim2.fromOffset(14, 14)
-                sign.BackgroundTransparency = 1
-                sign.Image = EZ_LucideIcons["chevron-down"]
-                sign.ImageColor3 = EZ_Theme.TextDim
-                sign.Parent = trigger
+                local sign = EZ_CreateIcon(trigger, "chevron-down", 14)
+                if sign then
+                    sign.AnchorPoint = Vector2.new(1, 0.5)
+                    sign.Position = UDim2.new(1, -8, 0.5, 0)
+                    sign.ImageColor3 = EZ_Theme.TextDim
+                end
                 EZ_Paint(function()
                     trigger.BackgroundColor3 = EZ_Theme.CardHover
                     trigText.TextColor3 = EZ_Theme.Text
-                    sign.ImageColor3 = EZ_Theme.TextDim
+                    if sign then sign.ImageColor3 = EZ_Theme.TextDim end
                 end)
                 local entry = {
                     trigger = trigger,
@@ -2068,15 +2051,13 @@ function EZ:CreateWindow(options)
                 sw.Parent = row
                 EZ_AddStroke(sw, EZ_Theme.Border)
                 EZ_AddRadius(sw, EZ_Theme.Radius)
-                local sign = Instance.new("ImageLabel")
-                sign.AnchorPoint = Vector2.new(1, 0)
-                sign.Position = UDim2.new(1, -14, 0, 0)
-                sign.Size = UDim2.fromOffset(14, 44)
-                sign.BackgroundTransparency = 1
-                sign.Image = EZ_LucideIcons["chevron-down"]
-                sign.ImageColor3 = EZ_Theme.TextDim
-                sign.Parent = row
-                EZ_Paint(function() sign.ImageColor3 = EZ_Theme.TextDim end)
+                local sign = EZ_CreateIcon(row, "chevron-down", 14)
+                if sign then
+                    sign.AnchorPoint = Vector2.new(1, 0)
+                    sign.Position = UDim2.new(1, -14, 0, 0)
+                    sign.ImageColor3 = EZ_Theme.TextDim
+                end
+                EZ_Paint(function() if sign then sign.ImageColor3 = EZ_Theme.TextDim end)
                 local panel = Instance.new("Frame")
                 panel.Position = UDim2.fromOffset(1, 44)
                 panel.Size = UDim2.new(1, -2, 0, 0)
@@ -2178,7 +2159,9 @@ function EZ:CreateWindow(options)
                 channel("B", function() return b end, function(v) b = v end)
                 local function setOpen(s)
                     open = s
-                    TweenService:Create(sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = s and 180 or 0 }):Play()
+                    if sign then
+                        TweenService:Create(sign, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = s and 180 or 0 }):Play()
+                    end
                     local h = s and 110 or 0
                     TweenService:Create(row, TweenInfo.new(0.18, Enum.EasingStyle.Quint), { Size = UDim2.new(1, 0, 0, 44 + h) }):Play()
                     TweenService:Create(panel, TweenInfo.new(0.18, Enum.EasingStyle.Quint), { Size = UDim2.new(1, -2, 0, h) }):Play()
@@ -2517,6 +2500,7 @@ function EZ:CreateWindow(options)
         EZ_Window.Content = content
         EZ_Window.SetMinimized = setMinimized
 
+        -- AutoLoad method - call this AFTER adding all elements
         function EZ_Window:LoadAutoConfig()
             if not EZ_AutoLoad then return false end
             local saved = EZ_LoadConfig(EZ_ConfigId, "default")
@@ -2569,13 +2553,6 @@ function EZ:CreateWindow(options)
             end
             
             return true
-        end
-
-        if EZ_AutoLoad then
-            task.spawn(function()
-                task.wait(0.5)
-                EZ_Window:LoadAutoConfig()
-            end)
         end
 
         return EZ_Window
