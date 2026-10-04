@@ -1,18 +1,17 @@
 --[[
-    Eazy UI v0.9.17
+    Eazy UI v0.9.18
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.17"
+EZ.Version = "0.9.18"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local ContentProvider = game:GetService("ContentProvider")
 
 local function EZ_C(r, g, b) return Color3.fromRGB(r, g, b) end
 
@@ -147,96 +146,153 @@ EZ.Compat = {
     hooks = hookmetamethod and true or false,
 }
 
--- Icon system with verified asset IDs
-local EZ_LucideIcons = {
-    -- Core UI icons (verified working IDs)
-    home = "rbxassetid://10709791438",
-    settings = "rbxassetid://10709791438",
-    user = "rbxassetid://10709791438",
-    users = "rbxassetid://10709791438",
-    shield = "rbxassetid://10709791438",
-    target = "rbxassetid://10709791438",
-    eye = "rbxassetid://10709791438",
-    star = "rbxassetid://10709791438",
-    zap = "rbxassetid://10709791438",
-    globe = "rbxassetid://10709791438",
-    cog = "rbxassetid://10709791438",
-    ["chevron-down"] = "rbxassetid://10709791438",
-    ["chevron-up"] = "rbxassetid://10709791438",
-    ["chevron-right"] = "rbxassetid://10709791438",
-    ["chevron-left"] = "rbxassetid://10709791438",
-    plus = "rbxassetid://10709791438",
-    minus = "rbxassetid://10709791438",
-    x = "rbxassetid://10709791438",
-    check = "rbxassetid://10709791438",
+-- =====================================================================
+-- EZ_IconSets - WindUI-style icon system (Footagesus/Icons)
+-- =====================================================================
+local EZ_IconSets = {
+    lucide = {
+        house = "rbxassetid://98755624629571",
+        star = "rbxassetid://136141469398409",
+        users = "rbxassetid://115398113982385",
+        user = "rbxassetid://81589895647169",
+        shield = "rbxassetid://110987169760162",
+        target = "rbxassetid://87563802520297",
+        eye = "rbxassetid://100033680381365",
+        ["eye-off"] = "rbxassetid://135928786788378",
+        zap = "rbxassetid://130551565616516",
+        settings = "rbxassetid://80758916183665",
+        cog = "rbxassetid://116544501716299",
+        key = "rbxassetid://96510194465420",
+        globe = "rbxassetid://114238209622913",
+        crosshair = "rbxassetid://134242818164054",
+        ["chevron-down"] = "rbxassetid://134243273101015",
+        ["chevron-up"] = "rbxassetid://122444883127455",
+        ["chevron-right"] = "rbxassetid://92473583511724",
+        ["chevron-left"] = "rbxassetid://73780377692148",
+        plus = "rbxassetid://111774323017047",
+        minus = "rbxassetid://118026365011536",
+        x = "rbxassetid://110786993356448",
+        check = "rbxassetid://93898873302694",
+        heart = "rbxassetid://116559368303288",
+        skull = "rbxassetid://137726256442333",
+        ["biceps-flexed"] = "rbxassetid://82004462003936",
+        mountain = "rbxassetid://73269957566415",
+        ["tree-palm"] = "rbxassetid://103846705893963",
+        ["circle-plus"] = "rbxassetid://113157136350384",
+        command = "rbxassetid://93648221906330",
+        palette = "rbxassetid://86350350950064",
+        search = "rbxassetid://121018724060431",
+        download = "rbxassetid://134814648082393",
+        save = "rbxassetid://126116963775616",
+        trash = "rbxassetid://106723740584310",
+        edit = "rbxassetid://137986121120732",
+        refresh = "rbxassetid://138133190015277",
+        sliders = "rbxassetid://85538382643347",
+        info = "rbxassetid://124560466474914",
+        warning = "rbxassetid://125920361880643",
+        error = "rbxassetid://114497774613488",
+        success = "rbxassetid://103617236554419",
+        power = "rbxassetid://96479131758775",
+        menu = "rbxassetid://77021539815611",
+        lock = "rbxassetid://134724289526879",
+        unlock = "rbxassetid://93597915325122",
+        bell = "rbxassetid://97392696311902",
+        code = "rbxassetid://107380207681249",
+        terminal = "rbxassetid://106783148545356",
+        folder = "rbxassetid://80846616596607",
+        bookmark = "rbxassetid://121093149326239",
+        crown = "rbxassetid://127843403295538",
+        trophy = "rbxassetid://131545003268773",
+        gamepad = "rbxassetid://121607283959010",
+        activity = "rbxassetid://94212016861936",
+        box = "rbxassetid://101768155599700",
+        circle = "rbxassetid://130359823580534",
+        hash = "rbxassetid://82890331678520",
+        layers = "rbxassetid://81973586053257",
+        list = "rbxassetid://113179976918783",
+        map = "rbxassetid://95107167260947",
+        ["message-square"] = "rbxassetid://83881670383280",
+        music = "rbxassetid://113343203848535",
+        navigation = "rbxassetid://79308213542922",
+        package = "rbxassetid://97261141732706",
+        phone = "rbxassetid://128804946640049",
+        ["chart-pie"] = "rbxassetid://113412261630136",
+        printer = "rbxassetid://76080649734247",
+        radio = "rbxassetid://85611589536956",
+        rss = "rbxassetid://131789058984793",
+        server = "rbxassetid://92188766517878",
+        share = "rbxassetid://87340985053299",
+        ["shopping-cart"] = "rbxassetid://128420521375441",
+        signal = "rbxassetid://78424889355261",
+        speaker = "rbxassetid://96227183003618",
+        tablet = "rbxassetid://128403991264386",
+        tag = "rbxassetid://129104970103940",
+        thermometer = "rbxassetid://106546011492311",
+        ["trending-up"] = "rbxassetid://81819858538839",
+        truck = "rbxassetid://86662707764771",
+        tv = "rbxassetid://135687724791776",
+        umbrella = "rbxassetid://127502210274589",
+        video = "rbxassetid://107587444636945",
+        wifi = "rbxassetid://104669375183960",
+        wind = "rbxassetid://114551690399915",
+        wrench = "rbxassetid://112148279212860",
+        ["arrow-up"] = "rbxassetid://89282378235317",
+        ["arrow-down"] = "rbxassetid://98764963621439",
+        ["arrow-left"] = "rbxassetid://102531941843733",
+        ["arrow-right"] = "rbxassetid://113692007244654",
+        ["circle-check"] = "rbxassetid://85262178816537",
+        ["circle-x"] = "rbxassetid://76821953846248",
+        ["circle-alert"] = "rbxassetid://83898160590116",
+    },
+    phosphor = {},
 }
 
--- Lucide sprite sheet approach (modern method)
-local EZ_IconSheet = "rbxassetid://10747384350" -- Lucide sprite sheet
-local EZ_IconSize = 24
-local EZ_IconMap = {
-    home = {x = 0, y = 0},
-    settings = {x = 24, y = 0},
-    user = {x = 48, y = 0},
-    users = {x = 72, y = 0},
-    shield = {x = 96, y = 0},
-    target = {x = 120, y = 0},
-    eye = {x = 144, y = 0},
-    star = {x = 168, y = 0},
-    zap = {x = 192, y = 0},
-    globe = {x = 216, y = 0},
-    cog = {x = 240, y = 0},
-    ["chevron-down"] = {x = 264, y = 0},
-    ["chevron-up"] = {x = 288, y = 0},
-    ["chevron-right"] = {x = 312, y = 0},
-    ["chevron-left"] = {x = 336, y = 0},
-    plus = {x = 360, y = 0},
-    minus = {x = 384, y = 0},
-    x = {x = 408, y = 0},
-    check = {x = 432, y = 0},
-}
-
-local function EZ_GetIcon(icon)
+local function EZ_ResolveIcon(icon)
     if type(icon) == "string" then
-        -- Check if it's a direct asset ID
-        local num = tonumber(icon:match("^rbxassetid://(%d+)") or icon)
-        if num then
-            return "rbxassetid://" .. num, nil
+        if icon:match("^rbxassetid://%d+$") then
+            return icon
         end
-        
-        -- Check icon map for sprite sheet
-        local coords = EZ_IconMap[icon:lower()]
-        if coords then
-            return EZ_IconSheet, coords
+        local set, name = icon:match("^(%w+):(.+)$")
+        if set and name then
+            local iconSet = EZ_IconSets[set:lower()]
+            if iconSet and iconSet[name:lower()] then
+                return iconSet[name:lower()]
+            end
+            return nil
         end
-        
-        -- Fallback to verified asset IDs
-        local asset = EZ_LucideIcons[icon:lower()]
-        if asset then
-            return asset, nil
+        local lucide = EZ_IconSets.lucide
+        local lower = icon:lower()
+        if lucide[lower] then
+            return lucide[lower]
         end
+        local withHyphens = lower:gsub(" ", "-")
+        if lucide[withHyphens] then
+            return lucide[withHyphens]
+        end
+        return nil
     elseif type(icon) == "number" then
-        return "rbxassetid://" .. icon, nil
+        return "rbxassetid://" .. tostring(icon)
     end
-    
-    return nil, nil
+    return nil
 end
 
 local function EZ_CreateIcon(parent, icon, size)
-    local asset, coords = EZ_GetIcon(icon)
-    if not asset then return nil end
+    local asset = EZ_ResolveIcon(icon)
+    if not asset then
+        local placeholder = Instance.new("Frame")
+        placeholder.BackgroundColor3 = EZ_Theme.TextDim
+        placeholder.BackgroundTransparency = 0.7
+        placeholder.Size = UDim2.fromOffset(size or 16, size or 16)
+        placeholder.Parent = parent
+        EZ_AddRadius(placeholder, 3)
+        return placeholder
+    end
     
     local img = Instance.new("ImageLabel")
     img.BackgroundTransparency = 1
     img.Size = UDim2.fromOffset(size or 16, size or 16)
     img.Image = asset
-    
-    if coords then
-        -- Sprite sheet approach
-        img.ImageRectOffset = Vector2.new(coords.x, coords.y)
-        img.ImageRectSize = Vector2.new(EZ_IconSize, EZ_IconSize)
-    end
-    
+    img.ScaleType = Enum.ScaleType.Fit
     img.Parent = parent
     return img
 end
@@ -2057,7 +2113,7 @@ function EZ:CreateWindow(options)
                     sign.Position = UDim2.new(1, -14, 0, 0)
                     sign.ImageColor3 = EZ_Theme.TextDim
                 end
-                EZ_Paint(function() if sign then sign.ImageColor3 = EZ_Theme.TextDim end)
+                EZ_Paint(function() if sign then sign.ImageColor3 = EZ_Theme.TextDim end end)
                 local panel = Instance.new("Frame")
                 panel.Position = UDim2.fromOffset(1, 44)
                 panel.Size = UDim2.new(1, -2, 0, 0)
@@ -2500,9 +2556,10 @@ function EZ:CreateWindow(options)
         EZ_Window.Content = content
         EZ_Window.SetMinimized = setMinimized
 
-        -- AutoLoad method - call this AFTER adding all elements
         function EZ_Window:LoadAutoConfig()
             if not EZ_AutoLoad then return false end
+            if EZ_Window._autoLoaded then return false end
+            EZ_Window._autoLoaded = true
             local saved = EZ_LoadConfig(EZ_ConfigId, "default")
             if not saved then return false end
             
@@ -2553,6 +2610,14 @@ function EZ:CreateWindow(options)
             end
             
             return true
+        end
+
+        if EZ_AutoLoad then
+            task.delay(2, function()
+                if not EZ_Window._autoLoaded then
+                    EZ_Window:LoadAutoConfig()
+                end
+            end)
         end
 
         return EZ_Window
