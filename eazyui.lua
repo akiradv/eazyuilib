@@ -1394,7 +1394,7 @@ function EZ:CreateWindow(options)
                 d.Active = (d == target)
                 d.Page.Visible = d.Active
                 TweenService:Create(d.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = d.Active and 0 or 1
+                    BackgroundTransparency = d.Active and EZ_GlobalTransparency or 1
                 }):Play()
                 TweenService:Create(d.Label, TweenInfo.new(0.15), {
                     TextColor3 = d.Active and EZ_Theme.Text or EZ_Theme.TextDim
@@ -1859,12 +1859,14 @@ function EZ:CreateWindow(options)
                 trigger.Size = UDim2.fromOffset(160, 28)
                 trigger.Position = UDim2.new(1, -172, 0.5, -14)
                 trigger.BackgroundColor3 = EZ_Theme.CardHover
+                trigger.BackgroundTransparency = EZ_GlobalTransparency
                 trigger.BorderSizePixel = 0
                 trigger.Text = ""
                 trigger.AutoButtonColor = false
                 trigger.Parent = row
                 EZ_AddStroke(trigger, EZ_Theme.Border)
                 EZ_AddRadius(trigger, EZ_Theme.Radius)
+                EZ_RegTrans(trigger)
                 local trigText = Instance.new("TextLabel")
                 trigText.Size = UDim2.new(1, -30, 1, 0)
                 trigText.Position = UDim2.fromOffset(10, 0)
@@ -1931,7 +1933,7 @@ function EZ:CreateWindow(options)
                 box.Size = UDim2.fromOffset(160, 28)
                 box.Position = UDim2.new(1, -172, 0.5, -14)
                 box.BackgroundColor3 = EZ_Theme.Background
-                box.BorderSizePixel = 0
+                box.BackgroundTransparency = EZ_GlobalTransparency
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono
                 box.TextSize = 12
@@ -2247,6 +2249,7 @@ function EZ:CreateWindow(options)
                 kl.Position = UDim2.new(1, -82, 0.5, -13)
                 kl.Size = UDim2.fromOffset(70, 26)
                 kl.BackgroundColor3 = EZ_Theme.Background
+                kl.BackgroundTransparency = EZ_GlobalTransparency
                 kl.BorderSizePixel = 0
                 kl.Text = obj.Value and obj.Value.Name or "None"
                 kl.Font = EZ_Brand.FontBody
