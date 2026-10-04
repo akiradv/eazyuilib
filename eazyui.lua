@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.15
+    Eazy UI v0.9.16
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.15"
+EZ.Version = "0.9.16"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -198,17 +198,60 @@ local EZ_LucideIcons = {
     crown = "rbxassetid://79944002922676",
     gamepad = "rbxassetid://94845607019445",
     ["gamepad-2"] = "rbxassetid://114397333122561",
+    activity = "rbxassetid://136141469398409",
+    box = "rbxassetid://74188213166406",
+    circle = "rbxassetid://77608084747459",
+    command = "rbxassetid://85888910775066",
+    compass = "rbxassetid://92425452073561",
+    cpu = "rbxassetid://93898873302694",
+    database = "rbxassetid://97392696311902",
+    dollar = "rbxassetid://100080055332619",
+    gift = "rbxassetid://102424727138621",
+    hash = "rbxassetid://103617236554419",
+    image = "rbxassetid://106723740584310",
+    layers = "rbxassetid://109128258237016",
+    layout = "rbxassetid://110786993356448",
+    list = "rbxassetid://114138575379582",
+    mail = "rbxassetid://114665132072871",
+    map = "rbxassetid://115398113982385",
+    message = "rbxassetid://122945524502470",
+    music = "rbxassetid://123411060281846",
+    navigation = "rbxassetid://125920361880643",
+    package = "rbxassetid://127982530911179",
+    phone = "rbxassetid://128062038995140",
+    pie = "rbxassetid://129809231789785",
+    printer = "rbxassetid://130551565616516",
+    radio = "rbxassetid://131112011281089",
+    rss = "rbxassetid://131545003268773",
+    server = "rbxassetid://132956012132591",
+    share = "rbxassetid://132977703952271",
+    shopping = "rbxassetid://134243273101015",
+    signal = "rbxassetid://136141469398409",
+    speaker = "rbxassetid://73764397981677",
+    tablet = "rbxassetid://73526580552431",
+    tag = "rbxassetid://79141369700910",
+    thermometer = "rbxassetid://79889764896824",
+    thumbs = "rbxassetid://81589895647169",
+    trending = "rbxassetid://81811754321385",
+    truck = "rbxassetid://85241284670779",
+    tv = "rbxassetid://87343101077175",
+    umbrella = "rbxassetid://87563802520297",
+    video = "rbxassetid://90119697969636",
+    wifi = "rbxassetid://90429033607373",
+    wind = "rbxassetid://93110857987859",
 }
+
+local EZ_DefaultIcon = "rbxassetid://92425452073561"
 
 local function EZ_GetIcon(icon)
     if type(icon) == "string" then
         local lower = icon:lower():gsub("^rbxassetid://", "")
         if tonumber(lower) then return "rbxassetid://" .. lower end
-        return EZ_LucideIcons[lower] or nil
+        return EZ_LucideIcons[lower] or EZ_DefaultIcon
     elseif type(icon) == "number" then
         return "rbxassetid://" .. tostring(icon)
     end
-    return nil
+    return EZ_DefaultIcon
 end
 
 local EZ_TITLEBAR_HEIGHT = 44
@@ -2297,13 +2340,25 @@ function EZ:CreateWindow(options)
                 if data._meta.transparency then EZ_Window:SetTransparency(data._meta.transparency) end
                 if data._meta.autoSave ~= nil then EZ_AutoSave = data._meta.autoSave end
             end
+            
+            if data._minimize_key and data._minimize_key.value then
+                local key = Enum.KeyCode[data._minimize_key.value]
+                if key then
+                    EZ_MinKey = key
+                end
+            end
+            
             for _, el in ipairs(EZ_Window.Elements) do
                 local d = data[el.Id]
                 if d then
                     if d.type == "color" then
                         el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
                     elseif d.type == "keybind" then
-                        el:Set(d.value and Enum.KeyCode[d.value] or nil, true)
+                        local key = d.value and Enum.KeyCode[d.value] or nil
+                        el:Set(key, true)
+                        if el.Id == "_minimize_key" and key then
+                            EZ_MinKey = key
+                        end
                     else
                         el:Set(d.value, true)
                     end
@@ -2462,35 +2517,65 @@ function EZ:CreateWindow(options)
         EZ_Window.Content = content
         EZ_Window.SetMinimized = setMinimized
 
-        if EZ_AutoLoad then
+        function EZ_Window:LoadAutoConfig()
+            if not EZ_AutoLoad then return false end
             local saved = EZ_LoadConfig(EZ_ConfigId, "default")
-            if saved then
-                EZ_Window.ConfigData = saved
-                EZ_Window.CurrentConfig = "default"
-                if saved._meta then
-                    if saved._meta.theme then
-                        EZ_ApplyThemeAndRepaint(saved._meta.theme)
-                    end
-                    if saved._meta.transparency then EZ_GlobalTransparency = EZ_Clamp(saved._meta.transparency, 0, 0.9) end
-                    if saved._meta.autoSave ~= nil then EZ_AutoSave = saved._meta.autoSave end
+            if not saved then return false end
+            
+            EZ_Window.ConfigData = saved
+            EZ_Window.CurrentConfig = "default"
+            
+            if saved._meta then
+                if saved._meta.theme then
+                    EZ_ApplyThemeAndRepaint(saved._meta.theme)
                 end
-                for _, el in ipairs(EZ_Window.Elements) do
-                    local d = saved[el.Id]
-                    if d then
-                        if d.type == "color" then
-                            el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
-                        elseif d.type == "keybind" then
-                            el:Set(d.value and Enum.KeyCode[d.value] or nil, true)
-                        else
-                            el:Set(d.value, true)
-                        end
-                    end
+                if saved._meta.transparency then 
+                    EZ_Window:SetTransparency(saved._meta.transparency) 
                 end
-                EZ_Repaint()
-                for _, inst in ipairs(EZ_TransSurf) do
-                    if inst.Parent then inst.BackgroundTransparency = EZ_GlobalTransparency end
+                if saved._meta.autoSave ~= nil then 
+                    EZ_AutoSave = saved._meta.autoSave 
                 end
             end
+            
+            if saved._minimize_key and saved._minimize_key.value then
+                local key = Enum.KeyCode[saved._minimize_key.value]
+                if key then
+                    EZ_MinKey = key
+                end
+            end
+            
+            for _, el in ipairs(EZ_Window.Elements) do
+                local d = saved[el.Id]
+                if d then
+                    if d.type == "color" then
+                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
+                    elseif d.type == "keybind" then
+                        local key = d.value and Enum.KeyCode[d.value] or nil
+                        el:Set(key, true)
+                        if el.Id == "_minimize_key" and key then
+                            EZ_MinKey = key
+                        end
+                    else
+                        el:Set(d.value, true)
+                    end
+                end
+            end
+            
+            EZ_Repaint()
+            for _, inst in ipairs(EZ_TransSurf) do
+                if inst.Parent then 
+                    inst.BackgroundTransparency = EZ_GlobalTransparency 
+                end
+            end
+            
+            return true
+        end
+
+        if EZ_AutoLoad then
+            task.spawn(function()
+                task.wait(0.5)
+                EZ_Window:LoadAutoConfig()
+            end)
         end
 
         return EZ_Window
