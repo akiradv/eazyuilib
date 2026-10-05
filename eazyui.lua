@@ -1687,7 +1687,7 @@ function EZ:CreateWindow(options)
             play.Padding = UDim.new(0, 10); play.Parent = page
             local ppad = Instance.new("UIPadding")
             ppad.PaddingTop = UDim.new(0, 16); ppad.PaddingBottom = UDim.new(0, 16)
-            ppad.PaddingLeft = UDim2.new(0, 18); ppad.PaddingRight = UDim2.new(0, 18); ppad.Parent = page
+            ppad.PaddingLeft = UDim.new(0, 18); ppad.PaddingRight = UDim.new(0, 18); ppad.Parent = page
 
             table.insert(registry, data)
 
