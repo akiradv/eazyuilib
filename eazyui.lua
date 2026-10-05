@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.26
+    Eazy UI v0.9.27
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.26"
+EZ.Version = "0.9.27"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -123,6 +123,12 @@ local EZ_CurrentThemeName = "Default"
 local EZ_Painters = {}
 local EZ_TransSurf = {}
 local EZ_ThemeListeners = {}
+local EZ_Ease = {
+    Fast = TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+    Med = TweenInfo.new(0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+    Slow = TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    Pop = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+}
 local EZ_NotifyPosition = "BottomRight"
 
 local function EZ_Paint(fn)
@@ -140,11 +146,17 @@ local function EZ_OnThemeChange(fn)
     return fn
 end
 
+local EZ_RepaintQueued = false
 local function EZ_Repaint()
-    for i = #EZ_Painters, 1, -1 do
-        local ok = pcall(EZ_Painters[i])
-        if not ok then table.remove(EZ_Painters, i) end
-    end
+    if EZ_RepaintQueued then return end
+    EZ_RepaintQueued = true
+    task.defer(function()
+        EZ_RepaintQueued = false
+        for i = #EZ_Painters, 1, -1 do
+            local ok = pcall(EZ_Painters[i])
+            if not ok then table.remove(EZ_Painters, i) end
+        end
+    end)
 end
 
 local function EZ_ApplyThemeAndRepaint(name)
@@ -595,6 +607,10 @@ end
 
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
+    if EZ_DropdownCurrent and input.KeyCode == Enum.KeyCode.Escape then
+        EZ_CloseDropdown()
+        return
+    end
     if EZ_DropdownCurrent and input.UserInputType == Enum.UserInputType.MouseButton1 then
         local current = EZ_DropdownCurrent
         if not current.trigger or not current.trigger.Parent then
@@ -1248,8 +1264,22 @@ function EZ:Notify(options)
             end)
         end
     end
+    local timer = nil
+    if d > 0 then
+        timer = Instance.new("Frame")
+        timer.Size = UDim2.new(1, -16, 0, 2)
+        timer.Position = UDim2.fromOffset(8, height - 6)
+        timer.BackgroundColor3 = styleColor
+        timer.BackgroundTransparency = 0.5
+        timer.BorderSizePixel = 0
+        timer.Parent = card
+        EZ_AddRadius(timer, 1)
+    end
     if onOpen then onOpen() end
-    TweenService:Create(holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, height) }):Play()
+    TweenService:Create(holder, EZ_Ease.Med, { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, height) }):Play()
+    if timer then
+        TweenService:Create(timer, TweenInfo.new(d, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 0, 0, 2) }):Play()
+    end
     if d > 0 then
         task.delay(d, function()
             if not holder.Parent then return end
@@ -2011,6 +2041,20 @@ function EZ:CreateWindow(options)
                         apply(fromPtr(i.Position.X), false)
                     end
                 end)
+                local hovering = false
+                row.MouseEnter:Connect(function() hovering = true end)
+                row.MouseLeave:Connect(function() hovering = false end)
+                UserInputService.InputChanged:Connect(function(i)
+                    if hovering and i.UserInputType == Enum.UserInputType.MouseWheel then
+                        apply(obj.Value + (i.Position.Z > 0 and st or -st), false)
+                    end
+                end)
+                UserInputService.InputBegan:Connect(function(i, p)
+                    if hovering and not p and not UserInputService:GetFocusedTextBox() then
+                        if i.KeyCode == Enum.KeyCode.Left then apply(obj.Value - st, false)
+                        elseif i.KeyCode == Enum.KeyCode.Right then apply(obj.Value + st, false) end
+                    end
+                end)
                 local editBtn = Instance.new("TextButton")
                 editBtn.AnchorPoint = Vector2.new(1, 0)
                 editBtn.Position = UDim2.new(1, -12, 0, 10)
@@ -2117,7 +2161,7 @@ function EZ:CreateWindow(options)
                 trigger.Text = ""
                 trigger.AutoButtonColor = false
                 trigger.Parent = row
-                EZ_AddStroke(trigger, EZ_Theme.Border)
+                local tst = EZ_AddStroke(trigger, EZ_Theme.Border)
                 EZ_AddRadius(trigger, EZ_Theme.Radius)
                 EZ_RegTrans(trigger)
                 local trigText = Instance.new("TextLabel")
@@ -2142,6 +2186,8 @@ function EZ:CreateWindow(options)
                     trigText.TextColor3 = EZ_Theme.Text
                     if sign then sign.ImageColor3 = EZ_Theme.TextDim end
                 end)
+                trigger.MouseEnter:Connect(function() TweenService:Create(tst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
+                trigger.MouseLeave:Connect(function() TweenService:Create(tst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
                 local entry = {
                     trigger = trigger,
                     sign = sign,
