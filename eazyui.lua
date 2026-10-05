@@ -1,11 +1,5 @@
---[[
-    Eazy UI v0.9.19
-    Open-source Roblox GUI library with minimal dependencies.
-    Join our discord!: https://discord.gg/9VE4PXFDSg
-]]
-
 local EZ = {}
-EZ.Version = "0.9.19"
+EZ.Version = "0.9.20"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -68,6 +62,36 @@ local EZ_Themes = {
         Text = EZ_C(238, 238, 238), TextDim = EZ_C(132, 132, 132),
         Accent = EZ_C(238, 238, 238), AccentDim = EZ_C(179, 179, 179),
     },
+    Amethyst = {
+        Background = EZ_C(24, 20, 31), Card = EZ_C(31, 26, 40), CardHover = EZ_C(39, 33, 50),
+        Border = EZ_C(52, 44, 66), BorderHover = EZ_C(78, 66, 99), TabActive = EZ_C(38, 30, 54),
+        Text = EZ_C(236, 232, 244), TextDim = EZ_C(140, 132, 156),
+        Accent = EZ_C(167, 139, 250), AccentDim = EZ_C(124, 99, 214),
+    },
+    Rose = {
+        Background = EZ_C(26, 18, 24), Card = EZ_C(34, 24, 31), CardHover = EZ_C(43, 30, 39),
+        Border = EZ_C(58, 42, 53), BorderHover = EZ_C(87, 62, 79), TabActive = EZ_C(52, 28, 42),
+        Text = EZ_C(244, 232, 238), TextDim = EZ_C(156, 132, 143),
+        Accent = EZ_C(244, 114, 182), AccentDim = EZ_C(190, 74, 138),
+    },
+    Aqua = {
+        Background = EZ_C(13, 22, 26), Card = EZ_C(18, 30, 36), CardHover = EZ_C(24, 38, 46),
+        Border = EZ_C(34, 52, 60), BorderHover = EZ_C(52, 78, 90), TabActive = EZ_C(16, 44, 52),
+        Text = EZ_C(228, 240, 244), TextDim = EZ_C(128, 148, 156),
+        Accent = EZ_C(34, 211, 238), AccentDim = EZ_C(14, 165, 187),
+    },
+    Nocturne = {
+        Background = EZ_C(10, 12, 22), Card = EZ_C(15, 18, 32), CardHover = EZ_C(21, 25, 42),
+        Border = EZ_C(32, 38, 60), BorderHover = EZ_C(48, 57, 88), TabActive = EZ_C(18, 24, 48),
+        Text = EZ_C(228, 232, 246), TextDim = EZ_C(128, 136, 160),
+        Accent = EZ_C(99, 102, 241), AccentDim = EZ_C(79, 82, 205),
+    },
+    Pumpkin = {
+        Background = EZ_C(24, 17, 12), Card = EZ_C(32, 23, 16), CardHover = EZ_C(41, 29, 20),
+        Border = EZ_C(58, 42, 28), BorderHover = EZ_C(87, 63, 42), TabActive = EZ_C(52, 36, 20),
+        Text = EZ_C(244, 236, 228), TextDim = EZ_C(156, 140, 124),
+        Accent = EZ_C(249, 115, 22), AccentDim = EZ_C(194, 87, 14),
+    },
 }
 
 local EZ_Theme = {}
@@ -82,6 +106,11 @@ local EZ_ThemeAliases = {
     ocean = "Ocean", oceano = "Ocean",
     sunset = "Sunset",
     mono = "Mono",
+    amethyst = "Amethyst", ametista = "Amethyst",
+    rose = "Rose", rosa = "Rose",
+    aqua = "Aqua", agua = "Aqua",
+    nocturne = "Nocturne", noite = "Nocturne",
+    pumpkin = "Pumpkin", abobora = "Pumpkin",
 }
 
 local EZ_CurrentThemeName = "Default"
@@ -146,9 +175,6 @@ EZ.Compat = {
     hooks = hookmetamethod and true or false,
 }
 
--- =====================================================================
--- EZ_IconSets - WindUI-style icon system (Footagesus/Icons)
--- =====================================================================
 local EZ_IconSets = {
     lucide = {
         house = "rbxassetid://98755624629571",
@@ -648,6 +674,31 @@ local function EZ_ListConfigs(placeId)
         end
     end
     return configs
+end
+
+local function EZ_AutoloadPath(configId)
+    return EZ_ConfigFolder .. "/" .. tostring(configId) .. "__autoload.json"
+end
+
+local function EZ_GetAutoloadName(configId)
+    if not readfile or not isfile then return nil end
+    local ok, name = pcall(function()
+        local p = EZ_AutoloadPath(configId)
+        if isfile(p) then
+            local d = HttpService:JSONDecode(readfile(p))
+            return d and d.name or nil
+        end
+        return nil
+    end)
+    return ok and name or nil
+end
+
+local function EZ_SetAutoloadName(configId, name)
+    if not writefile then return false end
+    return pcall(function()
+        if not isfolder(EZ_ConfigFolder) then makefolder(EZ_ConfigFolder) end
+        writefile(EZ_AutoloadPath(configId), HttpService:JSONEncode({ name = name }))
+    end)
 end
 
 local function EZ_SaveKey(key, duration, filename)
@@ -1934,6 +1985,7 @@ function EZ:CreateWindow(options)
                 box.Position = UDim2.new(1, -172, 0.5, -14)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BackgroundTransparency = EZ_GlobalTransparency
+                box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono
                 box.TextSize = 12
@@ -2002,6 +2054,7 @@ function EZ:CreateWindow(options)
                 box.Position = UDim2.fromOffset(14, 32)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BackgroundTransparency = EZ_GlobalTransparency
+                box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
@@ -2489,6 +2542,25 @@ function EZ:CreateWindow(options)
                 end
             })
             tab:AddButton({
+                Title = "Set Autoload Config",
+                Description = "Loads the selected config on startup",
+                ButtonText = "Set",
+                Callback = function()
+                    local name = EZ_Window.CurrentConfig
+                    EZ_SetAutoloadName(EZ_ConfigId, name)
+                    EZ:Notify({ Title = "Config", Content = "'" .. name .. "' will load on startup.", Style = "Success", Duration = 2 })
+                end
+            })
+            tab:AddButton({
+                Title = "Clear Autoload",
+                Description = "Back to loading 'default'",
+                ButtonText = "Clear",
+                Callback = function()
+                    EZ_SetAutoloadName(EZ_ConfigId, "default")
+                    EZ:Notify({ Title = "Config", Content = "Autoload back to 'default'.", Style = "Info", Duration = 2 })
+                end
+            })
+            tab:AddButton({
                 Title = "Delete Config",
                 Description = "Delete the config selected above",
                 ButtonText = "Delete",
@@ -2538,7 +2610,7 @@ function EZ:CreateWindow(options)
             themeDropdown = tab:AddDropdown({
                 Title = "Theme",
                 Description = "Change the UI theme (applies instantly)",
-                Values = { "Default", "Pitch", "Light", "Ocean", "Sunset", "Mono" },
+                Values = { "Default", "Pitch", "Light", "Ocean", "Sunset", "Mono", "Amethyst", "Rose", "Aqua", "Nocturne", "Pumpkin" },
                 Default = EZ_CurrentThemeName,
                 Callback = function(theme)
                     EZ:SetTheme(theme)
@@ -2563,11 +2635,12 @@ function EZ:CreateWindow(options)
             if not EZ_AutoLoad then return false end
             if EZ_Window._autoLoaded then return false end
             EZ_Window._autoLoaded = true
-            local saved = EZ_LoadConfig(EZ_ConfigId, "default")
+            local autoloadName = EZ_GetAutoloadName(EZ_ConfigId) or "default"
+            local saved = EZ_LoadConfig(EZ_ConfigId, autoloadName)
             if not saved then return false end
             
             EZ_Window.ConfigData = saved
-            EZ_Window.CurrentConfig = "default"
+            EZ_Window.CurrentConfig = autoloadName
             
             if saved._meta then
                 if saved._meta.theme then
