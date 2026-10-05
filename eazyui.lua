@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.25
+    Eazy UI v0.9.26
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.25"
+EZ.Version = "0.9.26"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -123,6 +123,7 @@ local EZ_CurrentThemeName = "Default"
 local EZ_Painters = {}
 local EZ_TransSurf = {}
 local EZ_ThemeListeners = {}
+local EZ_NotifyPosition = "BottomRight"
 
 local function EZ_Paint(fn)
     table.insert(EZ_Painters, fn)
@@ -388,17 +389,39 @@ EZ_NotifyGui.Parent = EZ_GuiParent()
 EZ_Hide(EZ_NotifyGui)
 
 local EZ_NotifyContainer = Instance.new("Frame")
-EZ_NotifyContainer.AnchorPoint = Vector2.new(1, 1)
-EZ_NotifyContainer.Position = UDim2.new(1, -24, 1, -24)
 EZ_NotifyContainer.Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, 400)
 EZ_NotifyContainer.BackgroundTransparency = 1
 EZ_NotifyContainer.Parent = EZ_NotifyGui
 
 local EZ_NotifyLayout = Instance.new("UIListLayout")
 EZ_NotifyLayout.Padding = UDim.new(0, 8)
-EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 EZ_NotifyLayout.Parent = EZ_NotifyContainer
+
+local function EZ_UpdateNotifyPosition()
+    local pos = EZ_NotifyPosition
+    if pos == "BottomRight" then
+        EZ_NotifyContainer.AnchorPoint = Vector2.new(1, 1)
+        EZ_NotifyContainer.Position = UDim2.new(1, -24, 1, -24)
+        EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    elseif pos == "BottomLeft" then
+        EZ_NotifyContainer.AnchorPoint = Vector2.new(0, 1)
+        EZ_NotifyContainer.Position = UDim2.new(0, 24, 1, -24)
+        EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    elseif pos == "TopRight" then
+        EZ_NotifyContainer.AnchorPoint = Vector2.new(1, 0)
+        EZ_NotifyContainer.Position = UDim2.new(1, -24, 0, 24)
+        EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+        EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    elseif pos == "TopLeft" then
+        EZ_NotifyContainer.AnchorPoint = Vector2.new(0, 0)
+        EZ_NotifyContainer.Position = UDim2.new(0, 24, 0, 24)
+        EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+        EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    end
+end
+EZ_UpdateNotifyPosition()
 
 local function EZ_AddStroke(parent, color, thickness)
     local s = Instance.new("UIStroke")
@@ -1248,6 +1271,11 @@ function EZ:CreateWindow(options)
     EZ_KeyDurationGlobal = options.KeyDuration or 86400
     EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
     local EZ_AutoLoad = options.AutoLoad ~= false
+    
+    if options.NotifyPosition then
+        EZ_NotifyPosition = options.NotifyPosition
+        EZ_UpdateNotifyPosition()
+    end
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
@@ -1629,7 +1657,7 @@ function EZ:CreateWindow(options)
             play.Padding = UDim.new(0, 10); play.Parent = page
             local ppad = Instance.new("UIPadding")
             ppad.PaddingTop = UDim.new(0, 16); ppad.PaddingBottom = UDim.new(0, 16)
-            ppad.PaddingLeft = UDim.new(0, 18); ppad.PaddingRight = UDim.new(0, 18); ppad.Parent = page
+            ppad.PaddingLeft = UDim2.new(0, 18); ppad.PaddingRight = UDim2.new(0, 18); ppad.Parent = page
 
             table.insert(registry, data)
 
@@ -1655,38 +1683,40 @@ function EZ:CreateWindow(options)
             function tab:AddSection(o)
                 o = o or {}
                 local holder = Instance.new("Frame")
+                holder.Name = "Frame"
                 holder:SetAttribute("EZ_Section", true)
-                holder.Size = UDim2.new(1, 0, 0, 32)
+                holder.Size = UDim2.new(1, 0, 0, 24)
                 holder.BackgroundTransparency = 1
                 holder.Parent = page
-                local line1 = Instance.new("Frame")
-                line1.Size = UDim2.new(0.35, 0, 0, 1)
-                line1.Position = UDim2.new(0, 0, 0.5, 0)
-                line1.BackgroundColor3 = EZ_Theme.Border
-                line1.BorderSizePixel = 0
-                line1.Parent = holder
-                EZ_Paint(function() line1.BackgroundColor3 = EZ_Theme.Border end)
-                local line2 = Instance.new("Frame")
-                line2.Size = UDim2.new(0.35, 0, 0, 1)
-                line2.Position = UDim2.new(0.65, 0, 0.5, 0)
-                line2.BackgroundColor3 = EZ_Theme.Border
-                line2.BorderSizePixel = 0
-                line2.Parent = holder
-                EZ_Paint(function() line2.BackgroundColor3 = EZ_Theme.Border end)
+
+                local bar = Instance.new("Frame")
+                bar.Size = UDim2.fromOffset(3, 12)
+                bar.Position = UDim2.new(0, 2, 0.5, -6)
+                bar.BackgroundColor3 = EZ_Theme.Accent
+                bar.BorderSizePixel = 0
+                bar.Parent = holder
+                EZ_AddRadius(bar, 2)
+                EZ_Paint(function() bar.BackgroundColor3 = EZ_Theme.Accent end)
+
                 local t = Instance.new("TextLabel")
-                t.Size = UDim2.new(0.3, 0, 1, 0)
-                t.Position = UDim2.new(0.35, 0, 0, 0)
+                t.Size = UDim2.new(1, -40, 1, 0)
+                t.Position = UDim2.new(0, 11, 0, 0)
                 t.BackgroundTransparency = 1
                 t.Text = string.upper(o.Title or "")
-                t.Font = EZ_Brand.FontMono
+                t.Font = EZ_Brand.FontBody
                 t.TextSize = 11
                 t.TextColor3 = EZ_Theme.TextDim
-                t.TextXAlignment = Enum.TextXAlignment.Center
+                t.TextXAlignment = Enum.TextXAlignment.Left
                 t.Parent = holder
                 EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
+
                 local chev = EZ_CreateIcon(holder, "chevron-down", 12)
-                chev.Position = UDim2.new(1, -14, 0.5, -6)
-                chev.ImageColor3 = EZ_Theme.TextDim
+                if chev then
+                    chev.AnchorPoint = Vector2.new(1, 0.5)
+                    chev.Position = UDim2.new(1, -2, 0.5, 0)
+                    chev.ImageColor3 = EZ_Theme.TextDim
+                end
+
                 local collapsed = false
                 local click = Instance.new("TextButton")
                 click.Size = UDim2.new(1, 0, 1, 0)
@@ -1696,18 +1726,21 @@ function EZ:CreateWindow(options)
                 click.Parent = holder
                 click.MouseButton1Click:Connect(function()
                     collapsed = not collapsed
-                    TweenService:Create(chev, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = collapsed and -90 or 0 }):Play()
+                    if chev then
+                        TweenService:Create(chev, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = collapsed and -90 or 0 }):Play()
+                    end
                     local active = false
                     for _, child in ipairs(page:GetChildren()) do
                         if child == holder then
                             active = true
-                        elseif child:GetAttribute("EZ_Section") == true then
+                        elseif child:GetAttribute("EZ_Section") then
                             active = false
                         elseif active then
                             child.Visible = not collapsed
                         end
                     end
                 end)
+
                 local obj = {}
                 function obj:Set(x) t.Text = string.upper(x or "") end
                 return obj
