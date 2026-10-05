@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.23
+    Eazy UI v0.9.24
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.23"
+EZ.Version = "0.9.24"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
