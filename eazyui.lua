@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.24
+    Eazy UI v0.9.25
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.24"
+EZ.Version = "0.9.25"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1655,7 +1655,7 @@ function EZ:CreateWindow(options)
             function tab:AddSection(o)
                 o = o or {}
                 local holder = Instance.new("Frame")
-                holder.Name = "EZ_Section"
+                holder:SetAttribute("EZ_Section", true)
                 holder.Size = UDim2.new(1, 0, 0, 32)
                 holder.BackgroundTransparency = 1
                 holder.Parent = page
@@ -1701,7 +1701,7 @@ function EZ:CreateWindow(options)
                     for _, child in ipairs(page:GetChildren()) do
                         if child == holder then
                             active = true
-                        elseif child.Name == "EZ_Section" then
+                        elseif child:GetAttribute("EZ_Section") == true then
                             active = false
                         elseif active then
                             child.Visible = not collapsed
