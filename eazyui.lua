@@ -1,5 +1,11 @@
+--[[
+    Eazy UI v0.9.21
+    Open-source Roblox GUI library with minimal dependencies.
+    Join our discord!: https://discord.gg/9VE4PXFDSg
+]]
+
 local EZ = {}
-EZ.Version = "0.9.20"
+EZ.Version = "0.9.21"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -435,11 +441,15 @@ EZ_Paint(function()
     EZ_DropdownPopup.BackgroundColor3 = EZ_Theme.Background
 end)
 
-local EZ_DropdownList = Instance.new("Frame")
+local EZ_DropdownList = Instance.new("ScrollingFrame")
 EZ_DropdownList.Size = UDim2.new(1, 0, 1, 0)
 EZ_DropdownList.BackgroundTransparency = 1
 EZ_DropdownList.ClipsDescendants = true
 EZ_DropdownList.ZIndex = 61
+EZ_DropdownList.ScrollBarThickness = 3
+EZ_DropdownList.ScrollBarImageColor3 = EZ_Theme.BorderHover
+EZ_DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+EZ_DropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
 EZ_DropdownList.Parent = EZ_DropdownPopup
 
 local EZ_DropdownLayout = Instance.new("UIListLayout")
@@ -523,6 +533,7 @@ local function EZ_OpenDropdown(entry)
     end
     x = EZ_Clamp(x, winX + 6, winX + winSize.X - popW - 6)
     y = EZ_Clamp(y, winY + 6, winY + winSize.Y - popH - 6)
+    EZ_DropdownList.CanvasPosition = Vector2.new(0, 0)
     EZ_DropdownPopup.Position = UDim2.fromOffset(x, y)
     EZ_DropdownPopup.Visible = true
     EZ_DropdownPopup.Size = UDim2.fromOffset(popW, 0)
@@ -670,7 +681,10 @@ local function EZ_ListConfigs(placeId)
     for _, file in ipairs(files) do
         local name = file:match("([^/\\]+)$") or file
         if name:sub(1, #base) == base and name:sub(-5) == ".json" then
-            table.insert(configs, name:sub(#base + 1, #name - 5))
+            local cfgName = name:sub(#base + 1, #name - 5)
+            if cfgName ~= "_autoload" then
+                table.insert(configs, cfgName)
+            end
         end
     end
     return configs
@@ -2435,7 +2449,10 @@ function EZ:CreateWindow(options)
                 if data._meta.transparency then EZ_Window:SetTransparency(data._meta.transparency) end
                 if data._meta.autoSave ~= nil then EZ_AutoSave = data._meta.autoSave end
             end
-            
+            if EZ_Window._themeDropdown then
+                EZ_Window._themeDropdown:Set(EZ_CurrentThemeName, true)
+            end
+
             if data._minimize_key and data._minimize_key.value then
                 local key = Enum.KeyCode[data._minimize_key.value]
                 if key then
@@ -2447,7 +2464,7 @@ function EZ:CreateWindow(options)
                 local d = data[el.Id]
                 if d then
                     if d.type == "color" then
-                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
+                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), false)
                     elseif d.type == "keybind" then
                         local key = d.value and Enum.KeyCode[d.value] or nil
                         el:Set(key, true)
@@ -2455,7 +2472,7 @@ function EZ:CreateWindow(options)
                             EZ_MinKey = key
                         end
                     else
-                        el:Set(d.value, true)
+                        el:Set(d.value, false)
                     end
                 end
             end
@@ -2623,6 +2640,7 @@ function EZ:CreateWindow(options)
                     themeDropdown:Set(name, true)
                 end
             end)
+            EZ_Window._themeDropdown = themeDropdown
         end
 
         EZ_Window.Frame = frame
@@ -2653,6 +2671,10 @@ function EZ:CreateWindow(options)
                     EZ_AutoSave = saved._meta.autoSave 
                 end
             end
+
+            if EZ_Window._themeDropdown then
+                EZ_Window._themeDropdown:Set(EZ_CurrentThemeName, true)
+            end
             
             if saved._minimize_key and saved._minimize_key.value then
                 local key = Enum.KeyCode[saved._minimize_key.value]
@@ -2665,7 +2687,7 @@ function EZ:CreateWindow(options)
                 local d = saved[el.Id]
                 if d then
                     if d.type == "color" then
-                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), true)
+                        el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), false)
                     elseif d.type == "keybind" then
                         local key = d.value and Enum.KeyCode[d.value] or nil
                         el:Set(key, true)
@@ -2673,7 +2695,7 @@ function EZ:CreateWindow(options)
                             EZ_MinKey = key
                         end
                     else
-                        el:Set(d.value, true)
+                        el:Set(d.value, false)
                     end
                 end
             end
