@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.27
+    Eazy UI v0.9.28
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.27"
+EZ.Version = "0.9.28"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -329,7 +329,9 @@ local function EZ_CreateIcon(parent, icon, size)
         placeholder.BackgroundTransparency = 0.7
         placeholder.Size = UDim2.fromOffset(size or 16, size or 16)
         placeholder.Parent = parent
-        EZ_AddRadius(placeholder, 3)
+        local pc = Instance.new("UICorner")
+        pc.CornerRadius = UDim.new(0, 3)
+        pc.Parent = placeholder
         return placeholder
     end
     
