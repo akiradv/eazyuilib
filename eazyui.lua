@@ -488,7 +488,33 @@ local function EZ_OpenDropdown(entry)
     end
     EZ_DropdownCurrent = entry
     for _, child in ipairs(EZ_DropdownList:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
+        if child:IsA("TextButton") or child:IsA("TextBox") then child:Destroy() end
+    end
+    local optionButtons = {}
+    if entry.searchable then
+        local search = Instance.new("TextBox")
+        search.Size = UDim2.new(1, 0, 0, 30)
+        search.BackgroundColor3 = EZ_Theme.Card
+        search.BorderSizePixel = 0
+        search.Text = ""
+        search.PlaceholderText = "Search..."
+        search.Font = EZ_Brand.FontBody
+        search.TextSize = 12
+        search.TextColor3 = EZ_Theme.Text
+        search.PlaceholderColor3 = EZ_Theme.TextDim
+        search.TextXAlignment = Enum.TextXAlignment.Left
+        search.ClearTextOnFocus = false
+        search.ZIndex = 61
+        search.Parent = EZ_DropdownList
+        local sp = Instance.new("UIPadding")
+        sp.PaddingLeft = UDim.new(0, 12)
+        sp.Parent = search
+        search:GetPropertyChangedSignal("Text"):Connect(function()
+            local q = search.Text:lower()
+            for name, btn in pairs(optionButtons) do
+                btn.Visible = q == "" or name:lower():find(q, 1, true) ~= nil
+            end
+        end)
     end
     local values = entry.getValues()
     for _, v in ipairs(values) do
@@ -503,6 +529,7 @@ local function EZ_OpenDropdown(entry)
         op.AutoButtonColor = false
         op.ZIndex = 61
         op.Parent = EZ_DropdownList
+        optionButtons[tostring(v)] = op
         local opp = Instance.new("UIPadding")
         opp.PaddingLeft = UDim.new(0, 12)
         opp.Parent = op
@@ -517,7 +544,7 @@ local function EZ_OpenDropdown(entry)
             EZ_CloseDropdown()
         end)
     end
-    local popH = math.min(#values * 30 + 8, 220)
+    local popH = math.min(#values * 30 + (entry.searchable and 38 or 8), 220)
     local popW = entry.width or 150
     local trigPos = entry.trigger.AbsolutePosition
     local trigSize = entry.trigger.AbsoluteSize
@@ -1628,6 +1655,7 @@ function EZ:CreateWindow(options)
             function tab:AddSection(o)
                 o = o or {}
                 local holder = Instance.new("Frame")
+                holder.Name = "EZ_Section"
                 holder.Size = UDim2.new(1, 0, 0, 32)
                 holder.BackgroundTransparency = 1
                 holder.Parent = page
@@ -1656,6 +1684,30 @@ function EZ:CreateWindow(options)
                 t.TextXAlignment = Enum.TextXAlignment.Center
                 t.Parent = holder
                 EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
+                local chev = EZ_CreateIcon(holder, "chevron-down", 12)
+                chev.Position = UDim2.new(1, -14, 0.5, -6)
+                chev.ImageColor3 = EZ_Theme.TextDim
+                local collapsed = false
+                local click = Instance.new("TextButton")
+                click.Size = UDim2.new(1, 0, 1, 0)
+                click.BackgroundTransparency = 1
+                click.Text = ""
+                click.AutoButtonColor = false
+                click.Parent = holder
+                click.MouseButton1Click:Connect(function()
+                    collapsed = not collapsed
+                    TweenService:Create(chev, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Rotation = collapsed and -90 or 0 }):Play()
+                    local active = false
+                    for _, child in ipairs(page:GetChildren()) do
+                        if child == holder then
+                            active = true
+                        elseif child.Name == "EZ_Section" then
+                            active = false
+                        elseif active then
+                            child.Visible = not collapsed
+                        end
+                    end
+                end)
                 local obj = {}
                 function obj:Set(x) t.Text = string.upper(x or "") end
                 return obj
@@ -1926,9 +1978,92 @@ function EZ:CreateWindow(options)
                         apply(fromPtr(i.Position.X), false)
                     end
                 end)
+                local editBtn = Instance.new("TextButton")
+                editBtn.AnchorPoint = Vector2.new(1, 0)
+                editBtn.Position = UDim2.new(1, -12, 0, 10)
+                editBtn.Size = UDim2.fromOffset(80, 16)
+                editBtn.BackgroundTransparency = 1
+                editBtn.Text = ""
+                editBtn.AutoButtonColor = false
+                editBtn.Parent = row
+                editBtn.MouseButton1Click:Connect(function()
+                    local box = Instance.new("TextBox")
+                    box.AnchorPoint = Vector2.new(1, 0)
+                    box.Position = UDim2.new(1, -12, 0, 8)
+                    box.Size = UDim2.fromOffset(80, 20)
+                    box.BackgroundColor3 = EZ_Theme.Card
+                    box.BorderSizePixel = 0
+                    box.Text = fmt(obj.Value)
+                    box.Font = EZ_Brand.FontMono
+                    box.TextSize = 13
+                    box.TextColor3 = EZ_Theme.Accent
+                    box.TextXAlignment = Enum.TextXAlignment.Right
+                    box.Parent = row
+                    EZ_AddRadius(box, 4)
+                    vl.Visible = false
+                    box:CaptureFocus()
+                    box.FocusLost:Connect(function(enter)
+                        if enter then
+                            local n = tonumber(box.Text)
+                            if n then apply(n, false) end
+                        end
+                        box:Destroy()
+                        vl.Visible = true
+                    end)
+                end)
                 function obj:Set(n, silent) apply(tonumber(n) or mn, silent) end
                 apply(obj.Value, true)
                 if obj.Flag then table.insert(EZ_Window.Elements, obj) end
+                return obj
+            end
+
+            function tab:AddBanner(o)
+                o = o or {}
+                local holder = Instance.new("Frame")
+                holder.Size = UDim2.new(1, 0, 0, o.Height or 90)
+                holder.BackgroundColor3 = EZ_Theme.Card
+                holder.BackgroundTransparency = EZ_GlobalTransparency
+                holder.BorderSizePixel = 0
+                holder.ClipsDescendants = true
+                holder.Parent = page
+                EZ_AddRadius(holder, EZ_Theme.Radius)
+                EZ_RegTrans(holder)
+                EZ_Paint(function() holder.BackgroundColor3 = EZ_Theme.Card end)
+                if o.Image then
+                    local img = Instance.new("ImageLabel")
+                    img.Size = UDim2.new(1, 0, 1, 0)
+                    img.BackgroundTransparency = 1
+                    img.Image = o.Image
+                    img.ScaleType = Enum.ScaleType.Crop
+                    img.Parent = holder
+                    EZ_AddRadius(img, EZ_Theme.Radius)
+                end
+                if o.Title then
+                    local t = Instance.new("TextLabel")
+                    t.Size = UDim2.new(1, -20, 0, 22)
+                    t.Position = UDim2.new(0, 14, 0, 12)
+                    t.BackgroundTransparency = 1
+                    t.Text = o.Title
+                    t.Font = EZ_Brand.Font
+                    t.TextSize = 16
+                    t.TextColor3 = o.TextColor or EZ_Theme.Text
+                    t.TextXAlignment = Enum.TextXAlignment.Left
+                    t.Parent = holder
+                end
+                if o.SubTitle then
+                    local s = Instance.new("TextLabel")
+                    s.Size = UDim2.new(1, -20, 0, 16)
+                    s.Position = UDim2.new(0, 14, 0, 36)
+                    s.BackgroundTransparency = 1
+                    s.Text = o.SubTitle
+                    s.Font = EZ_Brand.FontBody
+                    s.TextSize = 12
+                    s.TextColor3 = o.SubColor or EZ_Theme.TextDim
+                    s.TextXAlignment = Enum.TextXAlignment.Left
+                    s.Parent = holder
+                end
+                local obj = {}
+                function obj:SetTitle(x) end
                 return obj
             end
 
@@ -1979,6 +2114,7 @@ function EZ:CreateWindow(options)
                     sign = sign,
                     windowFrame = frame,
                     width = 172,
+                    searchable = o.Searchable and true or false,
                     getValues = function() return values end,
                     getValue = function() return obj.Value end,
                     pick = function(v) obj:Set(v, false) end,
@@ -2218,9 +2354,11 @@ function EZ:CreateWindow(options)
                 ppad2.PaddingTop = UDim.new(0, 10); ppad2.PaddingBottom = UDim.new(0, 10)
                 ppad2.PaddingLeft = UDim.new(0, 14); ppad2.PaddingRight = UDim.new(0, 14); ppad2.Parent = panel
                 local updateScheduled = false
+                local hexBox
                 local function update(silent)
                     obj.Value = Color3.fromRGB(r, g, b)
                     sw.BackgroundColor3 = obj.Value
+                    if hexBox and hexBox.Parent then hexBox.Text = string.format("#%02X%02X%02X", r, g, b) end
                     if silent then return end
                     if updateScheduled then return end
                     updateScheduled = true
@@ -2233,6 +2371,28 @@ function EZ:CreateWindow(options)
                         end
                     end)
                 end
+                hexBox = Instance.new("TextBox")
+                hexBox.Size = UDim2.new(1, 0, 0, 24)
+                hexBox.BackgroundColor3 = EZ_Theme.Card
+                hexBox.BorderSizePixel = 0
+                hexBox.Text = string.format("#%02X%02X%02X", r, g, b)
+                hexBox.Font = EZ_Brand.FontMono
+                hexBox.TextSize = 12
+                hexBox.TextColor3 = EZ_Theme.Text
+                hexBox.TextXAlignment = Enum.TextXAlignment.Center
+                hexBox.Parent = panel
+                EZ_AddRadius(hexBox, 4)
+                hexBox.FocusLost:Connect(function(enter)
+                    if enter then
+                        local hex = hexBox.Text:match("^#?(%x%x%x%x%x%x)$")
+                        if hex then
+                            r = tonumber(hex:sub(1, 2), 16)
+                            g = tonumber(hex:sub(3, 4), 16)
+                            b = tonumber(hex:sub(5, 6), 16)
+                            update(false)
+                        end
+                    end
+                end)
                 local function channel(letter, get, set)
                     local holder = Instance.new("Frame")
                     holder.Size = UDim2.new(1, 0, 0, 24)
@@ -2329,13 +2489,13 @@ function EZ:CreateWindow(options)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
                 local id = o.Flag or o.Id or o.Title or "keybind_" .. os.clock()
-                local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "keybind", Default = o.Default }
+                local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "keybind", Default = o.Default, Mods = "" }
                 local listening = false
                 local row = EZ_NewRow(page, 44)
                 EZ_RowTitle(row, o.Title or "Keybind", o.Description, 44, 100)
                 local kl = Instance.new("TextButton")
-                kl.Position = UDim2.new(1, -82, 0.5, -13)
-                kl.Size = UDim2.fromOffset(70, 26)
+                kl.Position = UDim2.new(1, -92, 0.5, -13)
+                kl.Size = UDim2.fromOffset(80, 26)
                 kl.BackgroundColor3 = EZ_Theme.Background
                 kl.BackgroundTransparency = EZ_GlobalTransparency
                 kl.BorderSizePixel = 0
@@ -2354,21 +2514,35 @@ function EZ:CreateWindow(options)
                     kl.TextColor3 = EZ_Theme.Text
                     if not listening then klst.Color = EZ_Theme.Border end
                 end)
+                local function modString()
+                    local m = ""
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then m = m .. "Ctrl+" end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift) then m = m .. "Shift+" end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt) then m = m .. "Alt+" end
+                    return m
+                end
+                local function modsHeld()
+                    local ctrl = UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl)
+                    local shift = UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or UserInputService:IsKeyDown(Enum.KeyCode.RightShift)
+                    local alt = UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt)
+                    return ctrl, shift, alt
+                end
                 UserInputService.InputBegan:Connect(function(input, processed)
                     if listening then
                         if input.UserInputType == Enum.UserInputType.Keyboard then
                             if input.KeyCode == Enum.KeyCode.Escape then
                                 listening = false
-                                kl.Text = obj.Value and obj.Value.Name or "None"
+                                kl.Text = (obj.Value and (obj.Mods .. obj.Value.Name)) or "None"
                                 klst.Color = EZ_Theme.Border
                             else
                                 obj.Value = input.KeyCode
+                                obj.Mods = modString()
                                 listening = false
-                                kl.Text = input.KeyCode.Name
+                                kl.Text = obj.Mods .. input.KeyCode.Name
                                 klst.Color = EZ_Theme.Border
                                 cb(input.KeyCode)
                                 if obj.Flag and EZ_AutoSave then
-                                    EZ_Window.ConfigData[id] = { type = "keybind", value = input.KeyCode.Name }
+                                    EZ_Window.ConfigData[id] = { type = "keybind", value = input.KeyCode.Name, mods = obj.Mods }
                                     EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
                                 end
                             end
@@ -2376,7 +2550,11 @@ function EZ:CreateWindow(options)
                         return
                     end
                     if obj.Value and input.KeyCode == obj.Value and not processed then
-                        if not UserInputService:GetFocusedTextBox() then cb() end
+                        local c, s, al = modsHeld()
+                        local mc, ms, ma = obj.Mods:find("Ctrl+") and true or false, obj.Mods:find("Shift+") and true or false, obj.Mods:find("Alt+") and true or false
+                        if c == mc and s == ms and al == ma then
+                            if not UserInputService:GetFocusedTextBox() then cb() end
+                        end
                     end
                 end)
                 kl.MouseEnter:Connect(function() if not listening then klst.Color = EZ_Theme.Accent end end)
@@ -2388,9 +2566,9 @@ function EZ:CreateWindow(options)
                 end)
                 function obj:Set(key, silent)
                     obj.Value = key
-                    kl.Text = key and key.Name or "None"
+                    kl.Text = key and (obj.Mods .. key.Name) or "None"
                     if not silent and obj.Flag and EZ_AutoSave then
-                        EZ_Window.ConfigData[id] = { type = "keybind", value = key and key.Name or nil }
+                        EZ_Window.ConfigData[id] = { type = "keybind", value = key and key.Name or nil, mods = obj.Mods }
                         EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
                     end
                 end
@@ -2399,6 +2577,7 @@ function EZ:CreateWindow(options)
             end
 
             tab.CreateSection = tab.AddSection
+            tab.CreateBanner = tab.AddBanner
             tab.CreateDivider = tab.AddDivider
             tab.CreateParagraph = tab.AddParagraph
             tab.CreateLabel = tab.AddLabel
