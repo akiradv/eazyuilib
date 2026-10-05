@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.21
+    Eazy UI v0.9.22
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.21"
+EZ.Version = "0.9.22"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -123,6 +123,7 @@ local EZ_CurrentThemeName = "Default"
 local EZ_Painters = {}
 local EZ_TransSurf = {}
 local EZ_ThemeListeners = {}
+local EZ_PulseDots = {}
 
 local function EZ_Paint(fn)
     table.insert(EZ_Painters, fn)
@@ -169,6 +170,30 @@ function EZ:SetAccent(color)
     local r, g, b = color.R * 255, color.G * 255, color.B * 255
     EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
     EZ_Repaint()
+end
+
+local function EZ_StartPulse(dot)
+    if not dot or not dot.Parent then return end
+    table.insert(EZ_PulseDots, dot)
+    task.spawn(function()
+        while dot and dot.Parent do
+            if dot.Visible then
+                TweenService:Create(dot, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                    Size = UDim2.fromOffset(10, 10),
+                    BackgroundTransparency = 0.6
+                }):Play()
+                task.wait(0.9)
+                if not dot.Parent then break end
+                TweenService:Create(dot, TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                    Size = UDim2.fromOffset(6, 6),
+                    BackgroundTransparency = 0
+                }):Play()
+                task.wait(0.9)
+            else
+                task.wait(0.3)
+            end
+        end
+    end)
 end
 
 EZ.Compat = {
@@ -1249,6 +1274,7 @@ function EZ:CreateWindow(options)
     EZ_Window.ConfigData = {}
     EZ_Window.Elements = {}
     EZ_Window.CurrentConfig = "default"
+    EZ_Window._tabBadges = {}
 
     local function EZ_BuildWindow()
         local frame = Instance.new("Frame")
@@ -1308,10 +1334,35 @@ function EZ:CreateWindow(options)
         logoLetter.Parent = titlebar
         EZ_Paint(function() logoLetter.TextColor3 = EZ_Theme.Accent end)
 
+        local statusDot = Instance.new("Frame")
+        statusDot.Size = UDim2.fromOffset(6, 6)
+        statusDot.Position = UDim2.new(0, 38, 0.5, -3)
+        statusDot.BackgroundColor3 = EZ_Theme.Success
+        statusDot.BorderSizePixel = 0
+        statusDot.AnchorPoint = Vector2.new(0, 0.5)
+        statusDot.Parent = titlebar
+        EZ_AddRadius(statusDot, 3)
+        EZ_Paint(function() statusDot.BackgroundColor3 = EZ_Theme.Success end)
+        EZ_Window._statusDot = statusDot
+        EZ_StartPulse(statusDot)
+
+        local statusLabel = Instance.new("TextLabel")
+        statusLabel.Size = UDim2.fromOffset(60, 12)
+        statusLabel.Position = UDim2.new(0, 48, 0.5, -6)
+        statusLabel.BackgroundTransparency = 1
+        statusLabel.Text = "ready"
+        statusLabel.Font = EZ_Brand.FontMono
+        statusLabel.TextSize = 9
+        statusLabel.TextColor3 = EZ_Theme.TextDim
+        statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+        statusLabel.Parent = titlebar
+        EZ_Paint(function() statusLabel.TextColor3 = EZ_Theme.TextDim end)
+        EZ_Window._statusLabel = statusLabel
+
         local tholder = Instance.new("Frame")
         tholder.BackgroundTransparency = 1
-        tholder.Size = UDim2.new(1, -120, 1, 0)
-        tholder.Position = UDim2.fromOffset(48, 0)
+        tholder.Size = UDim2.new(1, -240, 1, 0)
+        tholder.Position = UDim2.fromOffset(116, 0)
         tholder.Parent = titlebar
         local tlay = Instance.new("UIListLayout")
         tlay.FillDirection = Enum.FillDirection.Horizontal
@@ -1486,6 +1537,13 @@ function EZ:CreateWindow(options)
             frame.Visible = not state
         end
 
+        function EZ_Window:SetStatus(text, color)
+            if self._statusLabel then self._statusLabel.Text = text end
+            if self._statusDot and color then
+                self._statusDot.BackgroundColor3 = color
+            end
+        end
+
         minbtn.MouseEnter:Connect(function()
             TweenService:Create(minbtn, TweenInfo.new(0.12), { BackgroundTransparency = 0 }):Play()
             TweenService:Create(minicon, TweenInfo.new(0.12), { BackgroundColor3 = EZ_Theme.Text }):Play()
@@ -1540,7 +1598,7 @@ function EZ:CreateWindow(options)
 
             local lbl = Instance.new("TextLabel")
             lbl.Position = UDim2.fromOffset(iconOffset, 0)
-            lbl.Size = UDim2.new(1, -(iconOffset + 6), 1, 0)
+            lbl.Size = UDim2.new(1, -(iconOffset + 18), 1, 0)
             lbl.BackgroundTransparency = 1
             lbl.Text = tabTitle
             lbl.Font = EZ_Brand.FontBody
@@ -1550,8 +1608,19 @@ function EZ:CreateWindow(options)
             lbl.TextTruncate = Enum.TextTruncate.AtEnd
             lbl.Parent = btn
 
+            local badge = Instance.new("Frame")
+            badge.Size = UDim2.fromOffset(6, 6)
+            badge.AnchorPoint = Vector2.new(1, 0.5)
+            badge.Position = UDim2.new(1, -6, 0.5, 0)
+            badge.BackgroundColor3 = EZ_Theme.Accent
+            badge.BorderSizePixel = 0
+            badge.Visible = false
+            badge.Parent = btn
+            EZ_AddRadius(badge, 3)
+            EZ_Paint(function() badge.BackgroundColor3 = EZ_Theme.Accent end)
+
             data.Button = btn; data.Label = lbl; data.Page = nil; data.Icon = iconLbl
-            data.Indicator = indicator; data.Active = false
+            data.Indicator = indicator; data.Active = false; data.Badge = badge
 
             EZ_Paint(function()
                 btn.BackgroundColor3 = EZ_Theme.TabActive
@@ -1604,6 +1673,11 @@ function EZ:CreateWindow(options)
             end)
             btn.MouseButton1Click:Connect(function() selectTab(data) end)
             if #registry == 1 then selectTab(data) end
+
+            function tab:SetBadge(show, color)
+                badge.Visible = show and true or false
+                if color then badge.BackgroundColor3 = color end
+            end
 
             function tab:AddSection(o)
                 o = o or {}
@@ -1761,6 +1835,22 @@ function EZ:CreateWindow(options)
                 end
                 row.InputBegan:Connect(function(i)
                     if i.UserInputType == Enum.UserInputType.MouseButton1 then obj:Set(not obj.Value) end
+                end)
+                row.MouseEnter:Connect(function()
+                    if obj.Value then
+                        TweenService:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                            Size = UDim2.fromOffset(18, 18),
+                            Position = UDim2.fromOffset(20, 2)
+                        }):Play()
+                    end
+                end)
+                row.MouseLeave:Connect(function()
+                    if obj.Value then
+                        TweenService:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                            Size = UDim2.fromOffset(16, 16),
+                            Position = UDim2.fromOffset(21, 3)
+                        }):Play()
+                    end
                 end)
                 paintToggle()
                 if obj.Flag then table.insert(EZ_Window.Elements, obj) end
@@ -2477,6 +2567,19 @@ function EZ:CreateWindow(options)
                 end
             end
             EZ_Window.CurrentConfig = configName
+            if EZ_Window._configDropdown then
+                local currentValues = {}
+                for _, v in ipairs(EZ_Window._configDropdown:getValues()) do
+                    table.insert(currentValues, v)
+                end
+                local found = false
+                for _, v in ipairs(currentValues) do if v == configName then found = true break end end
+                if not found then
+                    table.insert(currentValues, configName)
+                    EZ_Window._configDropdown:SetValues(currentValues)
+                end
+                EZ_Window._configDropdown:Set(configName, true)
+            end
             if ignored > 0 then
                 task.spawn(function()
                     EZ:Notify({ Title = "Config", Content = ignored .. " saved field(s) no longer exist and were skipped.", Style = "Warning", Duration = 3 })
@@ -2548,6 +2651,7 @@ function EZ:CreateWindow(options)
                     EZ_Window.CurrentConfig = name
                 end
             })
+            EZ_Window._configDropdown = savedConfigsDropdown
             tab:AddButton({
                 Title = "Load Config",
                 Description = "Load the config selected above",
@@ -2700,6 +2804,20 @@ function EZ:CreateWindow(options)
                 end
             end
             
+            if EZ_Window._configDropdown then
+                local currentValues = {}
+                for _, v in ipairs(EZ_Window._configDropdown:getValues()) do
+                    table.insert(currentValues, v)
+                end
+                local found = false
+                for _, v in ipairs(currentValues) do if v == autoloadName then found = true break end end
+                if not found then
+                    table.insert(currentValues, autoloadName)
+                    EZ_Window._configDropdown:SetValues(currentValues)
+                end
+                EZ_Window._configDropdown:Set(autoloadName, true)
+            end
+            
             EZ_Repaint()
             for _, inst in ipairs(EZ_TransSurf) do
                 if inst.Parent then 
@@ -2731,6 +2849,7 @@ function EZ:Destroy()
     table.clear(EZ_Painters)
     table.clear(EZ_TransSurf)
     table.clear(EZ_ThemeListeners)
+    table.clear(EZ_PulseDots)
     if getgenv then getgenv().EazyUI = nil end
 end
 
