@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.28
+    Eazy UI v0.9.29
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.28"
+EZ.Version = "0.9.29"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -39,28 +39,28 @@ local EZ_Themes = {
         Info = EZ_C(59, 130, 246),
     },
     Pitch = {
-        Background = EZ_C(10, 10, 10), Card = EZ_C(17, 17, 17), CardHover = EZ_C(24, 24, 24),
-        Border = EZ_C(34, 34, 34), BorderHover = EZ_C(58, 58, 58), TabActive = EZ_C(17, 34, 28),
-        Text = EZ_C(229, 229, 229), TextDim = EZ_C(102, 102, 102),
-        Accent = EZ_C(16, 185, 129), AccentDim = EZ_C(12, 139, 97),
+        Background = EZ_C(5, 5, 6), Card = EZ_C(12, 12, 14), CardHover = EZ_C(20, 20, 23),
+        Border = EZ_C(28, 28, 32), BorderHover = EZ_C(48, 48, 54), TabActive = EZ_C(30, 12, 16),
+        Text = EZ_C(235, 235, 238), TextDim = EZ_C(105, 105, 112),
+        Accent = EZ_C(244, 63, 94), AccentDim = EZ_C(190, 40, 70),
     },
     Light = {
-        Background = EZ_C(244, 244, 244), Card = EZ_C(252, 252, 252), CardHover = EZ_C(236, 236, 236),
-        Border = EZ_C(214, 214, 214), BorderHover = EZ_C(180, 180, 180), TabActive = EZ_C(214, 240, 231),
-        Text = EZ_C(24, 24, 24), TextDim = EZ_C(112, 112, 112),
-        Accent = EZ_C(12, 150, 105), AccentDim = EZ_C(9, 113, 79),
+        Background = EZ_C(246, 247, 249), Card = EZ_C(255, 255, 255), CardHover = EZ_C(240, 242, 245),
+        Border = EZ_C(220, 224, 230), BorderHover = EZ_C(190, 196, 205), TabActive = EZ_C(224, 234, 252),
+        Text = EZ_C(25, 28, 35), TextDim = EZ_C(115, 122, 132),
+        Accent = EZ_C(37, 99, 235), AccentDim = EZ_C(28, 74, 176),
     },
     Ocean = {
-        Background = EZ_C(13, 20, 26), Card = EZ_C(18, 28, 36), CardHover = EZ_C(24, 36, 46),
-        Border = EZ_C(34, 48, 60), BorderHover = EZ_C(52, 72, 88), TabActive = EZ_C(16, 42, 54),
-        Text = EZ_C(225, 235, 240), TextDim = EZ_C(112, 132, 142),
-        Accent = EZ_C(56, 152, 199), AccentDim = EZ_C(42, 114, 149),
+        Background = EZ_C(6, 14, 26), Card = EZ_C(10, 20, 36), CardHover = EZ_C(15, 27, 46),
+        Border = EZ_C(24, 40, 62), BorderHover = EZ_C(38, 60, 90), TabActive = EZ_C(10, 32, 56),
+        Text = EZ_C(222, 234, 246), TextDim = EZ_C(108, 128, 148),
+        Accent = EZ_C(56, 189, 248), AccentDim = EZ_C(37, 140, 190),
     },
     Sunset = {
-        Background = EZ_C(24, 16, 20), Card = EZ_C(32, 22, 27), CardHover = EZ_C(40, 28, 34),
-        Border = EZ_C(52, 38, 46), BorderHover = EZ_C(78, 56, 68), TabActive = EZ_C(52, 28, 36),
-        Text = EZ_C(240, 228, 232), TextDim = EZ_C(142, 120, 130),
-        Accent = EZ_C(244, 114, 140), AccentDim = EZ_C(183, 86, 105),
+        Background = EZ_C(32, 15, 22), Card = EZ_C(42, 20, 29), CardHover = EZ_C(52, 26, 36),
+        Border = EZ_C(70, 34, 46), BorderHover = EZ_C(100, 50, 64), TabActive = EZ_C(58, 32, 20),
+        Text = EZ_C(246, 232, 226), TextDim = EZ_C(158, 124, 118),
+        Accent = EZ_C(250, 204, 21), AccentDim = EZ_C(196, 158, 12),
     },
     Mono = {
         Background = EZ_C(18, 18, 18), Card = EZ_C(26, 26, 26), CardHover = EZ_C(34, 34, 34),
@@ -69,28 +69,28 @@ local EZ_Themes = {
         Accent = EZ_C(238, 238, 238), AccentDim = EZ_C(179, 179, 179),
     },
     Amethyst = {
-        Background = EZ_C(24, 20, 31), Card = EZ_C(31, 26, 40), CardHover = EZ_C(39, 33, 50),
-        Border = EZ_C(52, 44, 66), BorderHover = EZ_C(78, 66, 99), TabActive = EZ_C(38, 30, 54),
-        Text = EZ_C(236, 232, 244), TextDim = EZ_C(140, 132, 156),
-        Accent = EZ_C(167, 139, 250), AccentDim = EZ_C(124, 99, 214),
+        Background = EZ_C(22, 17, 32), Card = EZ_C(29, 23, 42), CardHover = EZ_C(37, 30, 53),
+        Border = EZ_C(50, 42, 72), BorderHover = EZ_C(74, 62, 104), TabActive = EZ_C(40, 28, 62),
+        Text = EZ_C(238, 232, 248), TextDim = EZ_C(138, 128, 158),
+        Accent = EZ_C(192, 132, 252), AccentDim = EZ_C(147, 98, 196),
     },
     Rose = {
-        Background = EZ_C(26, 18, 24), Card = EZ_C(34, 24, 31), CardHover = EZ_C(43, 30, 39),
-        Border = EZ_C(58, 42, 53), BorderHover = EZ_C(87, 62, 79), TabActive = EZ_C(52, 28, 42),
-        Text = EZ_C(244, 232, 238), TextDim = EZ_C(156, 132, 143),
-        Accent = EZ_C(244, 114, 182), AccentDim = EZ_C(190, 74, 138),
+        Background = EZ_C(26, 14, 20), Card = EZ_C(35, 19, 27), CardHover = EZ_C(44, 25, 34),
+        Border = EZ_C(62, 34, 48), BorderHover = EZ_C(92, 50, 70), TabActive = EZ_C(52, 22, 38),
+        Text = EZ_C(248, 232, 238), TextDim = EZ_C(158, 128, 140),
+        Accent = EZ_C(244, 114, 182), AccentDim = EZ_C(190, 80, 138),
     },
     Aqua = {
-        Background = EZ_C(13, 22, 26), Card = EZ_C(18, 30, 36), CardHover = EZ_C(24, 38, 46),
-        Border = EZ_C(34, 52, 60), BorderHover = EZ_C(52, 78, 90), TabActive = EZ_C(16, 44, 52),
-        Text = EZ_C(228, 240, 244), TextDim = EZ_C(128, 148, 156),
-        Accent = EZ_C(34, 211, 238), AccentDim = EZ_C(14, 165, 187),
+        Background = EZ_C(8, 20, 20), Card = EZ_C(12, 27, 27), CardHover = EZ_C(17, 35, 35),
+        Border = EZ_C(28, 52, 50), BorderHover = EZ_C(42, 76, 73), TabActive = EZ_C(14, 42, 40),
+        Text = EZ_C(226, 242, 240), TextDim = EZ_C(116, 140, 138),
+        Accent = EZ_C(45, 212, 191), AccentDim = EZ_C(30, 160, 144),
     },
     Nocturne = {
-        Background = EZ_C(10, 12, 22), Card = EZ_C(15, 18, 32), CardHover = EZ_C(21, 25, 42),
-        Border = EZ_C(32, 38, 60), BorderHover = EZ_C(48, 57, 88), TabActive = EZ_C(18, 24, 48),
-        Text = EZ_C(228, 232, 246), TextDim = EZ_C(128, 136, 160),
-        Accent = EZ_C(99, 102, 241), AccentDim = EZ_C(79, 82, 205),
+        Background = EZ_C(9, 11, 22), Card = EZ_C(14, 17, 30), CardHover = EZ_C(20, 24, 40),
+        Border = EZ_C(30, 36, 58), BorderHover = EZ_C(46, 54, 86), TabActive = EZ_C(20, 24, 50),
+        Text = EZ_C(228, 232, 246), TextDim = EZ_C(122, 130, 156),
+        Accent = EZ_C(129, 140, 248), AccentDim = EZ_C(96, 105, 196),
     },
     Pumpkin = {
         Background = EZ_C(24, 17, 12), Card = EZ_C(32, 23, 16), CardHover = EZ_C(41, 29, 20),
