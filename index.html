@@ -17,7 +17,7 @@
         <a href="#about" class="logo">
             <span class="logo-mark">E</span>
             <span class="logo-name">Eazy UI</span>
-            <span class="version">v0.9.15</span>
+            <span class="version">v0.9.29</span>
         </a>
         <span class="logo-sub">docs</span>
     </div>
@@ -46,6 +46,7 @@
         <div class="nav-group">
             <h4>Elements</h4>
             <a href="#el-section">Section</a>
+            <a href="#el-banner">Banner</a>
             <a href="#el-divider">Divider</a>
             <a href="#el-paragraph">Paragraph</a>
             <a href="#el-label">Label</a>
@@ -112,14 +113,14 @@
         <h1>Eazy UI</h1>
         <p class="lead">One file. One loadstring. Zero dependencies.</p>
         <div class="hero-badges">
-            <span class="badge badge-green">v0.9.15</span>
+            <span class="badge badge-green">v0.9.29</span>
             <span class="badge">Single file</span>
             <span class="badge">Open source</span>
             <span class="badge">MIT</span>
         </div>
     </div>
 
-    <p>Eazy UI is a Lua library that ships the entire UI stack in a single file. You get a draggable window, a sidebar with tabs, thirteen interactive elements, six themes, persistent configs, a key system, a Discord prompt and a notification system.</p>
+    <p>Eazy UI is a Lua library that ships the entire UI stack in a single file. You get a draggable window, a sidebar with tabs, fourteen interactive elements, eleven themes, persistent configs, a key system, a Discord prompt and a notification system.</p>
 
     <p>You load it, create a window, add your elements. That is it. The code is open source and hosted on <a href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener">GitHub</a>.</p>
 
@@ -136,6 +137,7 @@ local Window = EZ:CreateWindow({
     Name = "My Hub",
     SubTitle = "by you",
     AutoLoad = true,
+    NotifyPosition = "BottomRight",
     Discord = {
         Enabled = true,
         Invite = "9VE4PXFDSg",
@@ -168,12 +170,12 @@ Tab:AddToggle({
 
     <div class="feature-grid">
         <div class="feature-card">
-            <h3>6 themes</h3>
-            <p>Default, Pitch, Light, Ocean, Sunset and Mono. Applied live to every open element and saved with configs.</p>
+            <h3>11 themes</h3>
+            <p>Default, Pitch, Light, Ocean, Sunset, Mono, Amethyst, Rose, Aqua, Nocturne and Pumpkin. Applied live to every open element and saved with configs.</p>
         </div>
         <div class="feature-card">
             <h3>Config system</h3>
-            <p>Auto save, named configs, load, delete and reset. Orphan fields from older configs are reported instead of ignored silently.</p>
+            <p>Auto save, named configs, load, delete and reset. Per-window autoload selection with Set/Clear Autoload buttons.</p>
         </div>
         <div class="feature-card">
             <h3>Key system</h3>
@@ -181,15 +183,15 @@ Tab:AddToggle({
         </div>
         <div class="feature-card">
             <h3>Notifications</h3>
-            <p>Toasts in four styles with optional action buttons and open and close callbacks.</p>
+            <p>Toasts in four styles with timer bar, optional action buttons, open/close callbacks and four position choices.</p>
         </div>
         <div class="feature-card">
-            <h3>Global dropdown</h3>
-            <p>One popup shared by every dropdown. Flips up near the bottom edge, clamps inside the window, closes on outside click and tab switch.</p>
+            <h3>Searchable dropdowns</h3>
+            <p>Toggle <code>Searchable = true</code> on any dropdown and get a filter box inside the popup. Great for long lists.</p>
         </div>
         <div class="feature-card">
-            <h3>13 elements</h3>
-            <p>Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section and Divider.</p>
+            <h3>14 elements</h3>
+            <p>Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section, Divider and Banner.</p>
         </div>
         <div class="feature-card">
             <h3>Discord prompt</h3>
@@ -202,6 +204,14 @@ Tab:AddToggle({
         <div class="feature-card">
             <h3>Executor safe</h3>
             <p>Filesystem, HTTP and hook calls are capability checked through <code>EZ.Compat</code>. Missing support disables the feature instead of crashing.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Accessibility</h3>
+            <p>Escape closes dropdowns. Sliders accept mouse wheel and arrow keys when hovered. Keybinds capture Ctrl/Shift/Alt modifiers.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Performance</h3>
+            <p>Repaint calls are batched through task.defer. Theme changes trigger one update pass, not one per element.</p>
         </div>
         <div class="feature-card">
             <h3>Window extras</h3>
@@ -223,6 +233,7 @@ Tab:AddToggle({
 
     <ul class="credit-list">
         <li><strong>Lucide Icons</strong> by WindUI. Icon set used for tabs and buttons, loaded as Roblox asset ids.</li>
+        <li><strong>Roboto Mono / JetBrains Mono</strong>. Monospace font used on code inputs and version tags.</li>
         <li><strong>Roblox TweenService</strong>. Engine service used for every animation.</li>
     </ul>
 
@@ -288,6 +299,7 @@ local Window = EZ:CreateWindow({
     ConfigId = "EazyDemo",
     MinimizeKey = Enum.KeyCode.RightShift,
     AutoLoad = true,
+    NotifyPosition = "BottomRight",
     Discord = {
         Enabled = true,
         Invite = "9VE4PXFDSg",
@@ -321,6 +333,7 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
         <div class="param"><code>ConfigId</code><span>"EazyDemo"</span></div>
         <div class="param"><code>MinimizeKey</code><span>RightShift</span></div>
         <div class="param"><code>AutoLoad</code><span>true, loads saved config on start</span></div>
+        <div class="param"><code>NotifyPosition</code><span>"BottomRight"</span></div>
         <div class="param"><code>Discord</code><span>shows prompt with copy link</span></div>
     </div>
 
@@ -344,8 +357,9 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
             <tr><td><code>Size</code></td><td>UDim2</td><td><code>620x440</code></td><td>Window size in offsets.</td></tr>
             <tr><td><code>MinimizeKey</code></td><td>KeyCode</td><td><code>RightControl</code></td><td>Hotkey that hides and shows the window.</td></tr>
             <tr><td><code>ConfigId</code></td><td>string</td><td><code>PlaceId</code></td><td>Prefix of config files. Fix it to keep configs across places.</td></tr>
-            <tr><td><code>AutoLoad</code></td><td>boolean</td><td><code>true</code></td><td>Loads the "default" config automatically on script start.</td></tr>
+            <tr><td><code>AutoLoad</code></td><td>boolean</td><td><code>true</code></td><td>Loads the autoload config automatically on script start.</td></tr>
             <tr><td><code>Transparency</code></td><td>number</td><td><code>0</code></td><td>Initial transparency, 0 to 0.9.</td></tr>
+            <tr><td><code>NotifyPosition</code></td><td>string</td><td><code>"BottomRight"</code></td><td>One of BottomRight, BottomLeft, TopRight, TopLeft.</td></tr>
             <tr><td><code>LoadingTitle</code></td><td>string</td><td><code>nil</code></td><td>Shows the loading screen when set.</td></tr>
             <tr><td><code>LoadingSubtitle</code></td><td>string</td><td><code>""</code></td><td>Loading screen subtitle.</td></tr>
             <tr><td><code>LoadingDuration</code></td><td>number</td><td><code>2</code></td><td>Loading screen duration in seconds.</td></tr>
@@ -369,6 +383,7 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
     MinimizeKey = Enum.KeyCode.RightShift,
     ConfigId = "FTF_Premium",
     AutoLoad = true,
+    NotifyPosition = "BottomRight",
     LoadingTitle = "FTF Premium",
     LoadingSubtitle = "Loading your hub...",
     Discord = {
@@ -386,6 +401,7 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
         <div class="param"><code>MinimizeKey</code><span>Enum.KeyCode.RightShift</span></div>
         <div class="param"><code>ConfigId</code><span>"FTF_Premium"</span></div>
         <div class="param"><code>AutoLoad</code><span>true</span></div>
+        <div class="param"><code>NotifyPosition</code><span>"BottomRight"</span></div>
         <div class="param"><code>LoadingTitle</code><span>"FTF Premium"</span></div>
         <div class="param"><code>LoadingSubtitle</code><span>"Loading your hub..."</span></div>
         <div class="param"><code>Discord.Invite</code><span>"9VE4PXFDSg"</span></div>
@@ -406,8 +422,9 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
             <span class="code-lang">lua</span>
             <button class="copy-btn" data-target="code-tabs">Copy</button>
         </div>
-        <pre><code id="code-tabs">local Main = Window:AddTab({ Title = "Main", Icon = "zap" })
+        <pre><code id="code-tabs">local Main = Window:AddTab({ Title = "Main", Icon = "home" })
 local Visual = Window:AddTab({ Title = "Visual", Icon = "eye" })
+local Teleport = Window:AddTab({ Title = "Teleport", Icon = "navigation" })
 local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code></pre>
     </div>
 
@@ -419,6 +436,7 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
 
     <h3>Built in icon names</h3>
     <div class="icon-grid">
+        <span class="ic">house</span>
         <span class="ic">home</span>
         <span class="ic">settings</span>
         <span class="ic">cog</span>
@@ -458,21 +476,24 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
         <span class="ic">target</span>
         <span class="ic">crosshair</span>
         <span class="ic">globe</span>
-        <span class="ic">link</span>
-        <span class="ic">github</span>
+        <span class="ic">navigation</span>
         <span class="ic">trophy</span>
         <span class="ic">crown</span>
         <span class="ic">gamepad</span>
+        <span class="ic">biceps-flexed</span>
+        <span class="ic">skull</span>
+        <span class="ic">tree-palm</span>
+        <span class="ic">trending-up</span>
     </div>
 
-    <p>You can also pass any asset directly: <code>Icon = "rbxassetid://123456"</code> or <code>Icon = 123456</code>.</p>
+    <p>You can also pass any asset directly: <code>Icon = "rbxassetid://123456"</code> or <code>Icon = 123456</code>. Prefix with the set name to force a set: <code>Icon = "lucide:house"</code>.</p>
 </section>
 
 <section class="page" id="themes">
     <div class="page-hero">
         <span class="eyebrow">UI</span>
         <h1>Themes</h1>
-        <p class="lead">Six themes, applied live to everything on screen.</p>
+        <p class="lead">Eleven themes, applied live to everything on screen.</p>
     </div>
 
     <div class="code-block">
@@ -480,7 +501,7 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
             <span class="code-lang">lua</span>
             <button class="copy-btn" data-target="code-theme">Copy</button>
         </div>
-        <pre><code id="code-theme">EZ:SetTheme("Ocean")
+        <pre><code id="code-theme">EZ:SetTheme("Amethyst")
 EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
     </div>
 
@@ -495,12 +516,17 @@ EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
             <tr><th>Theme</th><th>Look</th><th>Aliases</th></tr>
         </thead>
         <tbody>
-            <tr><td><code>Default</code></td><td>Dark with green accent</td><td><code>default</code>, <code>padrao</code></td></tr>
-            <tr><td><code>Pitch</code></td><td>Near black, OLED friendly</td><td><code>pitch</code>, <code>dark</code>, <code>escuro</code></td></tr>
-            <tr><td><code>Light</code></td><td>Clean light mode</td><td><code>light</code>, <code>claro</code></td></tr>
-            <tr><td><code>Ocean</code></td><td>Deep blue</td><td><code>ocean</code>, <code>oceano</code></td></tr>
-            <tr><td><code>Sunset</code></td><td>Warm pink</td><td><code>sunset</code></td></tr>
-            <tr><td><code>Mono</code></td><td>Grayscale</td><td><code>mono</code></td></tr>
+            <tr><td><code>Default</code></td><td>Dark with emerald accent</td><td><code>default</code>, <code>padrao</code></td></tr>
+            <tr><td><code>Pitch</code></td><td>Near black OLED with red accent</td><td><code>pitch</code>, <code>dark</code>, <code>escuro</code></td></tr>
+            <tr><td><code>Light</code></td><td>Clean light mode with blue accent</td><td><code>light</code>, <code>claro</code></td></tr>
+            <tr><td><code>Ocean</code></td><td>Deep navy with sky blue</td><td><code>ocean</code>, <code>oceano</code></td></tr>
+            <tr><td><code>Sunset</code></td><td>Warm wine with golden accent</td><td><code>sunset</code></td></tr>
+            <tr><td><code>Mono</code></td><td>Pure grayscale</td><td><code>mono</code></td></tr>
+            <tr><td><code>Amethyst</code></td><td>Violet purple with bright purple</td><td><code>amethyst</code>, <code>ametista</code></td></tr>
+            <tr><td><code>Rose</code></td><td>Dark pink with hot pink</td><td><code>rose</code>, <code>rosa</code></td></tr>
+            <tr><td><code>Aqua</code></td><td>Deep teal with turquoise</td><td><code>aqua</code>, <code>agua</code></td></tr>
+            <tr><td><code>Nocturne</code></td><td>Midnight blue with indigo</td><td><code>nocturne</code>, <code>noite</code></td></tr>
+            <tr><td><code>Pumpkin</code></td><td>Warm brown with orange</td><td><code>pumpkin</code>, <code>abobora</code></td></tr>
         </tbody>
     </table>
 
@@ -532,13 +558,11 @@ Window:BuildConfigSection(Settings)</code></pre>
         <div class="param"><code>tab</code><span>the tab object returned by AddTab</span></div>
     </div>
 
-    <p>That single call builds the auto save toggle, config name input, save, load, delete and reset buttons, the saved configs dropdown, the minimize keybind, the transparency slider and the theme dropdown. Calling it twice on the same tab does nothing.</p>
+    <p>That single call builds: auto save toggle, config name input, save/load/delete/reset buttons, saved configs dropdown, minimize keybind, transparency slider, theme dropdown and two buttons to set or clear the autoload config. Calling it twice on the same tab does nothing.</p>
 
     <h3>Auto load behavior</h3>
 
-    <p>By default, <code>CreateWindow</code> loads the config named "default" right after the window is built. This happens after all elements are registered, so every toggle, slider and keybind restores its saved value.</p>
-
-    <p>To disable auto load for a specific window:</p>
+    <p>By default, <code>CreateWindow</code> loads the autoload config right after the window is built. Use <strong>Set Autoload Config</strong> in the settings tab to pick which config loads on startup. Use <strong>Clear Autoload</strong> to go back to the default name.</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -548,12 +572,10 @@ Window:BuildConfigSection(Settings)</code></pre>
         <pre><code id="code-cfg-noload">local Window = EZ:CreateWindow({
     Name = "Manual Hub",
     AutoLoad = false,
-})</code></pre>
-    </div>
+})
 
-    <h4>Parameters used</h4>
-    <div class="params-grid">
-        <div class="param"><code>AutoLoad</code><span>false, config must be loaded manually</span></div>
+-- Then load manually:
+Window:LoadConfig("pvp")</code></pre>
     </div>
 
     <h3>Manual API</h3>
@@ -694,7 +716,7 @@ end</code></pre>
     <div class="page-hero">
         <span class="eyebrow">UI</span>
         <h1>Notifications</h1>
-        <p class="lead"><code>EZ:Notify(options)</code> shows a toast at the bottom right.</p>
+        <p class="lead"><code>EZ:Notify(options)</code> shows a toast at the chosen corner.</p>
     </div>
 
     <table class="options-table">
@@ -704,13 +726,15 @@ end</code></pre>
         <tbody>
             <tr><td><code>Title</code></td><td>string</td><td><code>"Eazy UI"</code></td><td>Bold line.</td></tr>
             <tr><td><code>Content</code></td><td>string</td><td><code>""</code></td><td>Body text, wraps on its own.</td></tr>
-            <tr><td><code>Duration</code></td><td>number</td><td><code>3</code></td><td>Seconds on screen. 0 keeps it until dismissed by code.</td></tr>
+            <tr><td><code>Duration</code></td><td>number</td><td><code>3</code></td><td>Seconds on screen. 0 keeps it until dismissed by code. A timer bar shows remaining time.</td></tr>
             <tr><td><code>Style</code></td><td>string</td><td><code>"Info"</code></td><td>Info, Success, Warning, Error.</td></tr>
             <tr><td><code>Buttons</code></td><td>table</td><td><code>{}</code></td><td>List of <code>{ Title, Callback }</code>, up to two.</td></tr>
             <tr><td><code>OnOpen</code></td><td>function</td><td><code>nil</code></td><td>Fires when the toast appears.</td></tr>
             <tr><td><code>OnClose</code></td><td>function</td><td><code>nil</code></td><td>Receives "Timeout" or "Action".</td></tr>
         </tbody>
     </table>
+
+    <p>The position of all notifications is set per window in <code>CreateWindow({ NotifyPosition = "TopRight" })</code>. Options are <code>BottomRight</code> (default), <code>BottomLeft</code>, <code>TopRight</code> and <code>TopLeft</code>.</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -735,22 +759,13 @@ EZ:Notify({
     },
 })</code></pre>
     </div>
-
-    <h4>Parameters used</h4>
-    <div class="params-grid">
-        <div class="param"><code>Title</code><span>"Config", "Update"</span></div>
-        <div class="param"><code>Content</code><span>short message body</span></div>
-        <div class="param"><code>Style</code><span>Success, Warning</span></div>
-        <div class="param"><code>Duration</code><span>2 and 10 seconds</span></div>
-        <div class="param"><code>Buttons</code><span>array of action objects</span></div>
-    </div>
 </section>
 
 <section class="page" id="el-section">
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Section</h1>
-        <p class="lead">Uppercase header with side lines to split a tab into blocks.</p>
+        <p class="lead">Uppercase header with accent bar and chevron. Clickable to collapse everything below it until the next section.</p>
     </div>
     <div class="code-block">
         <div class="code-header">
@@ -764,6 +779,38 @@ sec:Set("visuals")</code></pre>
     <div class="params-grid">
         <div class="param"><code>Title</code><span>string, required</span></div>
         <div class="param"><code>Set(text)</code><span>rename later</span></div>
+    </div>
+    <p>The chevron rotates 90 degrees when collapsed. Everything between this section and the next one toggles visibility together. Sections do not nest.</p>
+</section>
+
+<section class="page" id="el-banner">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Banner</h1>
+        <p class="lead">Decorative header card with background image, title and subtitle.</p>
+    </div>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-banner">Copy</button>
+        </div>
+        <pre><code id="code-el-banner">Tab:AddBanner({
+    Height = 110,
+    Image = "rbxassetid://123456",
+    Title = "Welcome back",
+    SubTitle = "Your hub is ready",
+    TextColor = Color3.fromRGB(255, 255, 255),
+    SubColor = Color3.fromRGB(200, 200, 200),
+})</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Height</code><span>number, default 90</span></div>
+        <div class="param"><code>Image</code><span>rbxassetid string, optional</span></div>
+        <div class="param"><code>Title</code><span>string, optional</span></div>
+        <div class="param"><code>SubTitle</code><span>string, optional</span></div>
+        <div class="param"><code>TextColor</code><span>Color3, optional</span></div>
+        <div class="param"><code>SubColor</code><span>Color3, optional</span></div>
     </div>
 </section>
 
@@ -910,7 +957,7 @@ btn:SetTitle("Done")</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Slider</h1>
-        <p class="lead">Drag or click the track. The value label updates live.</p>
+        <p class="lead">Drag, click the track, scroll or use arrow keys. The value label updates live and is also clickable to type an exact value.</p>
     </div>
     <table class="options-table">
         <thead>
@@ -948,37 +995,57 @@ slider:Set(100)</code></pre>
         <div class="param"><code>Flag</code><span>"WalkSpeed"</span></div>
         <div class="param"><code>Set(number, silent)</code><span>programmatic value</span></div>
     </div>
+    <div class="callout callout-tip">
+        <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <div class="callout-body">Hover the slider and use mouse wheel or arrow keys for fine tuning. Click the value label in the top right to type an exact number.</div>
+    </div>
 </section>
 
 <section class="page" id="el-dropdown">
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Dropdown</h1>
-        <p class="lead">Backed by the global popup: flips, clamps and closes on outside click.</p>
+        <p class="lead">Backed by the global popup: flips, clamps, closes on outside click or Escape.</p>
     </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td><code>"Dropdown"</code></td><td>Row title.</td></tr>
+            <tr><td><code>Description</code></td><td>string</td><td><code>""</code></td><td>Optional second line.</td></tr>
+            <tr><td><code>Values</code></td><td>table</td><td><code>{}</code></td><td>Array of options.</td></tr>
+            <tr><td><code>Default</code></td><td>string</td><td><code>nil</code></td><td>Initial selection.</td></tr>
+            <tr><td><code>Searchable</code></td><td>boolean</td><td><code>false</code></td><td>Adds a filter input inside the popup.</td></tr>
+            <tr><td><code>Flag</code></td><td>string</td><td><code>nil</code></td><td>Enables config saving.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(v)</td><td><code>nil</code></td><td>Fires on pick.</td></tr>
+        </tbody>
+    </table>
     <div class="code-block">
         <div class="code-header">
             <span class="code-lang">lua</span>
             <button class="copy-btn" data-target="code-el-drop">Copy</button>
         </div>
         <pre><code id="code-el-drop">local drop = Tab:AddDropdown({
-    Title = "Target",
-    Description = "Who to aim at",
-    Values = { "Closest", "Lowest HP", "Random" },
-    Default = "Closest",
-    Flag = "Target",
+    Title = "Server Region",
+    Description = "Pick your region",
+    Values = { "Auto", "NA-East", "NA-West", "EU-West", "EU-East", "BR", "Asia", "OCE" },
+    Default = "Auto",
+    Searchable = true,
+    Flag = "Region",
     Callback = function(v) print(v) end,
 })
-drop:Set("Random")
+drop:Set("NA-East")
 drop:SetValues({ "Closest", "Strongest" })</code></pre>
     </div>
     <h4>Parameters used</h4>
     <div class="params-grid">
-        <div class="param"><code>Title</code><span>"Target"</span></div>
-        <div class="param"><code>Description</code><span>"Who to aim at"</span></div>
+        <div class="param"><code>Title</code><span>"Server Region"</span></div>
         <div class="param"><code>Values</code><span>array of options</span></div>
-        <div class="param"><code>Default</code><span>"Closest"</span></div>
-        <div class="param"><code>Flag</code><span>"Target"</span></div>
+        <div class="param"><code>Searchable</code><span>true, enables filter input</span></div>
         <div class="param"><code>Set(value)</code><span>programmatic pick</span></div>
         <div class="param"><code>SetValues(array)</code><span>replace options at runtime</span></div>
     </div>
@@ -1071,7 +1138,7 @@ bar:Set(42)</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Color Picker</h1>
-        <p class="lead">Swatch that expands into R, G and B sliders. Callbacks are debounced at 80ms.</p>
+        <p class="lead">Swatch that expands into R, G and B sliders plus an editable hex box. Callbacks are debounced at 80ms.</p>
     </div>
     <div class="code-block">
         <div class="code-header">
@@ -1093,13 +1160,14 @@ picker:Set(Color3.fromRGB(255, 0, 0))</code></pre>
         <div class="param"><code>Flag</code><span>"ESPColor"</span></div>
         <div class="param"><code>Set(Color3, silent)</code><span>programmatic color</span></div>
     </div>
+    <p>The expanded panel has an <code>#RRGGBB</code> input at the top. Press Enter to parse and apply the hex value. Invalid input is ignored.</p>
 </section>
 
 <section class="page" id="el-keybind">
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Keybind</h1>
-        <p class="lead">Click, press a key, done. Escape cancels. The bind fires globally, ignored while typing.</p>
+        <p class="lead">Click, press a key, done. Escape cancels. The bind fires globally, ignored while typing. Modifier keys (Ctrl, Shift, Alt) are captured together with the main key.</p>
     </div>
     <div class="code-block">
         <div class="code-header">
@@ -1121,6 +1189,7 @@ bind:Set(Enum.KeyCode.F1)</code></pre>
         <div class="param"><code>Flag</code><span>"HubBind"</span></div>
         <div class="param"><code>Set(KeyCode, silent)</code><span>programmatic bind</span></div>
     </div>
+    <p>Hold Ctrl, Shift or Alt while pressing the key and the binding becomes a combo like <code>Ctrl+K</code>. The callback only fires when the same modifiers are held at trigger time.</p>
 </section>
 
 <section class="page" id="utilities">
@@ -1201,6 +1270,17 @@ end</code></pre>
         </div>
     </div>
 
+    <div class="showcase-card">
+        <div class="showcase-info">
+            <span class="badge badge-green">Built with Eazy UI</span>
+            <h3>Muscle Legends Hub</h3>
+            <p>Automation hub for Muscle Legends. Auto train, auto machines, teleport to gyms, auto kill players with whitelist, auto rebirth and a full stats panel.</p>
+            <div class="showcase-links">
+                <a class="btn" href="https://github.com/akiradv/scriptsroblox" target="_blank" rel="noopener">View source</a>
+            </div>
+        </div>
+    </div>
+
     <h3>Run the example</h3>
     <p id="showcase-status" class="showcase-status">Checking example.lua in the repository...</p>
     <div class="code-block">
@@ -1238,6 +1318,7 @@ local Window = EZ:CreateWindow({
     ConfigId = "EazyShowcase",
     MinimizeKey = Enum.KeyCode.RightShift,
     AutoLoad = true,
+    NotifyPosition = "BottomRight",
     Discord = {
         Enabled = true,
         Invite = "9VE4PXFDSg",
@@ -1248,10 +1329,15 @@ local Window = EZ:CreateWindow({
 })
 
 local Main = Window:AddTab({ Title = "Main", Icon = "home" })
+Main:AddBanner({
+    Height = 90,
+    Title = "Welcome back",
+    SubTitle = "Every element of Eazy UI, live in one tab.",
+})
 Main:AddSection({ Title = "general" })
 Main:AddParagraph({
     Title = "Welcome",
-    Content = "Every element of Eazy UI, live in one tab.",
+    Content = "Click around and see what saves.",
 })
 Main:AddLabel("Status: ready")
 Main:AddDivider()
@@ -1270,8 +1356,10 @@ Main:AddSlider({
 })
 Main:AddDropdown({
     Title = "Server Region",
-    Values = { "Auto", "NA", "EU", "BR" },
+    Description = "Pick one (has search box)",
+    Values = { "Auto", "NA", "EU", "BR", "Asia", "OCE" },
     Default = "Auto",
+    Searchable = true,
     Flag = "EX_Region",
     Callback = print,
 })
@@ -1294,6 +1382,7 @@ Visual:AddSection({ Title = "world" })
 Visual:AddToggle({ Title = "Fullbright", Flag = "EX_Fullbright", Callback = print })
 Visual:AddColorPicker({
     Title = "Ambient Color",
+    Description = "Click the swatch to expand",
     Default = Color3.fromRGB(16, 185, 129),
     Flag = "EX_Ambient",
     Callback = print,
@@ -1315,6 +1404,7 @@ Combat:AddSlider({
 })
 Combat:AddKeybind({
     Title = "Panic Key",
+    Description = "Hold Ctrl/Shift/Alt for combos",
     Default = Enum.KeyCode.K,
     Flag = "EX_Panic",
     Callback = function() Window:SetMinimized(true) end,
@@ -1339,11 +1429,41 @@ EZ:Notify({
         <p class="lead">Release history.</p>
     </div>
 
+    <h3>v0.9.29</h3>
+    <ul>
+        <li>Sections redesigned with colored accent bar and rotating chevron. Click the section header to collapse everything below it.</li>
+        <li>Sections no longer use the mono font, now consistent with the rest of the library.</li>
+        <li>Banner element added for decorative headers with background image, title and subtitle.</li>
+        <li>Searchable dropdowns: pass <code>Searchable = true</code> and get a filter input inside the popup.</li>
+        <li>Color picker now has an editable hex input at the top of the expanded panel.</li>
+        <li>Keybinds capture Ctrl, Shift and Alt modifiers and require them at trigger time.</li>
+        <li>Slider value label is clickable to open a typed input for exact values.</li>
+        <li>Sliders accept mouse wheel and arrow keys when hovered.</li>
+        <li>Config system has Set Autoload and Clear Autoload buttons.</li>
+        <li><code>NotifyPosition</code> option on <code>CreateWindow</code>: BottomRight, BottomLeft, TopRight, TopLeft.</li>
+        <li>Notifications show a timer bar that shrinks as the duration passes.</li>
+        <li>Repaint calls are batched through <code>task.defer</code> for better performance on theme changes.</li>
+        <li>Escape key closes open dropdowns.</li>
+        <li>Dropdown trigger shows hover stroke for better feedback.</li>
+        <li>Unified easing tokens (EZ_Ease) for consistent animation feel across the library.</li>
+        <li>Fixed <code>PaddingLeft</code> using <code>UDim2</code> instead of <code>UDim</code> in tab pages.</li>
+        <li>Icon set expanded: <code>home</code> alias for <code>house</code>, <code>navigation</code> icon added.</li>
+    </ul>
+
+    <h3>v0.9.16 to v0.9.28</h3>
+    <ul>
+        <li>Expanded themes from six to eleven (Amethyst, Rose, Aqua, Nocturne, Pumpkin).</li>
+        <li>Theme palettes reworked so each has a distinct identity and accent family.</li>
+        <li>Key system cache TTL now configurable via <code>KeyDuration</code>.</li>
+        <li>Orphan field detection reports the exact count of skipped fields on load.</li>
+        <li>Config dropdown syncs with newly saved configs without reloading.</li>
+        <li>Various bug fixes around dropdown positioning near window edges.</li>
+    </ul>
+
     <h3>v0.9.15</h3>
     <ul>
         <li>Discord prompt redesigned: accent stroke, big icon, copy link button instead of open in browser.</li>
         <li>New <code>AutoLoad</code> option on <code>CreateWindow</code>, defaults to true.</li>
-        <li>Removed <code>RememberJoins</code> from the Discord prompt.</li>
         <li>example.lua moved to the repository root; Showcase loadstring and live check now point to it.</li>
     </ul>
 
@@ -1381,7 +1501,7 @@ EZ:Notify({
                 <span class="logo-name">Eazy UI</span>
             </div>
             <p>Open source Roblox GUI library. One file, zero dependencies. Built to keep scripting easy.</p>
-            <span class="badge badge-green">v0.9.15</span>
+            <span class="badge badge-green">v0.9.29</span>
         </div>
         <div class="footer-col">
             <h5>Docs</h5>
@@ -1416,7 +1536,7 @@ EZ:Notify({
         </div>
     </div>
     <div class="footer-bottom">
-        <span>2026 Akira Dev. Eazy UI v0.9.15.</span>
+        <span>2026 Akira Dev. Eazy UI v0.9.29.</span>
         <span>Not affiliated with Roblox Corporation.</span>
     </div>
 </footer>
