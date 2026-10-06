@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.30
+    Eazy UI v0.9.31
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.30"
+EZ.Version = "0.9.31"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -469,7 +469,7 @@ local function EZ_AddStroke(parent, color, thickness)
     s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
     table.insert(EZ_StrokeSurf, s)
-    s.Transparency = EZ_GlobalTransparency
+    s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 1.8, 0, 1)
     EZ_Paint(function()
         if isTextObj and parent:IsA("TextBox") then
             if UserInputService:GetFocusedTextBox() ~= parent then
@@ -498,7 +498,7 @@ local function EZ_ApplyTransparency(t)
     end
     for _, s in ipairs(EZ_StrokeSurf) do
         if s.Parent then
-            s.Transparency = EZ_GlobalTransparency
+            s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 1.8, 0, 1)
         end
     end
 end
@@ -866,18 +866,19 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     gui.DisplayOrder = 300
     gui.Parent = EZ_GuiParent()
     EZ_Hide(gui)
-    local backdrop = Instance.new("Frame")
-    backdrop.Size = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3 = EZ_Theme.Background
-    backdrop.BackgroundTransparency = 0.15
-    backdrop.BorderSizePixel = 0
-    backdrop.Parent = gui
+    local card = Instance.new("Frame")
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.new(0.5, 0, 0.5, 0)
+    card.Size = UDim2.fromOffset(460, 170)
+    card.BackgroundColor3 = EZ_Theme.Background
+    card.BorderSizePixel = 0
+    card.Parent = gui
+    EZ_AddRadius(card, EZ_Theme.RadiusWindow)
+    local cardStroke = EZ_AddStroke(card, EZ_Theme.Border)
     local holder = Instance.new("Frame")
-    holder.AnchorPoint = Vector2.new(0.5, 0.5)
-    holder.Position = UDim2.new(0.5, 0, 0.5, 0)
-    holder.Size = UDim2.fromOffset(420, 150)
+    holder.Size = UDim2.new(1, 0, 1, 0)
     holder.BackgroundTransparency = 1
-    holder.Parent = gui
+    holder.Parent = card
     local lay = Instance.new("UIListLayout")
     lay.FillDirection = Enum.FillDirection.Vertical
     lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -887,7 +888,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local letter, fadeProp
     if EZ_LogoAsset then
         letter = Instance.new("ImageLabel")
-        letter.Size = UDim2.fromOffset(64, 64)
+        letter.Size = UDim2.fromOffset(56, 56)
         letter.BackgroundTransparency = 1
         letter.Image = EZ_LogoAsset
         letter.ScaleType = Enum.ScaleType.Fit
@@ -940,7 +941,8 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     TweenService:Create(letter, outInfo, { [fadeProp] = 1 }):Play()
     TweenService:Create(titleLabel, outInfo, { TextTransparency = 1 }):Play()
     TweenService:Create(subLabel, outInfo, { TextTransparency = 1 }):Play()
-    TweenService:Create(backdrop, outInfo, { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(card, outInfo, { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(cardStroke, outInfo, { Transparency = 1 }):Play()
     task.wait(0.32)
     gui:Destroy()
 end
@@ -1787,6 +1789,7 @@ function EZ:CreateWindow(options)
                 bar.BackgroundColor3 = EZ_Theme.Accent
                 bar.BorderSizePixel = 0
                 bar.Parent = holder
+                EZ_RegTrans(bar, 1)
                 EZ_AddRadius(bar, 2)
                 EZ_Paint(function() bar.BackgroundColor3 = EZ_Theme.Accent end)
                 local t = Instance.new("TextLabel")
