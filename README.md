@@ -5,13 +5,11 @@ Open-source Roblox GUI library. One file, zero dependencies.
 Built and maintained by [Akira Dev](https://github.com/akiradv).
 
 ## Loadstring
-
 ```lua
 local EZ = loadstring(game:HttpGet("https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"))()
 ```
 
 ## Quick Start
-
 ```lua
 local EZ = loadstring(game:HttpGet("https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"))()
 
@@ -19,6 +17,7 @@ local Window = EZ:CreateWindow({
     Name = "My Hub",
     SubTitle = "by you",
     AutoLoad = true,
+    NotifyPosition = "BottomRight",
     Discord = {
         Enabled = true,
         Invite = "9VE4PXFDSg",
@@ -40,14 +39,21 @@ Window:BuildConfigSection(Settings)
 
 ## Features
 
-- 6 themes (Default, Pitch, Light, Ocean, Sunset, Mono) with aliases
-- 13 elements: Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section, Divider
-- Persistent configs with auto-save, named files and orphan-field warnings
+- **11 themes** (Default, Pitch, Light, Ocean, Sunset, Mono, Amethyst, Rose, Aqua, Nocturne, Pumpkin) with aliases for quick switching
+- **14 elements**: Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section, Divider, Banner
+- **Collapsible sections** with colored accent bar and rotating chevron
+- **Searchable dropdowns** - add `Searchable = true` for a filter input inside the popup
+- **Color picker with hex input** - expand the panel and type `#RRGGBB` values
+- **Keybinds with modifiers** - capture Ctrl, Shift, Alt combos
+- **Editable sliders** - click the value label to type exact numbers, use mouse wheel or arrow keys when hovered
+- **Notifications with 4 positions** - BottomRight, BottomLeft, TopRight, TopLeft with timer bar
+- Persistent configs with auto-save, named files, orphan-field warnings and per-window autoload selection
 - Key system with custom validator and local cache with expiry
 - Discord prompt that copies the invite link to the clipboard
-- Global dropdown popup that flips, clamps and closes on outside click
+- Global dropdown popup that flips, clamps and closes on outside click or Escape
 - Notifications with 4 styles and optional action buttons
 - Loading screen, minimize hotkey, transparency 0-90%
+- **Performance optimized** - repaint calls batched through task.defer
 - Executor-safe: every filesystem, HTTP and hook call is capability-checked
 
 ## Documentation
@@ -64,7 +70,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/akiradv/eazyuilib/mai
 
 ## Showcase
 
-[FTF Premium Hub](https://github.com/akiradv/scriptsroblox) - Full hub for Flee The Facility with auto hack, ESPs, teleports and configs. The same hub used to test every library release.
+- **[FTF Premium Hub](https://github.com/akiradv/scriptsroblox)** - Full hub for Flee The Facility with auto hack, ESPs, teleports and configs. The same hub used to test every library release.
+- **[Muscle Legends Hub](https://github.com/akiradv/scriptsroblox)** - Automation hub for Muscle Legends with auto train, auto machines, teleport to gyms, auto kill players with whitelist, auto rebirth and a full stats panel.
 
 ## Credits
 
