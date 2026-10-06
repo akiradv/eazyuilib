@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.31
+    Eazy UI v0.9.32
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.31"
+EZ.Version = "0.9.32"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -469,7 +469,7 @@ local function EZ_AddStroke(parent, color, thickness)
     s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
     table.insert(EZ_StrokeSurf, s)
-    s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 1.8, 0, 1)
+    s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 2, 0, 1)
     EZ_Paint(function()
         if isTextObj and parent:IsA("TextBox") then
             if UserInputService:GetFocusedTextBox() ~= parent then
@@ -498,7 +498,7 @@ local function EZ_ApplyTransparency(t)
     end
     for _, s in ipairs(EZ_StrokeSurf) do
         if s.Parent then
-            s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 1.8, 0, 1)
+            s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 2, 0, 1)
         end
     end
 end
@@ -1457,6 +1457,7 @@ function EZ:CreateWindow(options)
         tline.BackgroundColor3 = EZ_Theme.Border
         tline.BorderSizePixel = 0
         tline.Parent = titlebar
+        EZ_RegTrans(tline, 1)
         EZ_Paint(function() tline.BackgroundColor3 = EZ_Theme.Border end)
 
         local logoLetter
@@ -1596,8 +1597,9 @@ function EZ:CreateWindow(options)
         sline.Size = UDim2.new(0, 1, 1, -EZ_TITLEBAR_HEIGHT)
         sline.Position = UDim2.new(0, EZ_SIDEBAR_WIDTH - 1, 0, EZ_TITLEBAR_HEIGHT)
         sline.BackgroundColor3 = EZ_Theme.Border
-        sline.BorderSizePixel = 0
-        sline.Parent = frame
+        tline.BorderSizePixel = 0
+        tline.Parent = titlebar
+        EZ_RegTrans(tline, 1)
         EZ_Paint(function() sline.BackgroundColor3 = EZ_Theme.Border end)
 
         local content = Instance.new("Frame")
@@ -1843,6 +1845,7 @@ function EZ:CreateWindow(options)
                 div.BackgroundColor3 = EZ_Theme.Border
                 div.BorderSizePixel = 0
                 div.Parent = page
+                EZ_RegTrans(div, 1)
                 EZ_Paint(function() div.BackgroundColor3 = EZ_Theme.Border end)
                 local obj = {}
                 function obj:Set(v) div.Visible = v end
