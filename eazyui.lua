@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.34
+    Eazy UI v0.9.35
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.34"
+EZ.Version = "0.9.35"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -2250,7 +2250,9 @@ function EZ:CreateWindow(options)
                 end
                 act.MouseButton1Click:Connect(function() obj:Fire() end)
                 act.MouseButton2Click:Connect(function() rightCb(obj) end)
-                act.MouseButton3Click:Connect(function() middleCb(obj) end)
+                EZ_Connect(act, act.InputBegan, function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton3 then middleCb(obj) end
+                end)
                 function obj:SetTitle(t) act.Text = t or "" end
                 obj._row = row
                 return obj
