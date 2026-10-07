@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.33
+    Eazy UI v0.9.34
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.33"
+EZ.Version = "0.9.34"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -269,10 +269,14 @@ function EZ:SetTheme(name)
 end
 
 function EZ:SetAccent(color)
-    EZ_Theme.Accent = color
-    local r, g, b = color.R * 255, color.G * 255, color.B * 255
-    EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
-    EZ_Repaint()
+    if EZ_CurrentWindow then
+        EZ_CurrentWindow:SetAccent(color)
+    else
+        EZ_Theme.Accent = color
+        local r, g, b = color.R * 255, color.G * 255, color.B * 255
+        EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
+        EZ_Repaint()
+    end
 end
 
 EZ.Compat = {
@@ -558,7 +562,7 @@ local function EZ_AddStroke(parent, color, thickness)
     s.ApplyStrokeMode = isTextObj and Enum.ApplyStrokeMode.Border or Enum.ApplyStrokeMode.Contextual
     s.Parent = parent
     table.insert(EZ_StrokeSurf, s)
-    s.Transparency = EZ_GlobalTransparency
+    s.Transparency = EZ_Clamp(EZ_GlobalTransparency * 2, 0, 1)
     EZ_Paint(function()
         if isTextObj and parent:IsA("TextBox") then
             if UserInputService:GetFocusedTextBox() ~= parent then
@@ -1369,8 +1373,10 @@ function EZ:Notify(options)
     local buttons = options.Buttons or {}
     local onOpen = options.OnOpen
     local onClose = options.OnClose
-    local hasButtons = #buttons > 0
-    local height = hasButtons and 92 or 66
+    local inputCallback = options.InputCallback
+    local hasInput = options.Input == true
+    local hasButtons = #buttons > 0 or hasInput
+    local height = hasInput and 110 or (hasButtons and 92 or 66)
     local styleColor = EZ_Theme.Info
     if style == "success" then styleColor = EZ_Theme.Success
     elseif style == "warning" then styleColor = EZ_Theme.Warning
@@ -1423,7 +1429,37 @@ function EZ:Notify(options)
         cl.TextWrapped = true
         cl.Parent = card
         EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
-        if hasButtons then
+        
+        local inputBox = nil
+        if hasInput then
+            inputBox = Instance.new("TextBox")
+            inputBox.Size = UDim2.new(1, -36, 0, 26)
+            inputBox.Position = UDim2.fromOffset(18, 58)
+            inputBox.BackgroundColor3 = EZ_Theme.Background
+            inputBox.BorderSizePixel = 0
+            inputBox.Text = ""
+            inputBox.PlaceholderText = options.InputPlaceholder or "Type here..."
+            inputBox.Font = EZ_Brand.FontMono
+            inputBox.TextSize = 12
+            inputBox.TextColor3 = EZ_Theme.Text
+            inputBox.PlaceholderColor3 = EZ_Theme.TextDim
+            inputBox.TextXAlignment = Enum.TextXAlignment.Left
+            inputBox.ClearTextOnFocus = false
+            inputBox.Parent = card
+            local ibst = EZ_AddStroke(inputBox, EZ_Theme.Border)
+            EZ_AddRadius(inputBox, 4)
+            local ibpad = Instance.new("UIPadding")
+            ibpad.PaddingLeft = UDim.new(0, 8); ibpad.PaddingRight = UDim.new(0, 8); ibpad.Parent = inputBox
+            inputBox.Focused:Connect(function() ibst.Color = EZ_Theme.Accent end)
+            inputBox.FocusLost:Connect(function(enter)
+                ibst.Color = EZ_Theme.Border
+                if enter and inputCallback then
+                    inputCallback(inputBox.Text)
+                end
+            end)
+        end
+        
+        if hasButtons and not hasInput then
             local btnRow = Instance.new("Frame")
             btnRow.Size = UDim2.new(1, -28, 0, 26)
             btnRow.Position = UDim2.fromOffset(18, 58)
@@ -1456,8 +1492,9 @@ function EZ:Notify(options)
                 end)
             end
         end
+        
         local timer = nil
-        if d > 0 then
+        if d > 0 and not hasInput then
             timer = Instance.new("Frame")
             timer.Size = UDim2.new(1, -16, 0, 2)
             timer.Position = UDim2.fromOffset(8, height - 6)
@@ -1486,7 +1523,7 @@ function EZ:Notify(options)
         if timer then
             TweenService:Create(timer, TweenInfo.new(d, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 0, 0, 2) }):Play()
         end
-        if d > 0 then
+        if d > 0 and not hasInput then
             task.delay(d, function()
                 if holder.Parent then
                     entry.destroy()
@@ -1549,6 +1586,13 @@ function EZ:CreateWindow(options)
     EZ_Window._pendingConfigSync = nil
     EZ_CurrentWindow = EZ_Window
 
+    function EZ_Window:SetAccent(color)
+        EZ_Theme.Accent = color
+        local r, g, b = color.R * 255, color.G * 255, color.B * 255
+        EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
+        EZ_Repaint()
+    end
+
     local function EZ_SyncConfigDropdown(name)
         if not EZ_Window._configDropdown then
             EZ_Window._pendingConfigSync = name
@@ -1603,6 +1647,10 @@ function EZ:CreateWindow(options)
                     local key = d.value and Enum.KeyCode[d.value] or nil
                     el:Set(key, true)
                     if el.Id == "_minimize_key" and key then EZ_MinKey = key end
+                elseif d.type == "multi" then
+                    el:Set(d.value, false)
+                elseif d.type == "range" then
+                    el:Set(d.value, false)
                 else
                     el:Set(d.value, false)
                 end
@@ -2113,6 +2161,8 @@ function EZ:CreateWindow(options)
             function tab:AddToggle(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
+                local rightCb = o.RightClick or function() end
+                local middleCb = o.MiddleClick or function() end
                 local id = o.Flag or o.Id or o.Title or "toggle_" .. os.clock()
                 local obj = { Value = o.Default and true or false, Id = id, Flag = o.Flag, Type = "toggle", Default = o.Default and true or false }
                 local row = EZ_NewRow(page, 44, obj)
@@ -2152,7 +2202,9 @@ function EZ:CreateWindow(options)
                     end
                 end
                 EZ_Connect(row, row.InputBegan, function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then obj:Set(not obj.Value) end
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 then obj:Set(not obj.Value)
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton2 then rightCb(obj)
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton3 then middleCb(obj) end
                 end)
                 renderTween()
                 if obj.Flag then table.insert(EZ_Window.Elements, obj) end
@@ -2163,6 +2215,8 @@ function EZ:CreateWindow(options)
             function tab:AddButton(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
+                local rightCb = o.RightClick or function() end
+                local middleCb = o.MiddleClick or function() end
                 local obj = {}
                 local row = EZ_NewRow(page, 44, obj)
                 EZ_RowTitle(row, o.Title or "Button", o.Description, 44, nil, obj)
@@ -2195,6 +2249,8 @@ function EZ:CreateWindow(options)
                     cb()
                 end
                 act.MouseButton1Click:Connect(function() obj:Fire() end)
+                act.MouseButton2Click:Connect(function() rightCb(obj) end)
+                act.MouseButton3Click:Connect(function() middleCb(obj) end)
                 function obj:SetTitle(t) act.Text = t or "" end
                 obj._row = row
                 return obj
@@ -2367,6 +2423,178 @@ function EZ:CreateWindow(options)
                 return obj
             end
 
+            function tab:AddRangeSlider(a, b)
+                local o = EZ_Normalize(a, b)
+                local mn, mx, st = o.Min or 0, o.Max or 100, o.Step or 1
+                local cb = o.Callback or function() end
+                local id = o.Flag or o.Id or o.Title or "range_" .. os.clock()
+                local obj = { 
+                    MinValue = (type(o.Default) == "table" and o.Default[1]) or mn,
+                    MaxValue = (type(o.Default) == "table" and o.Default[2]) or mx,
+                    Id = id, Flag = o.Flag, Type = "range",
+                    Default = { (type(o.Default) == "table" and o.Default[1]) or mn, (type(o.Default) == "table" and o.Default[2]) or mx }
+                }
+                local draggingMin = false
+                local draggingMax = false
+                local lastCallbackMin = obj.MinValue
+                local lastCallbackMax = obj.MaxValue
+                local row = EZ_NewRow(page, 62, obj)
+                local tl = Instance.new("TextLabel")
+                tl.Position = UDim2.fromOffset(12, 10)
+                tl.Size = UDim2.new(1, -180, 0, 16)
+                tl.BackgroundTransparency = 1
+                tl.Text = o.Title or "Range"
+                tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
+                tl.TextXAlignment = Enum.TextXAlignment.Left; tl.TextTruncate = Enum.TextTruncate.AtEnd
+                tl.Parent = row
+                EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
+                local vl = Instance.new("TextLabel")
+                vl.AnchorPoint = Vector2.new(1, 0)
+                vl.Position = UDim2.new(1, -12, 0, 10)
+                vl.Size = UDim2.fromOffset(150, 16)
+                vl.BackgroundTransparency = 1
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Accent
+                vl.TextXAlignment = Enum.TextXAlignment.Right
+                vl.Parent = row
+                EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end, obj)
+                local track = Instance.new("Frame")
+                track.Position = UDim2.fromOffset(12, 38)
+                track.Size = UDim2.new(1, -24, 0, 6)
+                track.BackgroundColor3 = EZ_Theme.BorderHover
+                track.BorderSizePixel = 0
+                track.Parent = row
+                EZ_AddRadius(track, 3)
+                local fill = Instance.new("Frame")
+                fill.BackgroundColor3 = EZ_Theme.Accent
+                fill.BorderSizePixel = 0
+                fill.Parent = track
+                EZ_AddRadius(fill, 3)
+                local knobMin = Instance.new("Frame")
+                knobMin.AnchorPoint = Vector2.new(0.5, 0.5)
+                knobMin.Size = UDim2.fromOffset(14, 14)
+                knobMin.BackgroundColor3 = EZ_Theme.Accent
+                knobMin.BorderSizePixel = 0
+                knobMin.ZIndex = 2
+                knobMin.Parent = track
+                EZ_AddRadius(knobMin, 7)
+                local knobMax = Instance.new("Frame")
+                knobMax.AnchorPoint = Vector2.new(0.5, 0.5)
+                knobMax.Size = UDim2.fromOffset(14, 14)
+                knobMax.BackgroundColor3 = EZ_Theme.Accent
+                knobMax.BorderSizePixel = 0
+                knobMax.ZIndex = 2
+                knobMax.Parent = track
+                EZ_AddRadius(knobMax, 7)
+                local capMin = Instance.new("TextButton")
+                capMin.Position = UDim2.fromOffset(12, 26)
+                capMin.Size = UDim2.new(0.5, -12, 0, 24)
+                capMin.BackgroundTransparency = 1
+                capMin.Text = ""
+                capMin.AutoButtonColor = false
+                capMin.ZIndex = 3
+                capMin.Parent = row
+                local capMax = Instance.new("TextButton")
+                capMax.Position = UDim2.new(0.5, 0, 0, 26)
+                capMax.Size = UDim2.new(0.5, -12, 0, 24)
+                capMax.BackgroundTransparency = 1
+                capMax.Text = ""
+                capMax.AutoButtonColor = false
+                capMax.ZIndex = 3
+                capMax.Parent = row
+                local function fmt(n)
+                    if st >= 1 then return tostring(math.floor(n + 0.5)) end
+                    return string.format("%.1f", n)
+                end
+                local function refreshVisual()
+                    local rMin = (mx - mn) == 0 and 0 or (obj.MinValue - mn) / (mx - mn)
+                    local rMax = (mx - mn) == 0 and 0 or (obj.MaxValue - mn) / (mx - mn)
+                    fill.Position = UDim2.new(rMin, 0, 0, 0)
+                    fill.Size = UDim2.new(rMax - rMin, 0, 1, 0)
+                    knobMin.Position = UDim2.new(rMin, 0, 0.5, 0)
+                    knobMax.Position = UDim2.new(rMax, 0, 0.5, 0)
+                    vl.Text = fmt(obj.MinValue) .. " - " .. fmt(obj.MaxValue)
+                end
+                EZ_Paint(function()
+                    track.BackgroundColor3 = EZ_Theme.BorderHover
+                    fill.BackgroundColor3 = EZ_Theme.Accent
+                    knobMin.BackgroundColor3 = EZ_Theme.Accent
+                    knobMax.BackgroundColor3 = EZ_Theme.Accent
+                    refreshVisual()
+                end, obj)
+                local function applyVisualMin(raw)
+                    local v = EZ_Round(EZ_Clamp(raw, mn, obj.MaxValue - st), st)
+                    obj.MinValue = v
+                    refreshVisual()
+                end
+                local function applyVisualMax(raw)
+                    local v = EZ_Round(EZ_Clamp(raw, obj.MinValue + st, mx), st)
+                    obj.MaxValue = v
+                    refreshVisual()
+                end
+                local function applyFinal(silent)
+                    if not silent then
+                        if obj.MinValue ~= lastCallbackMin or obj.MaxValue ~= lastCallbackMax then
+                            lastCallbackMin = obj.MinValue
+                            lastCallbackMax = obj.MaxValue
+                            cb({ obj.MinValue, obj.MaxValue })
+                            if obj.Flag and EZ_AutoSave then
+                                EZ_Window.ConfigData[id] = { type = "range", value = { obj.MinValue, obj.MaxValue } }
+                                EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
+                            end
+                        end
+                    end
+                end
+                local function fromPtr(x)
+                    local w = track.AbsoluteSize.X
+                    if w <= 0 then return 0 end
+                    return mn + EZ_Clamp((x - track.AbsolutePosition.X) / w, 0, 1) * (mx - mn)
+                end
+                capMin.InputBegan:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                        draggingMin = true; applyVisualMin(fromPtr(i.Position.X))
+                    end
+                end)
+                capMin.InputEnded:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                        draggingMin = false; applyFinal(false)
+                    end
+                end)
+                capMax.InputBegan:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                        draggingMax = true; applyVisualMax(fromPtr(i.Position.X))
+                    end
+                end)
+                capMax.InputEnded:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                        draggingMax = false; applyFinal(false)
+                    end
+                end)
+                UserInputService.InputChanged:Connect(function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseMovement then
+                        if draggingMin then applyVisualMin(fromPtr(i.Position.X)) end
+                        if draggingMax then applyVisualMax(fromPtr(i.Position.X)) end
+                    end
+                end)
+                function obj:Set(values, silent)
+                    if type(values) == "table" then
+                        obj.MinValue = EZ_Clamp(values[1] or mn, mn, obj.MaxValue - st)
+                        obj.MaxValue = EZ_Clamp(values[2] or mx, obj.MinValue + st, mx)
+                    end
+                    refreshVisual()
+                    if not silent then
+                        cb({ obj.MinValue, obj.MaxValue })
+                        if obj.Flag and EZ_AutoSave then
+                            EZ_Window.ConfigData[id] = { type = "range", value = { obj.MinValue, obj.MaxValue } }
+                            EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
+                        end
+                    end
+                end
+                refreshVisual()
+                if obj.Flag then table.insert(EZ_Window.Elements, obj) end
+                obj._row = row
+                return obj
+            end
+
             function tab:AddBanner(o)
                 o = o or {}
                 local holder = Instance.new("Frame")
@@ -2425,8 +2653,14 @@ function EZ:CreateWindow(options)
                 local o = EZ_Normalize(a, b)
                 local values = o.Values or o.Options or {}
                 local cb = o.Callback or function() end
+                local multi = o.Multi == true
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
-                local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "dropdown", Default = o.Default }
+                local obj = { 
+                    Value = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default, 
+                    Id = id, Flag = o.Flag, 
+                    Type = multi and "multi" or "dropdown", 
+                    Default = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default 
+                }
                 local row = EZ_NewRow(page, 44, obj)
                 EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44, 190, obj)
                 local trigger = Instance.new("TextButton")
@@ -2444,7 +2678,11 @@ function EZ:CreateWindow(options)
                 trigText.Size = UDim2.new(1, -30, 1, 0)
                 trigText.Position = UDim2.fromOffset(10, 0)
                 trigText.BackgroundTransparency = 1
-                trigText.Text = obj.Value and tostring(obj.Value) or "none"
+                if multi then
+                    trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                else
+                    trigText.Text = obj.Value and tostring(obj.Value) or "none"
+                end
                 trigText.Font = EZ_Brand.FontBody
                 trigText.TextSize = 12
                 trigText.TextColor3 = EZ_Theme.Text
@@ -2472,15 +2710,36 @@ function EZ:CreateWindow(options)
                     searchable = o.Searchable and true or false,
                     getValues = function() return values end,
                     getValue = function() return obj.Value end,
-                    pick = function(v) obj:Set(v, false) end,
+                    pick = function(v) 
+                        if multi then
+                            local found = false
+                            for i, item in ipairs(obj.Value) do
+                                if item == v then table.remove(obj.Value, i); found = true; break end
+                            end
+                            if not found then table.insert(obj.Value, v) end
+                            trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                            cb(obj.Value)
+                            if obj.Flag and EZ_AutoSave then
+                                EZ_Window.ConfigData[id] = { type = "multi", value = obj.Value }
+                                EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
+                            end
+                        else
+                            obj:Set(v, false)
+                        end
+                    end,
                 }
                 function obj:Set(v, silent)
-                    obj.Value = v
-                    trigText.Text = tostring(v)
+                    if multi then
+                        obj.Value = type(v) == "table" and v or {}
+                        trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                    else
+                        obj.Value = v
+                        trigText.Text = tostring(v)
+                    end
                     if not silent then
-                        cb(v)
+                        cb(obj.Value)
                         if obj.Flag and EZ_AutoSave then
-                            EZ_Window.ConfigData[id] = { type = "dropdown", value = v }
+                            EZ_Window.ConfigData[id] = { type = multi and "multi" or "dropdown", value = obj.Value }
                             EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
                         end
                     end
@@ -2937,6 +3196,7 @@ function EZ:CreateWindow(options)
             tab.CreateToggle = tab.AddToggle
             tab.CreateButton = tab.AddButton
             tab.CreateSlider = tab.AddSlider
+            tab.CreateRangeSlider = tab.AddRangeSlider
             tab.CreateDropdown = tab.AddDropdown
             tab.CreateInput = tab.AddInput
             tab.CreateTextArea = tab.AddTextArea
@@ -2966,6 +3226,10 @@ function EZ:CreateWindow(options)
                         data[el.Id] = { type = "color", value = { math.floor(el.Value.R * 255), math.floor(el.Value.G * 255), math.floor(el.Value.B * 255) } }
                     elseif el.Type == "keybind" then
                         data[el.Id] = { type = "keybind", value = el.Value and el.Value.Name or nil, mods = el.Mods }
+                    elseif el.Type == "multi" then
+                        data[el.Id] = { type = "multi", value = el.Value }
+                    elseif el.Type == "range" then
+                        data[el.Id] = { type = "range", value = { el.MinValue, el.MaxValue } }
                     else
                         data[el.Id] = { type = el.Type, value = el.Value }
                     end
