@@ -17,7 +17,7 @@
         <a href="#about" class="logo">
             <span class="logo-mark">E</span>
             <span class="logo-name">Eazy UI</span>
-            <span class="version">v0.9.35</span>
+            <span class="version">v0.9.36</span>
         </a>
         <span class="logo-sub">docs</span>
     </div>
@@ -115,7 +115,7 @@
         <h1>Eazy UI</h1>
         <p class="lead">One file. One loadstring. Zero dependencies.</p>
         <div class="hero-badges">
-            <span class="badge badge-green">v0.9.35</span>
+            <span class="badge badge-green">v0.9.36</span>
             <span class="badge">Single file</span>
             <span class="badge">Open source</span>
             <span class="badge">MIT</span>
@@ -1586,6 +1586,13 @@ EZ:Notify({
         <p class="lead">Release history.</p>
     </div>
 
+    <h3>v0.9.36</h3>
+    <ul>
+        <li>Fixed window opening stuck to the bottom-right corner on executors that clamp negative UDim2 offsets. Centering now uses <code>AnchorPoint</code> (0.5, 0.5) with scale position instead of negative pixel offsets.</li>
+        <li>The entry tween animates size only, so the pop-in effect no longer reintroduces the offset on broken executors.</li>
+        <li>Drag math is anchor-safe: moving and clamping the window behave exactly as before.</li>
+    </ul>
+
     <h3>v0.9.35</h3>
     <ul>
         <li>Fixed <code>MouseButton3Click</code> event that doesn't exist on <code>TextButton</code>. Middle-click now uses <code>InputBegan</code> with <code>Enum.UserInputType.MouseButton3</code> for toggles and buttons.</li>
@@ -1692,7 +1699,7 @@ EZ:Notify({
                 <span class="logo-name">Eazy UI</span>
             </div>
             <p>Open source Roblox GUI library. One file, zero dependencies. Built to keep scripting easy.</p>
-            <span class="badge badge-green">v0.9.35</span>
+            <span class="badge badge-green">v0.9.36</span>
         </div>
         <div class="footer-col">
             <h5>Docs</h5>
@@ -1729,7 +1736,7 @@ EZ:Notify({
         </div>
     </div>
     <div class="footer-bottom">
-        <span>2026 Akira Dev. Eazy UI v0.9.35.</span>
+        <span>2026 Akira Dev. Eazy UI v0.9.36.</span>
         <span>Not affiliated with Roblox Corporation.</span>
     </div>
 </footer>
