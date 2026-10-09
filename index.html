@@ -17,7 +17,7 @@
         <a href="#about" class="logo">
             <span class="logo-mark">E</span>
             <span class="logo-name">Eazy UI</span>
-            <span class="version">v0.9.29</span>
+            <span class="version">v0.9.35</span>
         </a>
         <span class="logo-sub">docs</span>
     </div>
@@ -53,7 +53,9 @@
             <a href="#el-toggle">Toggle</a>
             <a href="#el-button">Button</a>
             <a href="#el-slider">Slider</a>
+            <a href="#el-rangeslider">Range Slider</a>
             <a href="#el-dropdown">Dropdown</a>
+            <a href="#el-multiselect">Multi-Select</a>
             <a href="#el-input">Input</a>
             <a href="#el-textarea">Text Area</a>
             <a href="#el-progress">Progress Bar</a>
@@ -113,14 +115,14 @@
         <h1>Eazy UI</h1>
         <p class="lead">One file. One loadstring. Zero dependencies.</p>
         <div class="hero-badges">
-            <span class="badge badge-green">v0.9.29</span>
+            <span class="badge badge-green">v0.9.35</span>
             <span class="badge">Single file</span>
             <span class="badge">Open source</span>
             <span class="badge">MIT</span>
         </div>
     </div>
 
-    <p>Eazy UI is a Lua library that ships the entire UI stack in a single file. You get a draggable window, a sidebar with tabs, fourteen interactive elements, eleven themes, persistent configs, a key system, a Discord prompt and a notification system.</p>
+    <p>Eazy UI is a Lua library that ships the entire UI stack in a single file. You get a draggable window, a sidebar with tabs, seventeen interactive elements, eleven themes, persistent configs, a key system, a Discord prompt and a notification system.</p>
 
     <p>You load it, create a window, add your elements. That is it. The code is open source and hosted on <a href="https://github.com/akiradv/eazyuilib" target="_blank" rel="noopener">GitHub</a>.</p>
 
@@ -175,23 +177,35 @@ Tab:AddToggle({
         </div>
         <div class="feature-card">
             <h3>Config system</h3>
-            <p>Auto save, named configs, load, delete and reset. Per-window autoload selection with Set/Clear Autoload buttons.</p>
+            <p>Auto save with 1s debounce, named configs, load, delete and reset. Per-window autoload selection with Set/Clear Autoload buttons.</p>
         </div>
         <div class="feature-card">
             <h3>Key system</h3>
-            <p>Key screen with your own validator function, local cache with expiry and a logout call. Works with any HTTP key provider.</p>
+            <p>Key screen with your own validator function, local cache with expiry, 5s timeout on HTTP validation and a logout call. Works with any HTTP key provider.</p>
         </div>
         <div class="feature-card">
             <h3>Notifications</h3>
-            <p>Toasts in four styles with timer bar, optional action buttons, open/close callbacks and four position choices.</p>
+            <p>Toasts in four styles with timer bar, optional action buttons, input notifications, open/close callbacks and four position choices.</p>
         </div>
         <div class="feature-card">
             <h3>Searchable dropdowns</h3>
             <p>Toggle <code>Searchable = true</code> on any dropdown and get a filter box inside the popup. Great for long lists.</p>
         </div>
         <div class="feature-card">
-            <h3>14 elements</h3>
-            <p>Toggle, Slider, Dropdown, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section, Divider and Banner.</p>
+            <h3>Multi-select dropdowns</h3>
+            <p>Toggle <code>Multi = true</code> to pick several values at once. The trigger shows the count and the callback fires with an array.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Range slider</h3>
+            <p>Dual handle slider for min/max values. Both knobs are draggable and the callback receives <code>{min, max}</code>.</p>
+        </div>
+        <div class="feature-card">
+            <h3>17 elements</h3>
+            <p>Toggle, Slider, Range Slider, Dropdown, Multi-Select, Input, Text Area, Color Picker, Keybind, Button, Progress Bar, Label, Paragraph, Section, Divider and Banner.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Right &amp; middle click</h3>
+            <p>Toggles and buttons accept <code>RightCallback</code> and <code>MiddleCallback</code> for secondary actions bound to mouse buttons 2 and 3.</p>
         </div>
         <div class="feature-card">
             <h3>Discord prompt</h3>
@@ -200,6 +214,10 @@ Tab:AddToggle({
         <div class="feature-card">
             <h3>Auto load</h3>
             <p>Configs load automatically on script start. Disable per window with <code>AutoLoad = false</code> when you need manual control.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Locale system</h3>
+            <p>Built-in localization support. Register translation tables and swap languages at runtime without rebuilding the UI.</p>
         </div>
         <div class="feature-card">
             <h3>Executor safe</h3>
@@ -211,7 +229,7 @@ Tab:AddToggle({
         </div>
         <div class="feature-card">
             <h3>Performance</h3>
-            <p>Repaint calls are batched through task.defer. Theme changes trigger one update pass, not one per element.</p>
+            <p>Repaint calls are batched through task.defer. Theme changes trigger one update pass, not one per element. Save configs debounced at 1s to avoid spam.</p>
         </div>
         <div class="feature-card">
             <h3>Window extras</h3>
@@ -377,14 +395,14 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
             <button class="copy-btn" data-target="code-window">Copy</button>
         </div>
         <pre><code id="code-window">local Window = EZ:CreateWindow({
-    Name = "FTF Premium Hub",
+    Name = "FTF Hub",
     SubTitle = "by AkiraDev",
     Size = UDim2.fromOffset(580, 460),
     MinimizeKey = Enum.KeyCode.RightShift,
     ConfigId = "FTF_Premium",
     AutoLoad = true,
     NotifyPosition = "BottomRight",
-    LoadingTitle = "FTF Premium",
+    LoadingTitle = "FTF Hub",
     LoadingSubtitle = "Loading your hub...",
     Discord = {
         Enabled = true,
@@ -395,14 +413,14 @@ EZ:Notify({ Title = "Ready", Content = "Hub loaded.", Style = "Success" })</code
 
     <h4>Parameters used</h4>
     <div class="params-grid">
-        <div class="param"><code>Name</code><span>"FTF Premium Hub"</span></div>
+        <div class="param"><code>Name</code><span>"FTF Hub"</span></div>
         <div class="param"><code>SubTitle</code><span>"by AkiraDev"</span></div>
         <div class="param"><code>Size</code><span>UDim2.fromOffset(580, 460)</span></div>
         <div class="param"><code>MinimizeKey</code><span>Enum.KeyCode.RightShift</span></div>
         <div class="param"><code>ConfigId</code><span>"FTF_Premium"</span></div>
         <div class="param"><code>AutoLoad</code><span>true</span></div>
         <div class="param"><code>NotifyPosition</code><span>"BottomRight"</span></div>
-        <div class="param"><code>LoadingTitle</code><span>"FTF Premium"</span></div>
+        <div class="param"><code>LoadingTitle</code><span>"FTF Hub"</span></div>
         <div class="param"><code>LoadingSubtitle</code><span>"Loading your hub..."</span></div>
         <div class="param"><code>Discord.Invite</code><span>"9VE4PXFDSg"</span></div>
     </div>
@@ -540,7 +558,7 @@ EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
         <p class="lead">Files live in <code>EazyUI_Configs</code> as <code>{ConfigId}_{name}.json</code>.</p>
     </div>
 
-    <p>Every element with a <code>Flag</code> is persisted automatically. A meta block also stores the theme, transparency and auto save preference.</p>
+    <p>Every element with a <code>Flag</code> is persisted automatically. A meta block also stores the theme, transparency and auto save preference. Save calls are debounced at 1 second to avoid spam writing on disk.</p>
 
     <h3>The ready made settings tab</h3>
 
@@ -659,7 +677,7 @@ local names = Window:ListConfigs()</code></pre>
 end</code></pre>
     </div>
 
-    <p>Accepted keys are cached locally until expiry. A wrong key keeps the screen open with an error line. Cancelling makes <code>CreateWindow</code> return <code>nil</code>, so the rest of your script never runs.</p>
+    <p>Accepted keys are cached locally until expiry. A wrong key keeps the screen open with an error line. HTTP validators time out after 5 seconds to avoid blocking the hub when the server is slow. Cancelling makes <code>CreateWindow</code> return <code>nil</code>, so the rest of your script never runs.</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -729,6 +747,7 @@ end</code></pre>
             <tr><td><code>Duration</code></td><td>number</td><td><code>3</code></td><td>Seconds on screen. 0 keeps it until dismissed by code. A timer bar shows remaining time.</td></tr>
             <tr><td><code>Style</code></td><td>string</td><td><code>"Info"</code></td><td>Info, Success, Warning, Error.</td></tr>
             <tr><td><code>Buttons</code></td><td>table</td><td><code>{}</code></td><td>List of <code>{ Title, Callback }</code>, up to two.</td></tr>
+            <tr><td><code>Input</code></td><td>table</td><td><code>nil</code></td><td>Adds a text input. <code>{ Placeholder, Default, Callback }</code>.</td></tr>
             <tr><td><code>OnOpen</code></td><td>function</td><td><code>nil</code></td><td>Fires when the toast appears.</td></tr>
             <tr><td><code>OnClose</code></td><td>function</td><td><code>nil</code></td><td>Receives "Timeout" or "Action".</td></tr>
         </tbody>
@@ -756,6 +775,18 @@ EZ:Notify({
     Buttons = {
         { Title = "Update", Callback = function() print("updating") end },
         { Title = "Later", Callback = function() end },
+    },
+})
+
+EZ:Notify({
+    Title = "Set Nickname",
+    Content = "Pick a display name",
+    Style = "Info",
+    Duration = 15,
+    Input = {
+        Placeholder = "your name",
+        Default = "",
+        Callback = function(text) print("picked:", text) end,
     },
 })</code></pre>
     </div>
@@ -884,7 +915,7 @@ status:Set("Status: connected")</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Toggle</h1>
-        <p class="lead">Animated switch. The whole row is clickable.</p>
+        <p class="lead">Animated switch. The whole row is clickable. Right-click and middle-click fire optional callbacks.</p>
     </div>
     <table class="options-table">
         <thead>
@@ -895,7 +926,9 @@ status:Set("Status: connected")</code></pre>
             <tr><td><code>Description</code></td><td>string</td><td>Optional second line.</td></tr>
             <tr><td><code>Default</code></td><td>boolean</td><td>Initial state.</td></tr>
             <tr><td><code>Flag</code></td><td>string</td><td>Enables config saving and acts as the element id.</td></tr>
-            <tr><td><code>Callback</code></td><td>function(on)</td><td>Fires on user change.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(on)</td><td>Fires on left click.</td></tr>
+            <tr><td><code>RightCallback</code></td><td>function(on)</td><td>Fires on right click (mouse button 2).</td></tr>
+            <tr><td><code>MiddleCallback</code></td><td>function(on)</td><td>Fires on middle click (mouse button 3).</td></tr>
         </tbody>
     </table>
     <div class="code-block">
@@ -908,7 +941,8 @@ status:Set("Status: connected")</code></pre>
     Description = "Highlight players",
     Default = false,
     Flag = "ESP",
-    Callback = function(on) print(on) end,
+    Callback = function(on) print("left:", on) end,
+    RightCallback = function(on) print("right:", on) end,
 })
 toggle:Set(true, true)</code></pre>
     </div>
@@ -918,7 +952,8 @@ toggle:Set(true, true)</code></pre>
         <div class="param"><code>Description</code><span>"Highlight players"</span></div>
         <div class="param"><code>Default</code><span>false</span></div>
         <div class="param"><code>Flag</code><span>"ESP"</span></div>
-        <div class="param"><code>Callback</code><span>prints the new state</span></div>
+        <div class="param"><code>Callback</code><span>fires on left click</span></div>
+        <div class="param"><code>RightCallback</code><span>fires on right click</span></div>
         <div class="param"><code>Set(bool, silent)</code><span>second arg silences callback and save</span></div>
     </div>
 </section>
@@ -927,8 +962,21 @@ toggle:Set(true, true)</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Button</h1>
-        <p class="lead">Accent action button with press animation.</p>
+        <p class="lead">Accent action button with press animation. Right-click and middle-click fire optional callbacks.</p>
     </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td>Row title.</td></tr>
+            <tr><td><code>Description</code></td><td>string</td><td>Optional second line.</td></tr>
+            <tr><td><code>ButtonText</code></td><td>string</td><td>Label of the action button.</td></tr>
+            <tr><td><code>Callback</code></td><td>function()</td><td>Fires on left click or Fire().</td></tr>
+            <tr><td><code>RightCallback</code></td><td>function()</td><td>Fires on right click.</td></tr>
+            <tr><td><code>MiddleCallback</code></td><td>function()</td><td>Fires on middle click.</td></tr>
+        </tbody>
+    </table>
     <div class="code-block">
         <div class="code-header">
             <span class="code-lang">lua</span>
@@ -939,6 +987,7 @@ toggle:Set(true, true)</code></pre>
     Description = "Go to the safe zone",
     ButtonText = "Go",
     Callback = function() print("teleported") end,
+    RightCallback = function() print("right click menu") end,
 })
 btn:Fire()
 btn:SetTitle("Done")</code></pre>
@@ -957,7 +1006,7 @@ btn:SetTitle("Done")</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Slider</h1>
-        <p class="lead">Drag, click the track, scroll or use arrow keys. The value label updates live and is also clickable to type an exact value.</p>
+        <p class="lead">Drag, click the track, scroll or use arrow keys. The callback fires on release, not during drag. The value label updates live and is clickable to type an exact value.</p>
     </div>
     <table class="options-table">
         <thead>
@@ -969,7 +1018,7 @@ btn:SetTitle("Done")</code></pre>
             <tr><td><code>Step</code></td><td>number</td><td><code>1</code></td><td>Snap step. Decimals show one decimal place.</td></tr>
             <tr><td><code>Default</code></td><td>number</td><td><code>Min</code></td><td>Initial value.</td></tr>
             <tr><td><code>Flag</code></td><td>string</td><td><code>nil</code></td><td>Enables config saving.</td></tr>
-            <tr><td><code>Callback</code></td><td>function(v)</td><td><code>nil</code></td><td>Fires on change.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(v)</td><td><code>nil</code></td><td>Fires on release.</td></tr>
         </tbody>
     </table>
     <div class="code-block">
@@ -1002,6 +1051,51 @@ slider:Set(100)</code></pre>
         </svg>
         <div class="callout-body">Hover the slider and use mouse wheel or arrow keys for fine tuning. Click the value label in the top right to type an exact number.</div>
     </div>
+</section>
+
+<section class="page" id="el-rangeslider">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Range Slider</h1>
+        <p class="lead">Dual handle slider for min/max ranges. Both knobs are draggable and the callback receives the pair as an array.</p>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td><code>"Range"</code></td><td>Row title.</td></tr>
+            <tr><td><code>Min / Max</code></td><td>number</td><td><code>0 / 100</code></td><td>Range boundaries.</td></tr>
+            <tr><td><code>Step</code></td><td>number</td><td><code>1</code></td><td>Snap step.</td></tr>
+            <tr><td><code>Default</code></td><td>table</td><td><code>{Min, Max}</code></td><td>Initial pair <code>{low, high}</code>.</td></tr>
+            <tr><td><code>Flag</code></td><td>string</td><td><code>nil</code></td><td>Enables config saving.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(pair)</td><td><code>nil</code></td><td>Fires on release with <code>{low, high}</code>.</td></tr>
+        </tbody>
+    </table>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-range">Copy</button>
+        </div>
+        <pre><code id="code-el-range">local range = Tab:AddRangeSlider({
+    Title = "Damage Range",
+    Min = 0, Max = 100, Default = { 20, 80 }, Step = 5,
+    Flag = "DmgRange",
+    Callback = function(pair)
+        print("low:", pair[1], "high:", pair[2])
+    end,
+})
+range:Set({ 10, 90 })</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Title</code><span>"Damage Range"</span></div>
+        <div class="param"><code>Min / Max</code><span>0 / 100</span></div>
+        <div class="param"><code>Default</code><span>{ 20, 80 }</span></div>
+        <div class="param"><code>Flag</code><span>"DmgRange"</span></div>
+        <div class="param"><code>Set({low, high})</code><span>programmatic pair</span></div>
+    </div>
+    <p>The lower knob cannot pass the higher one, and vice versa. Both values are persisted as a JSON array in the config file.</p>
 </section>
 
 <section class="page" id="el-dropdown">
@@ -1049,7 +1143,56 @@ drop:SetValues({ "Closest", "Strongest" })</code></pre>
         <div class="param"><code>Set(value)</code><span>programmatic pick</span></div>
         <div class="param"><code>SetValues(array)</code><span>replace options at runtime</span></div>
     </div>
-    <p>SetValues closes the popup first if it is open with the old list.</p>
+    <p>SetValues closes the popup first if it is open with the old list. For multi-select, see the <a href="#el-multiselect">Multi-Select</a> element.</p>
+</section>
+
+<section class="page" id="el-multiselect">
+    <div class="page-hero">
+        <span class="eyebrow">Element</span>
+        <h1>Multi-Select</h1>
+        <p class="lead">Dropdown that lets the user pick several values at once. The trigger shows the count of selected items.</p>
+    </div>
+    <table class="options-table">
+        <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>Title</code></td><td>string</td><td><code>"Multi"</code></td><td>Row title.</td></tr>
+            <tr><td><code>Description</code></td><td>string</td><td><code>""</code></td><td>Optional second line.</td></tr>
+            <tr><td><code>Values</code></td><td>table</td><td><code>{}</code></td><td>Array of options.</td></tr>
+            <tr><td><code>Default</code></td><td>table</td><td><code>{}</code></td><td>Initial selection, array of values.</td></tr>
+            <tr><td><code>Multi</code></td><td>boolean</td><td><code>true</code></td><td>Always true, explicit for clarity.</td></tr>
+            <tr><td><code>Searchable</code></td><td>boolean</td><td><code>false</code></td><td>Adds a filter input inside the popup.</td></tr>
+            <tr><td><code>Flag</code></td><td>string</td><td><code>nil</code></td><td>Enables config saving.</td></tr>
+            <tr><td><code>Callback</code></td><td>function(array)</td><td><code>nil</code></td><td>Fires on every pick toggle.</td></tr>
+        </tbody>
+    </table>
+    <div class="code-block">
+        <div class="code-header">
+            <span class="code-lang">lua</span>
+            <button class="copy-btn" data-target="code-el-multi">Copy</button>
+        </div>
+        <pre><code id="code-el-multi">local multi = Tab:AddDropdown({
+    Title = "ESP Targets",
+    Description = "Pick who to highlight",
+    Multi = true,
+    Values = { "Players", "NPCs", "Items", "Vehicles", "Corpses" },
+    Default = { "Players", "Items" },
+    Flag = "ESPTargets",
+    Callback = function(list)
+        for _, v in ipairs(list) do print(v) end
+    end,
+})
+multi:Set({ "Players" })</code></pre>
+    </div>
+    <h4>Parameters used</h4>
+    <div class="params-grid">
+        <div class="param"><code>Multi</code><span>true, enables multi-select mode</span></div>
+        <div class="param"><code>Values</code><span>array of options</span></div>
+        <div class="param"><code>Default</code><span>initial selection array</span></div>
+        <div class="param"><code>Set(array)</code><span>programmatic selection</span></div>
+    </div>
+    <p>The popup stays open after each pick so the user can tick several options without reopening it. Click outside or press Escape to close.</p>
 </section>
 
 <section class="page" id="el-input">
@@ -1261,8 +1404,8 @@ end</code></pre>
     <div class="showcase-card">
         <div class="showcase-info">
             <span class="badge badge-green">Built with Eazy UI</span>
-            <h3>FTF Premium Hub</h3>
-            <p>Full hub for Flee The Facility on Roblox. Auto hack with double server side protection, ESPs, teleports, anti AFK, rejoin and a complete config system. The same hub used to test every library release.</p>
+            <h3>FTF Hub</h3>
+            <p>Full hub for Flee The Facility on Roblox. Auto hack with double server side protection, six ESPs, teleports, anti AFK, rejoin and a complete config system. The same hub used to test every library release.</p>
             <div class="showcase-links">
                 <a class="btn" href="https://github.com/akiradv/scriptsroblox" target="_blank" rel="noopener">View source</a>
                 <a class="btn btn-ghost" href="https://discord.gg/2ksQSAnnW6" target="_blank" rel="noopener">Discord</a>
@@ -1354,6 +1497,12 @@ Main:AddSlider({
     Flag = "EX_Speed",
     Callback = print,
 })
+Main:AddRangeSlider({
+    Title = "Damage Range",
+    Min = 0, Max = 100, Default = { 20, 80 }, Step = 5,
+    Flag = "EX_DmgRange",
+    Callback = print,
+})
 Main:AddDropdown({
     Title = "Server Region",
     Description = "Pick one (has search box)",
@@ -1361,6 +1510,14 @@ Main:AddDropdown({
     Default = "Auto",
     Searchable = true,
     Flag = "EX_Region",
+    Callback = print,
+})
+Main:AddDropdown({
+    Title = "ESP Targets",
+    Multi = true,
+    Values = { "Players", "NPCs", "Items", "Vehicles" },
+    Default = { "Players", "Items" },
+    Flag = "EX_ESPTargets",
     Callback = print,
 })
 Main:AddInput({
@@ -1429,6 +1586,41 @@ EZ:Notify({
         <p class="lead">Release history.</p>
     </div>
 
+    <h3>v0.9.35</h3>
+    <ul>
+        <li>Fixed <code>MouseButton3Click</code> event that doesn't exist on <code>TextButton</code>. Middle-click now uses <code>InputBegan</code> with <code>Enum.UserInputType.MouseButton3</code> for toggles and buttons.</li>
+    </ul>
+
+    <h3>v0.9.34</h3>
+    <ul>
+        <li>Multi-select dropdowns: pass <code>Multi = true</code> and the trigger shows the count of selected items, callbacks receive an array.</li>
+        <li>Right-click and middle-click callbacks on toggles and buttons via <code>RightCallback</code> and <code>MiddleCallback</code>.</li>
+        <li>Range slider added: dual handle slider for min/max values, persisted as an array.</li>
+        <li>Input notifications: pass <code>Input = { Placeholder, Default, Callback }</code> to <code>EZ:Notify</code> to collect text from the toast.</li>
+        <li><code>SetAccent</code> now works per window, not only globally.</li>
+    </ul>
+
+    <h3>v0.9.33</h3>
+    <ul>
+        <li>Fixed sidebar divider (<code>sline</code>) misalignment on resize.</li>
+        <li>Fixed <code>EZ_CreateIcon</code> returning a <code>Frame</code> instead of an <code>ImageLabel</code> when the icon name was invalid.</li>
+        <li>Save configs now debounced at 1 second to avoid spam writes when the user drags a slider.</li>
+        <li>New <code>EZ_Connect()</code> helper that registers a connection and auto disconnects it when the window is destroyed.</li>
+        <li>Slider callback now fires on release instead of during drag, avoiding expensive calls while moving.</li>
+        <li>HTTP validators in the key system time out after 5 seconds to avoid blocking the hub when the server is slow.</li>
+        <li>Built-in locale system: register translation tables and swap languages at runtime without rebuilding the UI.</li>
+        <li>Logo asset is now auto-destroyed when the window closes, fixing ghost logos on reload.</li>
+    </ul>
+
+    <h3>v0.9.30 to v0.9.32</h3>
+    <ul>
+        <li>Dropdown popup positioning hardened for window edge cases.</li>
+        <li>Theme change repaint now skips destroyed elements safely.</li>
+        <li>Config dropdown no longer duplicates entries when saving multiple configs quickly.</li>
+        <li>Keybind display refreshes correctly after being changed programmatically.</li>
+        <li>Various performance tweaks on <code>GetDescendants</code> heavy hubs.</li>
+    </ul>
+
     <h3>v0.9.29</h3>
     <ul>
         <li>Sections redesigned with colored accent bar and rotating chevron. Click the section header to collapse everything below it.</li>
@@ -1446,7 +1638,6 @@ EZ:Notify({
         <li>Escape key closes open dropdowns.</li>
         <li>Dropdown trigger shows hover stroke for better feedback.</li>
         <li>Unified easing tokens (EZ_Ease) for consistent animation feel across the library.</li>
-        <li>Fixed <code>PaddingLeft</code> using <code>UDim2</code> instead of <code>UDim</code> in tab pages.</li>
         <li>Icon set expanded: <code>home</code> alias for <code>house</code>, <code>navigation</code> icon added.</li>
     </ul>
 
@@ -1462,7 +1653,7 @@ EZ:Notify({
 
     <h3>v0.9.15</h3>
     <ul>
-        <li>Discord prompt redesigned: accent stroke, big icon, copy link button instead of open in browser.</li>
+        <li>Discord prompt redesign: accent stroke, big icon, copy link button instead of open in browser.</li>
         <li>New <code>AutoLoad</code> option on <code>CreateWindow</code>, defaults to true.</li>
         <li>example.lua moved to the repository root; Showcase loadstring and live check now point to it.</li>
     </ul>
@@ -1501,7 +1692,7 @@ EZ:Notify({
                 <span class="logo-name">Eazy UI</span>
             </div>
             <p>Open source Roblox GUI library. One file, zero dependencies. Built to keep scripting easy.</p>
-            <span class="badge badge-green">v0.9.29</span>
+            <span class="badge badge-green">v0.9.35</span>
         </div>
         <div class="footer-col">
             <h5>Docs</h5>
@@ -1516,7 +1707,9 @@ EZ:Notify({
             <h5>Elements</h5>
             <a href="#el-toggle">Toggle</a>
             <a href="#el-slider">Slider</a>
+            <a href="#el-rangeslider">Range Slider</a>
             <a href="#el-dropdown">Dropdown</a>
+            <a href="#el-multiselect">Multi-Select</a>
             <a href="#el-input">Input</a>
             <a href="#el-color">Color Picker</a>
             <a href="#el-keybind">Keybind</a>
@@ -1536,7 +1729,7 @@ EZ:Notify({
         </div>
     </div>
     <div class="footer-bottom">
-        <span>2026 Akira Dev. Eazy UI v0.9.29.</span>
+        <span>2026 Akira Dev. Eazy UI v0.9.35.</span>
         <span>Not affiliated with Roblox Corporation.</span>
     </div>
 </footer>

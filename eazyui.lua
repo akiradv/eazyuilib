@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.35
+    Eazy UI v0.9.36
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.35"
+EZ.Version = "0.9.36"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1668,7 +1668,8 @@ function EZ:CreateWindow(options)
         local frame = Instance.new("Frame")
         frame.Name = "Window"
         frame.Size = UDim2.fromOffset(EZ_Size.X.Offset * 0.96, EZ_Size.Y.Offset * 0.96)
-        frame.Position = UDim2.new(0.5, -(EZ_Size.X.Offset * 0.96) / 2, 0.5, -(EZ_Size.Y.Offset * 0.96) / 2)
+        frame.AnchorPoint = Vector2.new(0.5, 0.5)
+        frame.Position = UDim2.fromScale(0.5, 0.5)
         frame.BackgroundColor3 = EZ_Theme.Background
         frame.BorderSizePixel = 0
         frame.ClipsDescendants = true
@@ -1677,9 +1678,10 @@ function EZ:CreateWindow(options)
         EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
         EZ_RegTrans(frame, 1)
         EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
-        TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = EZ_Size, Position = UDim2.new(0.5, -EZ_Size.X.Offset / 2, 0.5, -EZ_Size.Y.Offset / 2)
-        }):Play()
+
+TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDirection.Out), {
+    Size = EZ_Size
+}):Play()
 
         local titlebar = Instance.new("Frame")
         titlebar.Size = UDim2.new(1, 0, 0, EZ_TITLEBAR_HEIGHT)
