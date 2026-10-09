@@ -1,17 +1,18 @@
 --[[
-    Eazy UI v0.9.36
+    Eazy UI v0.9.37
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.36"
+EZ.Version = "0.9.37"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
 
 local function EZ_C(r, g, b) return Color3.fromRGB(r, g, b) end
 
@@ -168,6 +169,9 @@ local EZ_ThemeListeners = {}
 local EZ_GlobalTransparency = 0
 local EZ_LogoAsset = nil
 local EZ_CurrentWindow = nil
+local EZ_CurrentScale = 1
+local EZ_ScaleConns = {}
+local EZ_MIN_SIZE = Vector2.new(420, 300)
 local EZ_Ease = {
     Fast = TweenInfo.new(0.12, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
     Med = TweenInfo.new(0.18, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -687,6 +691,14 @@ local function EZ_OpenDropdown(entry)
         end)
     end
     local values = entry.getValues()
+    local selected = entry.getValue()
+    local function isSelected(v)
+        if type(selected) == "table" then
+            for _, sv in ipairs(selected) do if sv == v then return true end end
+            return false
+        end
+        return v == selected
+    end
     for _, v in ipairs(values) do
         local op = Instance.new("TextButton")
         op.Size = UDim2.new(1, 0, 0, 30)
@@ -694,7 +706,7 @@ local function EZ_OpenDropdown(entry)
         op.Text = tostring(v)
         op.Font = EZ_Brand.FontBody
         op.TextSize = 12
-        op.TextColor3 = (v == entry.getValue()) and EZ_Theme.Accent or EZ_Theme.TextDim
+        op.TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.TextDim
         op.TextXAlignment = Enum.TextXAlignment.Left
         op.AutoButtonColor = false
         op.ZIndex = 61
@@ -707,11 +719,13 @@ local function EZ_OpenDropdown(entry)
             TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text, BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
         end)
         op.MouseLeave:Connect(function()
-            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = (v == entry.getValue()) and EZ_Theme.Accent or EZ_Theme.TextDim, BackgroundTransparency = 1 }):Play()
+            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.TextDim, BackgroundTransparency = 1 }):Play()
         end)
         op.MouseButton1Click:Connect(function()
             entry.pick(v)
-            EZ_CloseDropdown()
+            if not entry.multi then
+                EZ_CloseDropdown()
+            end
         end)
     end
     local popH = math.min(#values * 30 + (entry.searchable and 38 or 8), 220)
@@ -766,25 +780,54 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
+local function EZ_ViewportUsable()
+    local vp = Vector2.new(1280, 720)
+    pcall(function() vp = workspace.CurrentCamera.ViewportSize end)
+    local inset = Vector2.new(0, 0)
+    pcall(function() inset = GuiService:GetGuiInset() end)
+    return Vector2.new(vp.X, math.max(120, vp.Y - inset.Y)), inset
+end
+
+local function EZ_ApplyResponsiveScale(frame, baseSize)
+    local usable, inset = EZ_ViewportUsable()
+    local margin = 24
+    local fit = math.min((usable.X - margin) / baseSize.X, (usable.Y - margin) / baseSize.Y)
+    local scale = math.clamp(fit, 0.55, 1.15)
+    EZ_CurrentScale = scale
+    local scaler = frame:FindFirstChild("EZ_WindowScale")
+    if not scaler then
+        scaler = Instance.new("UIScale")
+        scaler.Name = "EZ_WindowScale"
+        scaler.Parent = frame
+    end
+    scaler.Scale = scale
+    local yOff = 0
+    if scale < 1 then
+        yOff = (inset.Y / 2) / scale
+    end
+    frame.Position = UDim2.new(0.5, 0, 0.5, yOff)
+    return scale
+end
+
 local function EZ_ClampToViewport(frame)
-    local vp = EZ_Gui.AbsoluteSize
-    local pos = frame.Position
+    local usable = EZ_ViewportUsable()
+    local abs = frame.AbsolutePosition
     local size = frame.AbsoluteSize
-    local x = pos.X.Offset
-    local y = pos.Y.Offset
-    local maxX = vp.X - size.X - 4
-    local maxY = vp.Y - size.Y - 4
-    x = EZ_Clamp(x, 4, math.max(4, maxX))
-    y = EZ_Clamp(y, 4, math.max(4, maxY))
-    if x ~= pos.X.Offset or y ~= pos.Y.Offset then
-        frame.Position = UDim2.new(pos.X.Scale, x, pos.Y.Scale, y)
+    local dx = math.clamp(abs.X, 4, math.max(4, usable.X - size.X - 4)) - abs.X
+    local dy = math.clamp(abs.Y, 4, math.max(4, usable.Y - size.Y - 4)) - abs.Y
+    if dx ~= 0 or dy ~= 0 then
+        local pos = frame.Position
+        frame.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx / EZ_CurrentScale, pos.Y.Scale, pos.Y.Offset + dy / EZ_CurrentScale)
     end
 end
 
 local function EZ_MakeDraggable(frame, handle)
     local dragging, start, startPos = false, nil, nil
+    local function isDragInput(t)
+        return t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch
+    end
     handle.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        if isDragInput(i.UserInputType) then
             dragging = true
             start = i.Position
             startPos = frame.Position
@@ -792,15 +835,91 @@ local function EZ_MakeDraggable(frame, handle)
         end
     end)
     handle.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+        if isDragInput(i.UserInputType) then
             dragging = false
             EZ_ClampToViewport(frame)
         end
     end)
     UserInputService.InputChanged:Connect(function(i)
         if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local d = i.Position - start
+            local d = (i.Position - start) / EZ_CurrentScale
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+end
+
+local EZ_RESIZE_DEFS = {
+    { id = "N",  pos = UDim2.new(0, 28, 0, 0, 1, -56, 0, 10) },
+    { id = "S",  pos = UDim2.new(0, 28, 1, -10, 1, -56, 0, 10) },
+    { id = "W",  pos = UDim2.new(0, 0, 0, 28, 0, 10, 1, -56) },
+    { id = "E",  pos = UDim2.new(1, -10, 0, 28, 0, 10, 1, -56) },
+    { id = "NW", pos = UDim2.new(0, 0, 0, 0, 0, 28, 0, 28) },
+    { id = "NE", pos = UDim2.new(1, -28, 0, 0, 0, 28, 0, 28) },
+    { id = "SW", pos = UDim2.new(0, 0, 1, -28, 0, 28, 0, 28) },
+    { id = "SE", pos = UDim2.new(1, -28, 1, -28, 0, 28, 0, 28) },
+}
+
+local function EZ_MakeResizable(frame)
+    local resizing = false
+    local dir = nil
+    local startInput = nil
+    local startSize = nil
+    local startPos = nil
+    local function isResizeInput(t)
+        return t == Enum.UserInputType.MouseButton1 or t == Enum.UserInputType.Touch
+    end
+    for _, def in ipairs(EZ_RESIZE_DEFS) do
+        local h = Instance.new("Frame")
+        h.Name = "EZ_Resize_" .. def.id
+        h.BackgroundTransparency = 1
+        h.Position = def.pos
+        h.ZIndex = 200
+        h.Parent = frame
+        local myDir = def.id
+        h.InputBegan:Connect(function(i)
+            if isResizeInput(i.UserInputType) then
+                resizing = true
+                dir = myDir
+                startInput = i.Position
+                startSize = Vector2.new(frame.Size.X.Offset, frame.Size.Y.Offset)
+                startPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+                EZ_CloseDropdown()
+            end
+        end)
+        h.InputEnded:Connect(function(i)
+            if isResizeInput(i.UserInputType) and dir == myDir then
+                resizing = false
+                dir = nil
+                EZ_ClampToViewport(frame)
+            end
+        end)
+    end
+    UserInputService.InputChanged:Connect(function(i)
+        if resizing and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            local usable = EZ_ViewportUsable()
+            local maxW = (usable.X - 8) / EZ_CurrentScale
+            local maxH = (usable.Y - 8) / EZ_CurrentScale
+            local d = (i.Position - startInput) / EZ_CurrentScale
+            local w, hgt = startSize.X, startSize.Y
+            local px, py = startPos.X, startPos.Y
+            if dir:find("E") then
+                w = EZ_Clamp(startSize.X + d.X, EZ_MIN_SIZE.X, maxW)
+            end
+            if dir:find("W") then
+                local nw = EZ_Clamp(startSize.X - d.X, EZ_MIN_SIZE.X, maxW)
+                px = px + (nw - startSize.X) / 2
+                w = nw
+            end
+            if dir:find("S") then
+                hgt = EZ_Clamp(startSize.Y + d.Y, EZ_MIN_SIZE.Y, maxH)
+            end
+            if dir:find("N") then
+                local nh = EZ_Clamp(startSize.Y - d.Y, EZ_MIN_SIZE.Y, maxH)
+                py = py + (nh - startSize.Y) / 2
+                hgt = nh
+            end
+            frame.Size = UDim2.new(0, w, 0, hgt)
+            frame.Position = UDim2.new(0.5, px, 0.5, py)
         end
     end)
 end
@@ -1429,7 +1548,7 @@ function EZ:Notify(options)
         cl.TextWrapped = true
         cl.Parent = card
         EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
-        
+
         local inputBox = nil
         if hasInput then
             inputBox = Instance.new("TextBox")
@@ -1458,7 +1577,7 @@ function EZ:Notify(options)
                 end
             end)
         end
-        
+
         if hasButtons and not hasInput then
             local btnRow = Instance.new("Frame")
             btnRow.Size = UDim2.new(1, -28, 0, 26)
@@ -1492,7 +1611,7 @@ function EZ:Notify(options)
                 end)
             end
         end
-        
+
         local timer = nil
         if d > 0 and not hasInput then
             timer = Instance.new("Frame")
@@ -1518,6 +1637,9 @@ function EZ:Notify(options)
                     EZ_FlushNotifyQueue()
                 end)
             end
+        end
+        local function destroyNotify()
+            entry.destroy()
         end
         TweenService:Create(holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, height) }):Play()
         if timer then
@@ -1630,6 +1752,13 @@ function EZ:CreateWindow(options)
             if data._meta.theme then EZ_ApplyThemeAndRepaint(data._meta.theme) end
             if data._meta.transparency then EZ_Window:SetTransparency(data._meta.transparency) end
             if data._meta.autoSave ~= nil then EZ_AutoSave = data._meta.autoSave end
+            if data._meta.windowSize and EZ_Window.Frame then
+                local ws = data._meta.windowSize
+                local usable = EZ_ViewportUsable()
+                local w = EZ_Clamp(ws[1] or 620, EZ_MIN_SIZE.X, (usable.X - 8) / EZ_CurrentScale)
+                local h = EZ_Clamp(ws[2] or 440, EZ_MIN_SIZE.Y, (usable.Y - 8) / EZ_CurrentScale)
+                EZ_Window.Frame.Size = UDim2.new(0, w, 0, h)
+            end
         end
         if EZ_Window._themeDropdown then
             EZ_Window._themeDropdown:Set(EZ_CurrentThemeName, true)
@@ -1679,9 +1808,21 @@ function EZ:CreateWindow(options)
         EZ_RegTrans(frame, 1)
         EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
 
-TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDirection.Out), {
-    Size = EZ_Size
-}):Play()
+        local EZ_BaseSize = Vector2.new(EZ_Size.X.Offset, EZ_Size.Y.Offset)
+        EZ_ApplyResponsiveScale(frame, EZ_BaseSize)
+
+        pcall(function()
+            local conn = workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+                if frame.Parent then
+                    EZ_ApplyResponsiveScale(frame, EZ_BaseSize)
+                end
+            end)
+            table.insert(EZ_ScaleConns, conn)
+        end)
+
+        TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = EZ_Size
+        }):Play()
 
         local titlebar = Instance.new("Frame")
         titlebar.Size = UDim2.new(1, 0, 0, EZ_TITLEBAR_HEIGHT)
@@ -1925,6 +2066,7 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
         end)
 
         EZ_MakeDraggable(frame, titlebar)
+        EZ_MakeResizable(frame)
 
         function EZ_Window:AddTab(opt)
             opt = opt or {}
@@ -2163,8 +2305,8 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
             function tab:AddToggle(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
-                local rightCb = o.RightClick or function() end
-                local middleCb = o.MiddleClick or function() end
+                local rightCb = o.RightClick or o.RightCallback or function() end
+                local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local id = o.Flag or o.Id or o.Title or "toggle_" .. os.clock()
                 local obj = { Value = o.Default and true or false, Id = id, Flag = o.Flag, Type = "toggle", Default = o.Default and true or false }
                 local row = EZ_NewRow(page, 44, obj)
@@ -2217,8 +2359,8 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
             function tab:AddButton(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
-                local rightCb = o.RightClick or function() end
-                local middleCb = o.MiddleClick or function() end
+                local rightCb = o.RightClick or o.RightCallback or function() end
+                local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local obj = {}
                 local row = EZ_NewRow(page, 44, obj)
                 EZ_RowTitle(row, o.Title or "Button", o.Description, 44, nil, obj)
@@ -2432,7 +2574,7 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                 local mn, mx, st = o.Min or 0, o.Max or 100, o.Step or 1
                 local cb = o.Callback or function() end
                 local id = o.Flag or o.Id or o.Title or "range_" .. os.clock()
-                local obj = { 
+                local obj = {
                     MinValue = (type(o.Default) == "table" and o.Default[1]) or mn,
                     MaxValue = (type(o.Default) == "table" and o.Default[2]) or mx,
                     Id = id, Flag = o.Flag, Type = "range",
@@ -2554,27 +2696,27 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                     return mn + EZ_Clamp((x - track.AbsolutePosition.X) / w, 0, 1) * (mx - mn)
                 end
                 capMin.InputBegan:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
                         draggingMin = true; applyVisualMin(fromPtr(i.Position.X))
                     end
                 end)
                 capMin.InputEnded:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
                         draggingMin = false; applyFinal(false)
                     end
                 end)
                 capMax.InputBegan:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
                         draggingMax = true; applyVisualMax(fromPtr(i.Position.X))
                     end
                 end)
                 capMax.InputEnded:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
                         draggingMax = false; applyFinal(false)
                     end
                 end)
                 UserInputService.InputChanged:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseMovement then
+                    if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
                         if draggingMin then applyVisualMin(fromPtr(i.Position.X)) end
                         if draggingMax then applyVisualMax(fromPtr(i.Position.X)) end
                     end
@@ -2659,11 +2801,11 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                 local cb = o.Callback or function() end
                 local multi = o.Multi == true
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
-                local obj = { 
-                    Value = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default, 
-                    Id = id, Flag = o.Flag, 
-                    Type = multi and "multi" or "dropdown", 
-                    Default = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default 
+                local obj = {
+                    Value = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default,
+                    Id = id, Flag = o.Flag,
+                    Type = multi and "multi" or "dropdown",
+                    Default = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default
                 }
                 local row = EZ_NewRow(page, 44, obj)
                 EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 44, 190, obj)
@@ -2683,9 +2825,9 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                 trigText.Position = UDim2.fromOffset(10, 0)
                 trigText.BackgroundTransparency = 1
                 if multi then
-                    trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                    trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
                 else
-                    trigText.Text = obj.Value and tostring(obj.Value) or "none"
+                    trigText.Text = obj.Value and tostring(obj.Value) or EZ_Locale.None
                 end
                 trigText.Font = EZ_Brand.FontBody
                 trigText.TextSize = 12
@@ -2712,16 +2854,17 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                     windowFrame = frame,
                     width = 172,
                     searchable = o.Searchable and true or false,
+                    multi = multi,
                     getValues = function() return values end,
                     getValue = function() return obj.Value end,
-                    pick = function(v) 
+                    pick = function(v)
                         if multi then
                             local found = false
                             for i, item in ipairs(obj.Value) do
                                 if item == v then table.remove(obj.Value, i); found = true; break end
                             end
                             if not found then table.insert(obj.Value, v) end
-                            trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                            trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
                             cb(obj.Value)
                             if obj.Flag and EZ_AutoSave then
                                 EZ_Window.ConfigData[id] = { type = "multi", value = obj.Value }
@@ -2735,7 +2878,7 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                 function obj:Set(v, silent)
                     if multi then
                         obj.Value = type(v) == "table" and v or {}
-                        trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or "none"
+                        trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
                     else
                         obj.Value = v
                         trigText.Text = tostring(v)
@@ -3066,13 +3209,13 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
                         update(false)
                     end
                     cap.InputBegan:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true; apply(i.Position.X) end
+                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = true; apply(i.Position.X) end
                     end)
                     cap.InputEnded:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end
+                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = false end
                     end)
                     UserInputService.InputChanged:Connect(function(i)
-                        if drag and i.UserInputType == Enum.UserInputType.MouseMovement then apply(i.Position.X) end
+                        if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then apply(i.Position.X) end
                     end)
                 end
                 channel("R", function() return r end, function(v) r = v end)
@@ -3224,6 +3367,9 @@ TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDi
         function EZ_Window:SaveConfig(configName)
             configName = configName or EZ_Window.CurrentConfig
             local data = { _meta = { theme = EZ_CurrentThemeName, transparency = EZ_GlobalTransparency, autoSave = EZ_AutoSave } }
+            if EZ_Window.Frame then
+                data._meta.windowSize = { math.floor(EZ_Window.Frame.Size.X.Offset), math.floor(EZ_Window.Frame.Size.Y.Offset) }
+            end
             for _, el in ipairs(EZ_Window.Elements) do
                 if el.Flag then
                     if el.Type == "color" then
@@ -3474,6 +3620,10 @@ function EZ:Destroy()
         end
     end
     table.clear(EZ_Connections)
+    for _, conn in ipairs(EZ_ScaleConns) do
+        if conn.Connected then conn:Disconnect() end
+    end
+    table.clear(EZ_ScaleConns)
     table.clear(EZ_ThemeListeners)
     if getgenv then getgenv().EazyUI = nil end
     EZ_CurrentWindow = nil
