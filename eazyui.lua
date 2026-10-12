@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.39
+    Eazy UI v0.9.40
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.39"
+EZ.Version = "0.9.40"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -2265,6 +2265,7 @@ function EZ:CreateWindow(options)
                 holder.Parent = page
                 EZ_AddRadius(holder, EZ_Theme.Radius)
                 local hs = EZ_AddStroke(holder, EZ_Theme.Border, 1)
+                EZ_Paint(function() holder.BackgroundColor3 = EZ_Theme.Card end)
 
                 local t = Instance.new("TextLabel")
                 t.Size = UDim2.new(1, -40, 1, 0)
