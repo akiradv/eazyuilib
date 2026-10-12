@@ -52,20 +52,20 @@ end
 
 local EZ_Themes = {
     Default = {
-        Background = EZ_C(13, 14, 18),
-        Card = EZ_C(20, 22, 28),
-        CardHover = EZ_C(27, 30, 38),
-        Border = EZ_C(34, 38, 48),
-        BorderHover = EZ_C(52, 58, 72),
-        TabActive = EZ_C(24, 27, 35),
-        Text = EZ_C(228, 232, 240),
-        TextDim = EZ_C(120, 128, 142),
-        Accent = EZ_C(95, 155, 230),
-        AccentDim = EZ_C(68, 112, 172),
-        Success = EZ_C(115, 195, 145),
+        Background = EZ_C(14, 22, 18),
+        Card = EZ_C(20, 32, 26),
+        CardHover = EZ_C(28, 44, 36),
+        Border = EZ_C(38, 56, 46),
+        BorderHover = EZ_C(56, 80, 66),
+        TabActive = EZ_C(24, 40, 32),
+        Text = EZ_C(228, 240, 232),
+        TextDim = EZ_C(120, 142, 128),
+        Accent = EZ_C(95, 200, 140),
+        AccentDim = EZ_C(68, 150, 105),
+        Success = EZ_C(115, 200, 150),
         Warning = EZ_C(240, 180, 90),
         Error = EZ_C(230, 95, 95),
-        Info = EZ_C(95, 155, 230),
+        Info = EZ_C(95, 200, 140),
         Radius = 6,
         RadiusWindow = 10,
     },
@@ -74,7 +74,7 @@ local EZ_Themes = {
         Border = EZ_C(28, 28, 32), BorderHover = EZ_C(48, 48, 54), TabActive = EZ_C(30, 12, 16),
         Text = EZ_C(235, 235, 238), TextDim = EZ_C(105, 105, 112),
         Accent = EZ_C(244, 63, 94), AccentDim = EZ_C(190, 40, 70),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 63, 94),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 63, 94),
         Radius = 6, RadiusWindow = 10,
     },
     Light = {
@@ -90,7 +90,7 @@ local EZ_Themes = {
         Border = EZ_C(24, 40, 62), BorderHover = EZ_C(38, 60, 90), TabActive = EZ_C(10, 32, 56),
         Text = EZ_C(222, 234, 246), TextDim = EZ_C(108, 128, 148),
         Accent = EZ_C(56, 189, 248), AccentDim = EZ_C(37, 140, 190),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(56, 189, 248),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(56, 189, 248),
         Radius = 8, RadiusWindow = 12,
     },
     Sunset = {
@@ -98,7 +98,7 @@ local EZ_Themes = {
         Border = EZ_C(70, 34, 46), BorderHover = EZ_C(100, 50, 64), TabActive = EZ_C(58, 32, 20),
         Text = EZ_C(246, 232, 226), TextDim = EZ_C(158, 124, 118),
         Accent = EZ_C(250, 204, 21), AccentDim = EZ_C(196, 158, 12),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(250, 204, 21),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(250, 204, 21),
         Radius = 10, RadiusWindow = 14,
     },
     Mono = {
@@ -114,7 +114,7 @@ local EZ_Themes = {
         Border = EZ_C(50, 42, 72), BorderHover = EZ_C(74, 62, 104), TabActive = EZ_C(40, 28, 62),
         Text = EZ_C(238, 232, 248), TextDim = EZ_C(138, 128, 158),
         Accent = EZ_C(192, 132, 252), AccentDim = EZ_C(147, 98, 196),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(192, 132, 252),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(192, 132, 252),
         Radius = 8, RadiusWindow = 12,
     },
     Rose = {
@@ -122,7 +122,7 @@ local EZ_Themes = {
         Border = EZ_C(62, 34, 48), BorderHover = EZ_C(92, 50, 70), TabActive = EZ_C(52, 22, 38),
         Text = EZ_C(248, 232, 238), TextDim = EZ_C(158, 128, 140),
         Accent = EZ_C(244, 114, 182), AccentDim = EZ_C(190, 80, 138),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 114, 182),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 114, 182),
         Radius = 8, RadiusWindow = 12,
     },
     Aqua = {
@@ -138,7 +138,7 @@ local EZ_Themes = {
         Border = EZ_C(30, 36, 58), BorderHover = EZ_C(46, 54, 86), TabActive = EZ_C(20, 24, 50),
         Text = EZ_C(228, 232, 246), TextDim = EZ_C(122, 130, 156),
         Accent = EZ_C(129, 140, 248), AccentDim = EZ_C(96, 105, 196),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(129, 140, 248),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(129, 140, 248),
         Radius = 6, RadiusWindow = 10,
     },
     Pumpkin = {
@@ -146,7 +146,7 @@ local EZ_Themes = {
         Border = EZ_C(58, 42, 28), BorderHover = EZ_C(87, 63, 42), TabActive = EZ_C(52, 36, 20),
         Text = EZ_C(244, 236, 228), TextDim = EZ_C(156, 140, 124),
         Accent = EZ_C(249, 115, 22), AccentDim = EZ_C(194, 87, 14),
-        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(249, 115, 22),
+        Success = EZ_C(115, 200, 150), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(249, 115, 22),
         Radius = 10, RadiusWindow = 14,
     },
 }
@@ -182,7 +182,7 @@ local EZ_CurrentWindow = nil
 local EZ_CurrentScale = 1
 local EZ_ScaleConns = {}
 local EZ_MIN_SIZE = Vector2.new(420, 300)
-local EZ_STROKE_BASE = 0.9
+local EZ_STROKE_BASE = 0.7
 
 local EZ_Ease = {
     Fast = TweenInfo.new(0.14, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -817,11 +817,13 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
         scaler.Parent = frame
     end
     scaler.Scale = scale
-    local yOff = 0
-    if scale < 1 then
-        yOff = (inset.Y / 2) / scale
+    if not frame:GetAttribute("EZ_Moved") then
+        local yOff = 0
+        if scale < 1 then
+            yOff = (inset.Y / 2) / scale
+        end
+        frame.Position = UDim2.new(0.5, 0, 0.5, yOff)
     end
-    frame.Position = UDim2.new(0.5, 0, 0.5, yOff)
     return scale
 end
 
@@ -847,6 +849,7 @@ local function EZ_MakeDraggable(frame, handle)
             dragging = true
             start = i.Position
             startPos = frame.Position
+            frame:SetAttribute("EZ_Moved", true)
             EZ_CloseDropdown()
         end
     end)
@@ -1822,8 +1825,8 @@ function EZ:CreateWindow(options)
         local frame = Instance.new("CanvasGroup")
         frame.Name = "Window"
         frame.Size = UDim2.fromOffset(EZ_Size.X.Offset * 0.96, EZ_Size.Y.Offset * 0.96)
-        frame.AnchorPoint = Vector2.new(0.5, 0.5)
-        frame.Position = UDim2.fromScale(0.5, 0.5)
+        frame.AnchorPoint = Vector2.new(0.5, 0)
+        frame.Position = UDim2.new(0.5, 0, 0.5, -EZ_Size.Y.Offset * 0.5)
         frame.BackgroundColor3 = EZ_Theme.Background
         frame.BorderSizePixel = 0
         frame.ClipsDescendants = true
@@ -2091,14 +2094,10 @@ function EZ:CreateWindow(options)
         end
 
         local function applyMinimizeShrink(state)
-            local info = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            local info = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
             if state then
-                local curH = frame.Size.Y.Offset
-                local topDelta = (EZ_TITLEBAR_HEIGHT - curH) * EZ_CurrentScale * 0.5
-                local pos = frame.Position
                 TweenService:Create(frame, info, {
-                    Size = UDim2.new(0, frame.Size.X.Offset, 0, EZ_TITLEBAR_HEIGHT),
-                    Position = UDim2.new(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset + topDelta),
+                    Size = UDim2.fromOffset(frame.Size.X.Offset, EZ_TITLEBAR_HEIGHT)
                 }):Play()
                 task.delay(0.14, function()
                     if not EZ_Window.Minimized or EZ_Window.MinimizeMode ~= "shrink" then return end
@@ -2114,13 +2113,8 @@ function EZ:CreateWindow(options)
                         child.Visible = true
                     end
                 end
-                local curH = frame.Size.Y.Offset
-                local targetH = EZ_Size.Y.Offset
-                local topDelta = (targetH - curH) * EZ_CurrentScale * 0.5
-                local pos = frame.Position
                 TweenService:Create(frame, info, {
-                    Size = UDim2.new(0, EZ_Size.X.Offset, 0, EZ_Size.Y.Offset),
-                    Position = UDim2.new(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset + topDelta),
+                    Size = UDim2.fromOffset(EZ_Size.X.Offset, EZ_Size.Y.Offset)
                 }):Play()
             end
         end
@@ -2264,33 +2258,30 @@ function EZ:CreateWindow(options)
                 o = o or {}
                 local holder = Instance.new("Frame")
                 holder:SetAttribute("EZ_Section", true)
-                holder.Size = UDim2.new(1, 0, 0, 22)
-                holder.BackgroundTransparency = 1
+                holder.Size = UDim2.new(1, 0, 0, 28)
+                holder.BackgroundColor3 = EZ_Theme.Card
+                holder.BackgroundTransparency = 0.4
+                holder.BorderSizePixel = 0
                 holder.Parent = page
-                local dot = Instance.new("Frame")
-                dot.Size = UDim2.fromOffset(5, 5)
-                dot.Position = UDim2.new(0, 2, 0.5, -2)
-                dot.BackgroundColor3 = EZ_Theme.Accent
-                dot.BackgroundTransparency = 0.2
-                dot.BorderSizePixel = 0
-                dot.Parent = holder
-                EZ_AddRadius(dot, 3)
-                EZ_Paint(function() dot.BackgroundColor3 = EZ_Theme.Accent end)
+                EZ_AddRadius(holder, EZ_Theme.Radius)
+                local hs = EZ_AddStroke(holder, EZ_Theme.Border, 1)
+
                 local t = Instance.new("TextLabel")
                 t.Size = UDim2.new(1, -40, 1, 0)
                 t.Position = UDim2.new(0, 14, 0, 0)
                 t.BackgroundTransparency = 1
                 t.Text = string.upper(o.Title or "")
                 t.Font = EZ_Brand.Font
-                t.TextSize = 11
-                t.TextColor3 = EZ_Theme.TextDim
+                t.TextSize = 12
+                t.TextColor3 = EZ_Theme.Text
                 t.TextXAlignment = Enum.TextXAlignment.Left
                 t.Parent = holder
-                EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
-                local chev = EZ_CreateIcon(holder, "chevron-down", 12)
+                EZ_Paint(function() t.TextColor3 = EZ_Theme.Text end)
+
+                local chev = EZ_CreateIcon(holder, "chevron-down", 14)
                 if chev then
                     chev.AnchorPoint = Vector2.new(1, 0.5)
-                    chev.Position = UDim2.new(1, -2, 0.5, 0)
+                    chev.Position = UDim2.new(1, -10, 0.5, 0)
                     chev.ImageColor3 = EZ_Theme.TextDim
                 end
                 local collapsed = false
