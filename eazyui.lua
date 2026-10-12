@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.38
+    Eazy UI v0.9.39
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.38"
+EZ.Version = "0.9.39"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -52,29 +52,29 @@ end
 
 local EZ_Themes = {
     Default = {
-        Background = EZ_C(16, 27, 34),
-        Card = EZ_C(22, 34, 42),
-        CardHover = EZ_C(30, 44, 54),
-        Border = EZ_C(48, 64, 76),
-        BorderHover = EZ_C(74, 96, 112),
-        TabActive = EZ_C(26, 40, 50),
-        Text = EZ_C(232, 240, 246),
-        TextDim = EZ_C(126, 142, 156),
-        Accent = EZ_C(108, 185, 220),
-        AccentDim = EZ_C(78, 138, 168),
-        Success = EZ_C(120, 200, 150),
-        Warning = EZ_C(245, 185, 95),
-        Error = EZ_C(235, 100, 100),
-        Info = EZ_C(108, 185, 220),
-        Radius = 8,
-        RadiusWindow = 12,
+        Background = EZ_C(13, 14, 18),
+        Card = EZ_C(20, 22, 28),
+        CardHover = EZ_C(27, 30, 38),
+        Border = EZ_C(34, 38, 48),
+        BorderHover = EZ_C(52, 58, 72),
+        TabActive = EZ_C(24, 27, 35),
+        Text = EZ_C(228, 232, 240),
+        TextDim = EZ_C(120, 128, 142),
+        Accent = EZ_C(95, 155, 230),
+        AccentDim = EZ_C(68, 112, 172),
+        Success = EZ_C(115, 195, 145),
+        Warning = EZ_C(240, 180, 90),
+        Error = EZ_C(230, 95, 95),
+        Info = EZ_C(95, 155, 230),
+        Radius = 6,
+        RadiusWindow = 10,
     },
     Pitch = {
         Background = EZ_C(5, 5, 6), Card = EZ_C(12, 12, 14), CardHover = EZ_C(20, 20, 23),
         Border = EZ_C(28, 28, 32), BorderHover = EZ_C(48, 48, 54), TabActive = EZ_C(30, 12, 16),
         Text = EZ_C(235, 235, 238), TextDim = EZ_C(105, 105, 112),
         Accent = EZ_C(244, 63, 94), AccentDim = EZ_C(190, 40, 70),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(244, 63, 94),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 63, 94),
         Radius = 6, RadiusWindow = 10,
     },
     Light = {
@@ -90,7 +90,7 @@ local EZ_Themes = {
         Border = EZ_C(24, 40, 62), BorderHover = EZ_C(38, 60, 90), TabActive = EZ_C(10, 32, 56),
         Text = EZ_C(222, 234, 246), TextDim = EZ_C(108, 128, 148),
         Accent = EZ_C(56, 189, 248), AccentDim = EZ_C(37, 140, 190),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(56, 189, 248),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(56, 189, 248),
         Radius = 8, RadiusWindow = 12,
     },
     Sunset = {
@@ -98,7 +98,7 @@ local EZ_Themes = {
         Border = EZ_C(70, 34, 46), BorderHover = EZ_C(100, 50, 64), TabActive = EZ_C(58, 32, 20),
         Text = EZ_C(246, 232, 226), TextDim = EZ_C(158, 124, 118),
         Accent = EZ_C(250, 204, 21), AccentDim = EZ_C(196, 158, 12),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(250, 204, 21),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(250, 204, 21),
         Radius = 10, RadiusWindow = 14,
     },
     Mono = {
@@ -106,7 +106,7 @@ local EZ_Themes = {
         Border = EZ_C(48, 48, 48), BorderHover = EZ_C(72, 72, 72), TabActive = EZ_C(40, 40, 40),
         Text = EZ_C(238, 238, 238), TextDim = EZ_C(132, 132, 132),
         Accent = EZ_C(238, 238, 238), AccentDim = EZ_C(179, 179, 179),
-        Success = EZ_C(238, 238, 238), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(238, 238, 238),
+        Success = EZ_C(238, 238, 238), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(238, 238, 238),
         Radius = 4, RadiusWindow = 8,
     },
     Amethyst = {
@@ -114,7 +114,7 @@ local EZ_Themes = {
         Border = EZ_C(50, 42, 72), BorderHover = EZ_C(74, 62, 104), TabActive = EZ_C(40, 28, 62),
         Text = EZ_C(238, 232, 248), TextDim = EZ_C(138, 128, 158),
         Accent = EZ_C(192, 132, 252), AccentDim = EZ_C(147, 98, 196),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(192, 132, 252),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(192, 132, 252),
         Radius = 8, RadiusWindow = 12,
     },
     Rose = {
@@ -122,7 +122,7 @@ local EZ_Themes = {
         Border = EZ_C(62, 34, 48), BorderHover = EZ_C(92, 50, 70), TabActive = EZ_C(52, 22, 38),
         Text = EZ_C(248, 232, 238), TextDim = EZ_C(158, 128, 140),
         Accent = EZ_C(244, 114, 182), AccentDim = EZ_C(190, 80, 138),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(244, 114, 182),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(244, 114, 182),
         Radius = 8, RadiusWindow = 12,
     },
     Aqua = {
@@ -130,7 +130,7 @@ local EZ_Themes = {
         Border = EZ_C(28, 52, 50), BorderHover = EZ_C(42, 76, 73), TabActive = EZ_C(14, 42, 40),
         Text = EZ_C(226, 242, 240), TextDim = EZ_C(116, 140, 138),
         Accent = EZ_C(45, 212, 191), AccentDim = EZ_C(30, 160, 144),
-        Success = EZ_C(45, 212, 191), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(45, 212, 191),
+        Success = EZ_C(45, 212, 191), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(45, 212, 191),
         Radius = 8, RadiusWindow = 12,
     },
     Nocturne = {
@@ -138,7 +138,7 @@ local EZ_Themes = {
         Border = EZ_C(30, 36, 58), BorderHover = EZ_C(46, 54, 86), TabActive = EZ_C(20, 24, 50),
         Text = EZ_C(228, 232, 246), TextDim = EZ_C(122, 130, 156),
         Accent = EZ_C(129, 140, 248), AccentDim = EZ_C(96, 105, 196),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(129, 140, 248),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(129, 140, 248),
         Radius = 6, RadiusWindow = 10,
     },
     Pumpkin = {
@@ -146,7 +146,7 @@ local EZ_Themes = {
         Border = EZ_C(58, 42, 28), BorderHover = EZ_C(87, 63, 42), TabActive = EZ_C(52, 36, 20),
         Text = EZ_C(244, 236, 228), TextDim = EZ_C(156, 140, 124),
         Accent = EZ_C(249, 115, 22), AccentDim = EZ_C(194, 87, 14),
-        Success = EZ_C(120, 200, 150), Warning = EZ_C(245, 185, 95), Error = EZ_C(235, 100, 100), Info = EZ_C(249, 115, 22),
+        Success = EZ_C(115, 195, 145), Warning = EZ_C(240, 180, 90), Error = EZ_C(230, 95, 95), Info = EZ_C(249, 115, 22),
         Radius = 10, RadiusWindow = 14,
     },
 }
@@ -182,7 +182,7 @@ local EZ_CurrentWindow = nil
 local EZ_CurrentScale = 1
 local EZ_ScaleConns = {}
 local EZ_MIN_SIZE = Vector2.new(420, 300)
-local EZ_STROKE_BASE = 0.83
+local EZ_STROKE_BASE = 0.9
 
 local EZ_Ease = {
     Fast = TweenInfo.new(0.14, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -273,8 +273,8 @@ local function EZ_ApplyThemeAndRepaint(name)
     local t = EZ_Themes[resolved] or EZ_Themes.Default
     EZ_CurrentThemeName = resolved
     for k, v in pairs(t) do EZ_Theme[k] = v end
-    if not EZ_Theme.Radius then EZ_Theme.Radius = 8 end
-    if not EZ_Theme.RadiusWindow then EZ_Theme.RadiusWindow = 12 end
+    if not EZ_Theme.Radius then EZ_Theme.Radius = 6 end
+    if not EZ_Theme.RadiusWindow then EZ_Theme.RadiusWindow = 10 end
     EZ_Repaint()
     for _, fn in ipairs(EZ_ThemeListeners) do
         pcall(fn, EZ_CurrentThemeName)
@@ -476,8 +476,8 @@ local function EZ_CreateIcon(parent, icon, size)
     return img
 end
 
-local EZ_TITLEBAR_HEIGHT = 50
-local EZ_SIDEBAR_WIDTH = 190
+local EZ_TITLEBAR_HEIGHT = 46
+local EZ_SIDEBAR_WIDTH = 178
 local EZ_NOTIFY_WIDTH = 320
 local EZ_ConfigFolder = "EazyUI_Configs"
 local EZ_AutoSave = true
@@ -549,22 +549,22 @@ local function EZ_UpdateNotifyPosition()
     local pos = EZ_NotifyPosition
     if pos == "BottomRight" then
         EZ_NotifyContainer.AnchorPoint = Vector2.new(1, 1)
-        EZ_NotifyContainer.Position = UDim2.new(1, -24, 1, -24)
+        EZ_NotifyContainer.Position = UDim2.new(1, -20, 1, -20)
         EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
         EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     elseif pos == "BottomLeft" then
         EZ_NotifyContainer.AnchorPoint = Vector2.new(0, 1)
-        EZ_NotifyContainer.Position = UDim2.new(0, 24, 1, -24)
+        EZ_NotifyContainer.Position = UDim2.new(0, 20, 1, -20)
         EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
         EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     elseif pos == "TopRight" then
         EZ_NotifyContainer.AnchorPoint = Vector2.new(1, 0)
-        EZ_NotifyContainer.Position = UDim2.new(1, -24, 0, 24)
+        EZ_NotifyContainer.Position = UDim2.new(1, -20, 0, 20)
         EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Top
         EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     elseif pos == "TopLeft" then
         EZ_NotifyContainer.AnchorPoint = Vector2.new(0, 0)
-        EZ_NotifyContainer.Position = UDim2.new(0, 24, 0, 24)
+        EZ_NotifyContainer.Position = UDim2.new(0, 20, 0, 20)
         EZ_NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Top
         EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     end
@@ -608,7 +608,7 @@ local function EZ_ApplyTransparency(t)
     end
     for _, s in ipairs(EZ_StrokeSurf) do
         if s.Parent then
-            s.Transparency = EZ_Clamp(EZ_STROKE_BASE + EZ_GlobalTransparency * 0.5, 0, 1)
+            s.Transparency = EZ_Clamp(EZ_STROKE_BASE + EZ_GlobalTransparency * 0.1, 0, 1)
         end
     end
 end
@@ -680,13 +680,13 @@ local function EZ_OpenDropdown(entry)
     local optionButtons = {}
     if entry.searchable then
         local search = Instance.new("TextBox")
-        search.Size = UDim2.new(1, 0, 0, 32)
+        search.Size = UDim2.new(1, 0, 0, 30)
         search.BackgroundColor3 = EZ_Theme.Card
         search.BorderSizePixel = 0
         search.Text = ""
         search.PlaceholderText = EZ_Locale.Search
         search.Font = EZ_Brand.FontBody
-        search.TextSize = 14
+        search.TextSize = 13
         search.TextColor3 = EZ_Theme.Text
         search.PlaceholderColor3 = EZ_Theme.TextDim
         search.TextXAlignment = Enum.TextXAlignment.Left
@@ -694,7 +694,7 @@ local function EZ_OpenDropdown(entry)
         search.ZIndex = 61
         search.Parent = EZ_DropdownList
         local sp = Instance.new("UIPadding")
-        sp.PaddingLeft = UDim.new(0, 12)
+        sp.PaddingLeft = UDim.new(0, 10)
         sp.Parent = search
         search:GetPropertyChangedSignal("Text"):Connect(function()
             local q = search.Text:lower()
@@ -714,12 +714,12 @@ local function EZ_OpenDropdown(entry)
     end
     for _, v in ipairs(values) do
         local op = Instance.new("TextButton")
-        op.Size = UDim2.new(1, 0, 0, 32)
+        op.Size = UDim2.new(1, 0, 0, 30)
         op.BackgroundTransparency = 1
         op.Text = tostring(v)
         op.Font = EZ_Brand.FontBody
-        op.TextSize = 14
-        op.TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.TextDim
+        op.TextSize = 13
+        op.TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.Text
         op.TextXAlignment = Enum.TextXAlignment.Left
         op.AutoButtonColor = false
         op.ZIndex = 61
@@ -729,10 +729,13 @@ local function EZ_OpenDropdown(entry)
         opp.PaddingLeft = UDim.new(0, 12)
         opp.Parent = op
         op.MouseEnter:Connect(function()
-            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text, BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
+            TweenService:Create(op, TweenInfo.new(0.1), { BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
+            if not isSelected(v) then
+                TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text }):Play()
+            end
         end)
         op.MouseLeave:Connect(function()
-            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.TextDim, BackgroundTransparency = 1 }):Play()
+            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.Text, BackgroundTransparency = 1 }):Play()
         end)
         op.MouseButton1Click:Connect(function()
             entry.pick(v)
@@ -741,7 +744,7 @@ local function EZ_OpenDropdown(entry)
             end
         end)
     end
-    local popH = math.min(#values * 32 + (entry.searchable and 40 or 8), 240)
+    local popH = math.min(#values * 30 + (entry.searchable and 38 or 8), 240)
     local popW = entry.width or 160
     local trigPos = entry.trigger.AbsolutePosition
     local trigSize = entry.trigger.AbsoluteSize
@@ -830,7 +833,7 @@ local function EZ_ClampToViewport(frame)
     local dy = math.clamp(abs.Y, 4, math.max(4, usable.Y - size.Y - 4)) - abs.Y
     if dx ~= 0 or dy ~= 0 then
         local pos = frame.Position
-        frame.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx / EZ_CurrentScale, pos.Y.Scale, pos.Y.Offset + dy / EZ_CurrentScale)
+        frame.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx, pos.Y.Scale, pos.Y.Offset + dy)
     end
 end
 
@@ -855,21 +858,21 @@ local function EZ_MakeDraggable(frame, handle)
     end)
     UserInputService.InputChanged:Connect(function(i)
         if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local d = (i.Position - start) / EZ_CurrentScale
+            local d = i.Position - start
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
         end
     end)
 end
 
 local EZ_RESIZE_DEFS = {
-    { id = "N",  pos = UDim2.new(0, 28, 0, 0, 1, -56, 0, 10) },
-    { id = "S",  pos = UDim2.new(0, 28, 1, -10, 1, -56, 0, 10) },
-    { id = "W",  pos = UDim2.new(0, 0, 0, 28, 0, 10, 1, -56) },
-    { id = "E",  pos = UDim2.new(1, -10, 0, 28, 0, 10, 1, -56) },
-    { id = "NW", pos = UDim2.new(0, 0, 0, 0, 0, 28, 0, 28) },
-    { id = "NE", pos = UDim2.new(1, -28, 0, 0, 0, 28, 0, 28) },
-    { id = "SW", pos = UDim2.new(0, 0, 1, -28, 0, 28, 0, 28) },
-    { id = "SE", pos = UDim2.new(1, -28, 1, -28, 0, 28, 0, 28) },
+    { id = "N",  pos = UDim2.new(0, 24, 0, 0, 1, -56, 0, 10) },
+    { id = "S",  pos = UDim2.new(0, 24, 1, -10, 1, -56, 0, 10) },
+    { id = "W",  pos = UDim2.new(0, 0, 0, 24, 0, 10, 1, -56) },
+    { id = "E",  pos = UDim2.new(1, -10, 0, 24, 0, 10, 1, -56) },
+    { id = "NW", pos = UDim2.new(0, 0, 0, 0, 0, 24, 0, 24) },
+    { id = "NE", pos = UDim2.new(1, -24, 0, 0, 0, 24, 0, 24) },
+    { id = "SW", pos = UDim2.new(0, 0, 1, -24, 0, 24, 0, 24) },
+    { id = "SE", pos = UDim2.new(1, -24, 1, -24, 0, 24, 0, 24) },
 }
 
 local function EZ_MakeResizable(frame)
@@ -912,7 +915,7 @@ local function EZ_MakeResizable(frame)
             local usable = EZ_ViewportUsable()
             local maxW = (usable.X - 8) / EZ_CurrentScale
             local maxH = (usable.Y - 8) / EZ_CurrentScale
-            local d = (i.Position - startInput) / EZ_CurrentScale
+            local d = i.Position - startInput
             local w, hgt = startSize.X, startSize.Y
             local px, py = startPos.X, startPos.Y
             if dir:find("E") then
@@ -944,7 +947,7 @@ local function EZ_NewRow(page, height, element)
     row.BorderSizePixel = 0
     row.ClipsDescendants = true
     row.Parent = page
-    local st = EZ_AddStroke(row, EZ_Theme.Border)
+    local st = EZ_AddStroke(row, EZ_Theme.Border, 1)
     EZ_AddRadius(row, EZ_Theme.Radius)
     EZ_RegTrans(row)
     local hovering = false
@@ -968,12 +971,12 @@ end
 local function EZ_RowTitle(row, text, desc, height, rightPad, element)
     local pad = rightPad or 130
     local l = Instance.new("TextLabel")
-    l.Position = UDim2.fromOffset(14, desc and 10 or 0)
-    l.Size = UDim2.new(1, -pad, 0, desc and 18 or (height or 48))
+    l.Position = UDim2.fromOffset(14, desc and 9 or 0)
+    l.Size = UDim2.new(1, -pad, 0, desc and 16 or (height or 46))
     l.BackgroundTransparency = 1
     l.Text = text
     l.Font = EZ_Brand.FontBody
-    l.TextSize = 14
+    l.TextSize = 13
     l.TextColor3 = EZ_Theme.Text
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.TextTruncate = Enum.TextTruncate.AtEnd
@@ -981,12 +984,12 @@ local function EZ_RowTitle(row, text, desc, height, rightPad, element)
     EZ_Paint(function() l.TextColor3 = EZ_Theme.Text end, element)
     if desc and desc ~= "" then
         local d = Instance.new("TextLabel")
-        d.Position = UDim2.fromOffset(14, 30)
-        d.Size = UDim2.new(1, -pad, 0, 15)
+        d.Position = UDim2.fromOffset(14, 27)
+        d.Size = UDim2.new(1, -pad, 0, 14)
         d.BackgroundTransparency = 1
         d.Text = desc
         d.Font = EZ_Brand.FontBody
-        d.TextSize = 12
+        d.TextSize = 11
         d.TextColor3 = EZ_Theme.TextDim
         d.TextXAlignment = Enum.TextXAlignment.Left
         d.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1115,7 +1118,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local card = Instance.new("Frame")
     card.AnchorPoint = Vector2.new(0.5, 0.5)
     card.Position = UDim2.new(0.5, 0, 0.5, 0)
-    card.Size = UDim2.fromOffset(480, 180)
+    card.Size = UDim2.fromOffset(460, 170)
     card.BackgroundColor3 = EZ_Theme.Background
     card.BorderSizePixel = 0
     card.Parent = gui
@@ -1129,12 +1132,12 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     lay.FillDirection = Enum.FillDirection.Vertical
     lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
     lay.VerticalAlignment = Enum.VerticalAlignment.Center
-    lay.Padding = UDim.new(0, 12)
+    lay.Padding = UDim.new(0, 10)
     lay.Parent = holder
     local letter, fadeProp
     if EZ_LogoAsset then
         letter = Instance.new("ImageLabel")
-        letter.Size = UDim2.fromOffset(64, 64)
+        letter.Size = UDim2.fromOffset(58, 58)
         letter.BackgroundTransparency = 1
         letter.Image = EZ_LogoAsset
         letter.ScaleType = Enum.ScaleType.Fit
@@ -1143,11 +1146,11 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
         fadeProp = "ImageTransparency"
     else
         letter = Instance.new("TextLabel")
-        letter.Size = UDim2.fromOffset(64, 64)
+        letter.Size = UDim2.fromOffset(58, 58)
         letter.BackgroundTransparency = 1
         letter.Text = "E"
         letter.Font = EZ_Brand.Font
-        letter.TextSize = 48
+        letter.TextSize = 44
         letter.TextColor3 = EZ_Theme.Accent
         letter.TextTransparency = 1
         letter.Parent = holder
@@ -1155,11 +1158,11 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
         EZ_Paint(function() letter.TextColor3 = EZ_Theme.Accent end)
     end
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.fromOffset(440, 26)
+    titleLabel.Size = UDim2.fromOffset(420, 24)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title or EZ_Locale.Loading
     titleLabel.Font = EZ_Brand.Font
-    titleLabel.TextSize = 20
+    titleLabel.TextSize = 18
     titleLabel.TextColor3 = EZ_Theme.Text
     titleLabel.TextXAlignment = Enum.TextXAlignment.Center
     titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1167,11 +1170,11 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     titleLabel.Parent = holder
     EZ_Paint(function() titleLabel.TextColor3 = EZ_Theme.Text end)
     local subLabel = Instance.new("TextLabel")
-    subLabel.Size = UDim2.fromOffset(440, 20)
+    subLabel.Size = UDim2.fromOffset(420, 18)
     subLabel.BackgroundTransparency = 1
     subLabel.Text = subtitle or EZ_Locale.PleaseWait
     subLabel.Font = EZ_Brand.FontBody
-    subLabel.TextSize = 14
+    subLabel.TextSize = 13
     subLabel.TextColor3 = EZ_Theme.TextDim
     subLabel.TextXAlignment = Enum.TextXAlignment.Center
     subLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1202,23 +1205,23 @@ local function EZ_ShowDiscordPrompt(invite, callback)
     gui.Parent = EZ_GuiParent()
     EZ_Hide(gui)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.fromOffset(480, 290)
+    frame.Size = UDim2.fromOffset(460, 280)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.Position = UDim2.new(0.5, 0, 0.5, 0)
     frame.BackgroundColor3 = EZ_Theme.Background
     frame.BorderSizePixel = 0
     frame.Parent = gui
-    EZ_AddStroke(frame, EZ_Theme.Accent, 2)
+    EZ_AddStroke(frame, EZ_Theme.Border)
     EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
     EZ_RegTrans(frame)
     EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
     local iconFrame = Instance.new("Frame")
-    iconFrame.Size = UDim2.fromOffset(52, 52)
-    iconFrame.Position = UDim2.new(0.5, -26, 0, 22)
+    iconFrame.Size = UDim2.fromOffset(48, 48)
+    iconFrame.Position = UDim2.new(0.5, -24, 0, 22)
     iconFrame.BackgroundColor3 = EZ_Theme.Accent
     iconFrame.BorderSizePixel = 0
     iconFrame.Parent = frame
-    EZ_AddRadius(iconFrame, 13)
+    EZ_AddRadius(iconFrame, 12)
     EZ_Paint(function() iconFrame.BackgroundColor3 = EZ_Theme.Accent end)
     local iconLetter
     if EZ_LogoAsset then
@@ -1235,39 +1238,39 @@ local function EZ_ShowDiscordPrompt(invite, callback)
         iconLetter.BackgroundTransparency = 1
         iconLetter.Text = "D"
         iconLetter.Font = EZ_Brand.Font
-        iconLetter.TextSize = 30
+        iconLetter.TextSize = 28
         iconLetter.TextColor3 = EZ_Theme.Background
         iconLetter.Parent = iconFrame
         EZ_Paint(function() iconLetter.TextColor3 = EZ_Theme.Background end)
     end
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -40, 0, 26)
-    title.Position = UDim2.new(0.5, 0, 0, 88)
+    title.Size = UDim2.new(1, -40, 0, 24)
+    title.Position = UDim2.new(0.5, 0, 0, 82)
     title.AnchorPoint = Vector2.new(0.5, 0)
     title.BackgroundTransparency = 1
     title.Text = EZ_Locale.JoinDiscord
     title.Font = EZ_Brand.Font
-    title.TextSize = 20
+    title.TextSize = 18
     title.TextColor3 = EZ_Theme.Text
     title.TextXAlignment = Enum.TextXAlignment.Center
     title.Parent = frame
     EZ_Paint(function() title.TextColor3 = EZ_Theme.Text end)
     local sub = Instance.new("TextLabel")
-    sub.Size = UDim2.new(1, -40, 0, 40)
-    sub.Position = UDim2.new(0.5, 0, 0, 120)
+    sub.Size = UDim2.new(1, -40, 0, 38)
+    sub.Position = UDim2.new(0.5, 0, 0, 112)
     sub.AnchorPoint = Vector2.new(0.5, 0)
     sub.BackgroundTransparency = 1
     sub.Text = EZ_Locale.DiscordSubtitle
     sub.Font = EZ_Brand.FontBody
-    sub.TextSize = 14
+    sub.TextSize = 13
     sub.TextColor3 = EZ_Theme.TextDim
     sub.TextXAlignment = Enum.TextXAlignment.Center
     sub.TextWrapped = true
     sub.Parent = frame
     EZ_Paint(function() sub.TextColor3 = EZ_Theme.TextDim end)
     local inviteLabel = Instance.new("Frame")
-    inviteLabel.Size = UDim2.new(1, -40, 0, 48)
-    inviteLabel.Position = UDim2.new(0.5, 0, 0, 168)
+    inviteLabel.Size = UDim2.new(1, -40, 0, 46)
+    inviteLabel.Position = UDim2.new(0.5, 0, 0, 160)
     inviteLabel.AnchorPoint = Vector2.new(0.5, 0)
     inviteLabel.BackgroundColor3 = EZ_Theme.Card
     inviteLabel.BorderSizePixel = 0
@@ -1281,39 +1284,39 @@ local function EZ_ShowDiscordPrompt(invite, callback)
     inviteText.BackgroundTransparency = 1
     inviteText.Text = "discord.gg/" .. invite
     inviteText.Font = EZ_Brand.FontMono
-    inviteText.TextSize = 15
+    inviteText.TextSize = 14
     inviteText.TextColor3 = EZ_Theme.Accent
     inviteText.TextXAlignment = Enum.TextXAlignment.Center
     inviteText.Parent = inviteLabel
     EZ_Paint(function() inviteText.TextColor3 = EZ_Theme.Accent end)
     local copyBtn = Instance.new("TextButton")
-    copyBtn.Size = UDim2.new(0.5, -19, 0, 46)
-    copyBtn.Position = UDim2.new(0, 14, 0, 228)
+    copyBtn.Size = UDim2.new(0.5, -19, 0, 42)
+    copyBtn.Position = UDim2.new(0, 14, 0, 218)
     copyBtn.BackgroundColor3 = EZ_Theme.Accent
     copyBtn.BorderSizePixel = 0
     copyBtn.Text = EZ_Locale.CopyLink
     copyBtn.Font = EZ_Brand.FontBody
-    copyBtn.TextSize = 15
+    copyBtn.TextSize = 14
     copyBtn.TextColor3 = EZ_Theme.Background
     copyBtn.AutoButtonColor = false
     copyBtn.Parent = frame
     EZ_AddRadius(copyBtn, EZ_Theme.Radius)
     EZ_Paint(function() copyBtn.BackgroundColor3 = EZ_Theme.Accent; copyBtn.TextColor3 = EZ_Theme.Background end)
     local skipBtn = Instance.new("TextButton")
-    skipBtn.Size = UDim2.new(0.5, -19, 0, 46)
-    skipBtn.Position = UDim2.new(0.5, 5, 0, 228)
+    skipBtn.Size = UDim2.new(0.5, -19, 0, 42)
+    skipBtn.Position = UDim2.new(0.5, 5, 0, 218)
     skipBtn.BackgroundColor3 = EZ_Theme.CardHover
     skipBtn.BorderSizePixel = 0
     skipBtn.Text = EZ_Locale.Skip
     skipBtn.Font = EZ_Brand.FontBody
-    skipBtn.TextSize = 15
+    skipBtn.TextSize = 14
     skipBtn.TextColor3 = EZ_Theme.TextDim
     skipBtn.AutoButtonColor = false
     skipBtn.Parent = frame
     local skipSt = EZ_AddStroke(skipBtn, EZ_Theme.Border)
     EZ_AddRadius(skipBtn, EZ_Theme.Radius)
     EZ_Paint(function() skipBtn.BackgroundColor3 = EZ_Theme.CardHover; skipBtn.TextColor3 = EZ_Theme.TextDim end)
-    skipBtn.MouseEnter:Connect(function() TweenService:Create(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play() end)
+    skipBtn.MouseEnter:Connect(function() TweenService:Create(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
     skipBtn.MouseLeave:Connect(function() TweenService:Create(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
     copyBtn.MouseButton1Click:Connect(function()
         local link = "https://discord.gg/" .. invite
@@ -1346,7 +1349,7 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     gui.Parent = EZ_GuiParent()
     EZ_Hide(gui)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.fromOffset(440, 290)
+    frame.Size = UDim2.fromOffset(430, 280)
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.Position = UDim2.new(0.5, 0, 0.5, 0)
     frame.BackgroundColor3 = EZ_Theme.Background
@@ -1357,36 +1360,36 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     EZ_RegTrans(frame)
     EZ_Paint(function() frame.BackgroundColor3 = EZ_Theme.Background end)
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -24, 0, 26)
+    title.Size = UDim2.new(1, -24, 0, 24)
     title.Position = UDim2.fromOffset(16, 18)
     title.BackgroundTransparency = 1
     title.Text = options.Title or EZ_Locale.EnterKey
     title.Font = EZ_Brand.Font
-    title.TextSize = 17
+    title.TextSize = 16
     title.TextColor3 = EZ_Theme.Text
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = frame
     EZ_Paint(function() title.TextColor3 = EZ_Theme.Text end)
     local sub = Instance.new("TextLabel")
     sub.Size = UDim2.new(1, -24, 0, 18)
-    sub.Position = UDim2.fromOffset(16, 48)
+    sub.Position = UDim2.fromOffset(16, 46)
     sub.BackgroundTransparency = 1
     sub.Text = options.Subtitle or EZ_Locale.EnterKeySubtitle
     sub.Font = EZ_Brand.FontBody
-    sub.TextSize = 13
+    sub.TextSize = 12
     sub.TextColor3 = EZ_Theme.TextDim
     sub.TextXAlignment = Enum.TextXAlignment.Left
     sub.Parent = frame
     EZ_Paint(function() sub.TextColor3 = EZ_Theme.TextDim end)
     local input = Instance.new("TextBox")
-    input.Size = UDim2.new(1, -32, 0, 40)
-    input.Position = UDim2.fromOffset(16, 82)
+    input.Size = UDim2.new(1, -32, 0, 38)
+    input.Position = UDim2.fromOffset(16, 80)
     input.BackgroundColor3 = EZ_Theme.Card
     input.BorderSizePixel = 0
     input.Text = ""
     input.PlaceholderText = EZ_Locale.EnterKeyPlaceholder
     input.Font = EZ_Brand.FontMono
-    input.TextSize = 14
+    input.TextSize = 13
     input.TextColor3 = EZ_Theme.Text
     input.PlaceholderColor3 = EZ_Theme.TextDim
     input.TextXAlignment = Enum.TextXAlignment.Left
@@ -1398,55 +1401,55 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     EZ_Paint(function() input.BackgroundColor3 = EZ_Theme.Card; input.TextColor3 = EZ_Theme.Text; input.PlaceholderColor3 = EZ_Theme.TextDim end)
     local ip = Instance.new("UIPadding")
     ip.PaddingLeft = UDim.new(0, 12); ip.PaddingRight = UDim.new(0, 12); ip.Parent = input
-    input.Focused:Connect(function() ist.Color = EZ_Theme.Accent end)
+    input.Focused:Connect(function() ist.Color = EZ_Theme.BorderHover end)
     input.FocusLost:Connect(function() ist.Color = EZ_Theme.Border end)
     local note = Instance.new("TextLabel")
     note.Size = UDim2.new(1, -32, 0, 18)
-    note.Position = UDim2.fromOffset(16, 128)
+    note.Position = UDim2.fromOffset(16, 124)
     note.BackgroundTransparency = 1
     note.Text = options.Note or ""
     note.Font = EZ_Brand.FontBody
-    note.TextSize = 12
+    note.TextSize = 11
     note.TextColor3 = EZ_Theme.TextDim
     note.TextXAlignment = Enum.TextXAlignment.Left
     note.Parent = frame
     EZ_Paint(function() note.TextColor3 = EZ_Theme.TextDim end)
     local submit = Instance.new("TextButton")
-    submit.Size = UDim2.new(0.5, -21, 0, 42)
-    submit.Position = UDim2.new(0, 16, 0, 168)
+    submit.Size = UDim2.new(0.5, -21, 0, 40)
+    submit.Position = UDim2.new(0, 16, 0, 162)
     submit.BackgroundColor3 = EZ_Theme.Accent
     submit.BorderSizePixel = 0
     submit.Text = EZ_Locale.Submit
     submit.Font = EZ_Brand.FontBody
-    submit.TextSize = 14
+    submit.TextSize = 13
     submit.TextColor3 = EZ_Theme.Background
     submit.AutoButtonColor = false
     submit.Parent = frame
     EZ_AddRadius(submit, EZ_Theme.Radius)
     EZ_Paint(function() submit.BackgroundColor3 = EZ_Theme.Accent; submit.TextColor3 = EZ_Theme.Background end)
     local cancel = Instance.new("TextButton")
-    cancel.Size = UDim2.new(0.5, -21, 0, 42)
-    cancel.Position = UDim2.new(0.5, 5, 0, 168)
+    cancel.Size = UDim2.new(0.5, -21, 0, 40)
+    cancel.Position = UDim2.new(0.5, 5, 0, 162)
     cancel.BackgroundColor3 = EZ_Theme.CardHover
     cancel.BorderSizePixel = 0
     cancel.Text = EZ_Locale.Cancel
     cancel.Font = EZ_Brand.FontBody
-    cancel.TextSize = 14
+    cancel.TextSize = 13
     cancel.TextColor3 = EZ_Theme.TextDim
     cancel.AutoButtonColor = false
     cancel.Parent = frame
     local cst = EZ_AddStroke(cancel, EZ_Theme.Border)
     EZ_AddRadius(cancel, EZ_Theme.Radius)
     EZ_Paint(function() cancel.BackgroundColor3 = EZ_Theme.CardHover; cancel.TextColor3 = EZ_Theme.TextDim end)
-    cancel.MouseEnter:Connect(function() TweenService:Create(cst, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play() end)
+    cancel.MouseEnter:Connect(function() TweenService:Create(cst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
     cancel.MouseLeave:Connect(function() TweenService:Create(cst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
     local err = Instance.new("TextLabel")
     err.Size = UDim2.new(1, -32, 0, 20)
-    err.Position = UDim2.fromOffset(16, 222)
+    err.Position = UDim2.fromOffset(16, 214)
     err.BackgroundTransparency = 1
     err.Text = ""
     err.Font = EZ_Brand.FontBody
-    err.TextSize = 12
+    err.TextSize = 11
     err.TextColor3 = EZ_Theme.Error
     err.TextXAlignment = Enum.TextXAlignment.Left
     err.Parent = frame
@@ -1508,7 +1511,7 @@ function EZ:Notify(options)
     local inputCallback = options.InputCallback
     local hasInput = options.Input == true
     local hasButtons = #buttons > 0 or hasInput
-    local height = hasInput and 118 or (hasButtons and 100 or 72)
+    local height = hasInput and 112 or (hasButtons and 96 or 68)
     local styleColor = EZ_Theme.Info
     if style == "success" then styleColor = EZ_Theme.Success
     elseif style == "warning" then styleColor = EZ_Theme.Warning
@@ -1530,31 +1533,31 @@ function EZ:Notify(options)
         EZ_RegTrans(card)
         EZ_Paint(function() card.BackgroundColor3 = EZ_Theme.Card end)
         local bar = Instance.new("Frame")
-        bar.Size = UDim2.new(0, 3, 1, -18)
-        bar.Position = UDim2.fromOffset(9, 9)
+        bar.Size = UDim2.new(0, 2, 1, -18)
+        bar.Position = UDim2.fromOffset(10, 9)
         bar.BackgroundColor3 = styleColor
         bar.BorderSizePixel = 0
         bar.Parent = card
-        EZ_AddRadius(bar, 2)
+        EZ_AddRadius(bar, 1)
         local tl = Instance.new("TextLabel")
         tl.Position = UDim2.fromOffset(20, 12)
-        tl.Size = UDim2.new(1, -30, 0, 18)
+        tl.Size = UDim2.new(1, -30, 0, 16)
         tl.BackgroundTransparency = 1
         tl.Text = t
         tl.Font = EZ_Brand.FontBody
-        tl.TextSize = 15
+        tl.TextSize = 14
         tl.TextColor3 = EZ_Theme.Text
         tl.TextXAlignment = Enum.TextXAlignment.Left
         tl.TextTruncate = Enum.TextTruncate.AtEnd
         tl.Parent = card
         EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end)
         local cl = Instance.new("TextLabel")
-        cl.Position = UDim2.fromOffset(20, 32)
-        cl.Size = UDim2.new(1, -30, 0, 30)
+        cl.Position = UDim2.fromOffset(20, 30)
+        cl.Size = UDim2.new(1, -30, 0, 28)
         cl.BackgroundTransparency = 1
         cl.Text = c
         cl.Font = EZ_Brand.FontBody
-        cl.TextSize = 13
+        cl.TextSize = 12
         cl.TextColor3 = EZ_Theme.TextDim
         cl.TextXAlignment = Enum.TextXAlignment.Left
         cl.TextYAlignment = Enum.TextYAlignment.Top
@@ -1565,14 +1568,14 @@ function EZ:Notify(options)
         local inputBox = nil
         if hasInput then
             inputBox = Instance.new("TextBox")
-            inputBox.Size = UDim2.new(1, -40, 0, 28)
-            inputBox.Position = UDim2.fromOffset(20, 64)
+            inputBox.Size = UDim2.new(1, -40, 0, 26)
+            inputBox.Position = UDim2.fromOffset(20, 60)
             inputBox.BackgroundColor3 = EZ_Theme.Background
             inputBox.BorderSizePixel = 0
             inputBox.Text = ""
             inputBox.PlaceholderText = options.InputPlaceholder or "Type here..."
             inputBox.Font = EZ_Brand.FontMono
-            inputBox.TextSize = 13
+            inputBox.TextSize = 12
             inputBox.TextColor3 = EZ_Theme.Text
             inputBox.PlaceholderColor3 = EZ_Theme.TextDim
             inputBox.TextXAlignment = Enum.TextXAlignment.Left
@@ -1582,7 +1585,7 @@ function EZ:Notify(options)
             EZ_AddRadius(inputBox, 5)
             local ibpad = Instance.new("UIPadding")
             ibpad.PaddingLeft = UDim.new(0, 8); ibpad.PaddingRight = UDim.new(0, 8); ibpad.Parent = inputBox
-            inputBox.Focused:Connect(function() ibst.Color = EZ_Theme.Accent end)
+            inputBox.Focused:Connect(function() ibst.Color = EZ_Theme.BorderHover end)
             inputBox.FocusLost:Connect(function(enter)
                 ibst.Color = EZ_Theme.Border
                 if enter and inputCallback then
@@ -1593,8 +1596,8 @@ function EZ:Notify(options)
 
         if hasButtons and not hasInput then
             local btnRow = Instance.new("Frame")
-            btnRow.Size = UDim2.new(1, -32, 0, 28)
-            btnRow.Position = UDim2.fromOffset(20, 64)
+            btnRow.Size = UDim2.new(1, -32, 0, 26)
+            btnRow.Position = UDim2.fromOffset(20, 60)
             btnRow.BackgroundTransparency = 1
             btnRow.Parent = card
             local btnLayout = Instance.new("UIListLayout")
@@ -1608,14 +1611,14 @@ function EZ:Notify(options)
                 btn.BorderSizePixel = 0
                 btn.Text = btnData.Title
                 btn.Font = EZ_Brand.FontBody
-                btn.TextSize = 13
+                btn.TextSize = 12
                 btn.TextColor3 = EZ_Theme.Text
                 btn.AutoButtonColor = false
                 btn.Parent = btnRow
                 local bst = EZ_AddStroke(btn, EZ_Theme.Border)
                 EZ_AddRadius(btn, 5)
                 EZ_Paint(function() btn.BackgroundColor3 = EZ_Theme.Background; btn.TextColor3 = EZ_Theme.Text end)
-                btn.MouseEnter:Connect(function() TweenService:Create(bst, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play() end)
+                btn.MouseEnter:Connect(function() TweenService:Create(bst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
                 btn.MouseLeave:Connect(function() TweenService:Create(bst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
                 btn.MouseButton1Click:Connect(function()
                     if btnData.Callback then btnData.Callback() end
@@ -1877,20 +1880,20 @@ function EZ:CreateWindow(options)
         local logoLetter
         if EZ_LogoAsset then
             logoLetter = Instance.new("ImageLabel")
-            logoLetter.Size = UDim2.fromOffset(28, 28)
-            logoLetter.Position = UDim2.new(0, 16, 0.5, -14)
+            logoLetter.Size = UDim2.fromOffset(24, 24)
+            logoLetter.Position = UDim2.new(0, 14, 0.5, -12)
             logoLetter.BackgroundTransparency = 1
             logoLetter.Image = EZ_LogoAsset
             logoLetter.ScaleType = Enum.ScaleType.Fit
             logoLetter.Parent = titlebar
         else
             logoLetter = Instance.new("TextLabel")
-            logoLetter.Size = UDim2.fromOffset(28, 28)
-            logoLetter.Position = UDim2.new(0, 16, 0.5, -14)
+            logoLetter.Size = UDim2.fromOffset(24, 24)
+            logoLetter.Position = UDim2.new(0, 14, 0.5, -12)
             logoLetter.BackgroundTransparency = 1
             logoLetter.Text = "E"
             logoLetter.Font = EZ_Brand.Font
-            logoLetter.TextSize = 18
+            logoLetter.TextSize = 15
             logoLetter.TextColor3 = EZ_Theme.Accent
             logoLetter.TextXAlignment = Enum.TextXAlignment.Center
             logoLetter.Parent = titlebar
@@ -1899,59 +1902,59 @@ function EZ:CreateWindow(options)
 
         local tholder = Instance.new("Frame")
         tholder.BackgroundTransparency = 1
-        tholder.Size = UDim2.new(1, -130, 1, 0)
-        tholder.Position = UDim2.fromOffset(52, 0)
+        tholder.Size = UDim2.new(1, -120, 1, 0)
+        tholder.Position = UDim2.fromOffset(46, 0)
         tholder.Parent = titlebar
         local tlay = Instance.new("UIListLayout")
         tlay.FillDirection = Enum.FillDirection.Horizontal
         tlay.VerticalAlignment = Enum.VerticalAlignment.Center
-        tlay.Padding = UDim.new(0, 8)
+        tlay.Padding = UDim.new(0, 6)
         tlay.Parent = tholder
 
         local tlabel = Instance.new("TextLabel")
         tlabel.BackgroundTransparency = 1
-        tlabel.Size = UDim2.fromOffset(0, 22)
+        tlabel.Size = UDim2.fromOffset(0, 20)
         tlabel.AutomaticSize = Enum.AutomaticSize.X
         tlabel.Text = EZ_Name
         tlabel.Font = EZ_Brand.Font
-        tlabel.TextSize = 17
+        tlabel.TextSize = 15
         tlabel.TextColor3 = EZ_Theme.Text
         tlabel.Parent = tholder
         EZ_Paint(function() tlabel.TextColor3 = EZ_Theme.Text end)
 
         local tdiv = Instance.new("TextLabel")
         tdiv.BackgroundTransparency = 1
-        tdiv.Size = UDim2.fromOffset(8, 22)
+        tdiv.Size = UDim2.fromOffset(6, 20)
         tdiv.Text = "·"
         tdiv.Font = EZ_Brand.FontBody
-        tdiv.TextSize = 16
+        tdiv.TextSize = 14
         tdiv.TextColor3 = EZ_Theme.TextDim
         tdiv.Parent = tholder
         EZ_Paint(function() tdiv.TextColor3 = EZ_Theme.TextDim end)
 
         local slabel = Instance.new("TextLabel")
         slabel.BackgroundTransparency = 1
-        slabel.Size = UDim2.fromOffset(0, 20)
+        slabel.Size = UDim2.fromOffset(0, 18)
         slabel.AutomaticSize = Enum.AutomaticSize.X
         slabel.Text = EZ_SubTitle
         slabel.Font = EZ_Brand.FontBody
-        slabel.TextSize = 14
+        slabel.TextSize = 12
         slabel.TextColor3 = EZ_Theme.TextDim
         slabel.Parent = tholder
         EZ_Paint(function() slabel.TextColor3 = EZ_Theme.TextDim end)
 
         local minbtn = Instance.new("TextButton")
-        minbtn.Size = UDim2.fromOffset(32, 32)
-        minbtn.Position = UDim2.new(1, -44, 0.5, -16)
+        minbtn.Size = UDim2.fromOffset(30, 30)
+        minbtn.Position = UDim2.new(1, -40, 0.5, -15)
         minbtn.BackgroundColor3 = EZ_Theme.CardHover
         minbtn.BackgroundTransparency = 1
         minbtn.Text = ""
         minbtn.AutoButtonColor = false
         minbtn.Parent = titlebar
-        EZ_AddRadius(minbtn, 7)
+        EZ_AddRadius(minbtn, 6)
         local minicon = Instance.new("Frame")
-        minicon.Size = UDim2.fromOffset(14, 2)
-        minicon.Position = UDim2.new(0.5, -7, 0.5, -1)
+        minicon.Size = UDim2.fromOffset(12, 2)
+        minicon.Position = UDim2.new(0.5, -6, 0.5, -1)
         minicon.BackgroundColor3 = EZ_Theme.TextDim
         minicon.BorderSizePixel = 0
         minicon.Parent = minbtn
@@ -1997,14 +2000,14 @@ function EZ:CreateWindow(options)
         tabsContainer.Parent = sidebar
 
         local slay = Instance.new("UIListLayout")
-        slay.Padding = UDim.new(0, 3)
+        slay.Padding = UDim.new(0, 2)
         slay.Parent = tabsContainer
 
         local spad = Instance.new("UIPadding")
-        spad.PaddingTop = UDim.new(0, 12)
-        spad.PaddingBottom = UDim.new(0, 12)
-        spad.PaddingLeft = UDim.new(0, 9)
-        spad.PaddingRight = UDim.new(0, 9)
+        spad.PaddingTop = UDim.new(0, 10)
+        spad.PaddingBottom = UDim.new(0, 10)
+        spad.PaddingLeft = UDim.new(0, 8)
+        spad.PaddingRight = UDim.new(0, 8)
         spad.Parent = tabsContainer
 
         local sline = Instance.new("Frame")
@@ -2025,12 +2028,12 @@ function EZ:CreateWindow(options)
 
         local wm = Instance.new("TextLabel")
         wm.AnchorPoint = Vector2.new(1, 1)
-        wm.Position = UDim2.new(1, -12, 1, -9)
-        wm.Size = UDim2.fromOffset(160, 15)
+        wm.Position = UDim2.new(1, -12, 1, -8)
+        wm.Size = UDim2.fromOffset(160, 14)
         wm.BackgroundTransparency = 1
         wm.Text = "eazy ui · v" .. EZ.Version
         wm.Font = EZ_Brand.FontMono
-        wm.TextSize = 11
+        wm.TextSize = 10
         wm.TextColor3 = EZ_Theme.TextDim
         wm.TextXAlignment = Enum.TextXAlignment.Right
         wm.Parent = frame
@@ -2048,15 +2051,15 @@ function EZ:CreateWindow(options)
                 if d.Active then
                     if not wasActive then
                         d.Page.Visible = true
-                        d.Page.Position = UDim2.new(0.03, 0, 0, 0)
-                        TweenService:Create(d.Page, TweenInfo.new(0.26, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        d.Page.Position = UDim2.new(0.025, 0, 0, 0)
+                        TweenService:Create(d.Page, TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                             Position = UDim2.new(0, 0, 0, 0)
                         }):Play()
                     end
                 else
                     d.Page.Visible = false
                 end
-                TweenService:Create(d.Button, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                TweenService:Create(d.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     BackgroundTransparency = d.Active and (EZ_GlobalTransparency * 0.55) or 1
                 }):Play()
                 TweenService:Create(d.Label, EZ_Ease.Fast, {
@@ -2064,11 +2067,11 @@ function EZ:CreateWindow(options)
                 }):Play()
                 if d.Icon then
                     TweenService:Create(d.Icon, EZ_Ease.Fast, {
-                        ImageColor3 = d.Active and EZ_Theme.Accent or EZ_Theme.TextDim
+                        ImageColor3 = d.Active and EZ_Theme.Text or EZ_Theme.TextDim
                     }):Play()
                 end
-                TweenService:Create(d.Indicator, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Size = d.Active and UDim2.new(0, 3, 0, 22) or UDim2.new(0, 0, 0, 0)
+                TweenService:Create(d.Indicator, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    Size = d.Active and UDim2.new(0, 2, 0, 16) or UDim2.new(0, 0, 0, 0)
                 }):Play()
             end
         end
@@ -2088,9 +2091,14 @@ function EZ:CreateWindow(options)
         end
 
         local function applyMinimizeShrink(state)
+            local info = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
             if state then
-                TweenService:Create(frame, TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Size = UDim2.new(0, frame.Size.X.Offset, 0, EZ_TITLEBAR_HEIGHT)
+                local curH = frame.Size.Y.Offset
+                local topDelta = (EZ_TITLEBAR_HEIGHT - curH) * EZ_CurrentScale * 0.5
+                local pos = frame.Position
+                TweenService:Create(frame, info, {
+                    Size = UDim2.new(0, frame.Size.X.Offset, 0, EZ_TITLEBAR_HEIGHT),
+                    Position = UDim2.new(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset + topDelta),
                 }):Play()
                 task.delay(0.14, function()
                     if not EZ_Window.Minimized or EZ_Window.MinimizeMode ~= "shrink" then return end
@@ -2106,8 +2114,13 @@ function EZ:CreateWindow(options)
                         child.Visible = true
                     end
                 end
-                TweenService:Create(frame, TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Size = UDim2.new(0, EZ_Size.X.Offset, 0, EZ_Size.Y.Offset)
+                local curH = frame.Size.Y.Offset
+                local targetH = EZ_Size.Y.Offset
+                local topDelta = (targetH - curH) * EZ_CurrentScale * 0.5
+                local pos = frame.Position
+                TweenService:Create(frame, info, {
+                    Size = UDim2.new(0, EZ_Size.X.Offset, 0, EZ_Size.Y.Offset),
+                    Position = UDim2.new(pos.X.Scale, pos.X.Offset, pos.Y.Scale, pos.Y.Offset + topDelta),
                 }):Play()
             end
         end
@@ -2153,30 +2166,30 @@ function EZ:CreateWindow(options)
             local tab = {}
 
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, 0, 0, 40)
+            btn.Size = UDim2.new(1, 0, 0, 36)
             btn.BackgroundColor3 = EZ_Theme.TabActive
             btn.BackgroundTransparency = 1
             btn.Text = ""
             btn.AutoButtonColor = false
             btn.Parent = tabsContainer
-            EZ_AddRadius(btn, 7)
+            EZ_AddRadius(btn, 6)
 
             local indicator = Instance.new("Frame")
-            indicator.Position = UDim2.fromOffset(4, 9)
+            indicator.Position = UDim2.fromOffset(6, 10)
             indicator.Size = UDim2.new(0, 0, 0, 0)
             indicator.BackgroundColor3 = EZ_Theme.Accent
             indicator.BorderSizePixel = 0
             indicator.Parent = btn
-            EZ_AddRadius(indicator, 2)
+            EZ_AddRadius(indicator, 1)
 
             local iconLbl = nil
-            local iconOffset = 16
+            local iconOffset = 18
             if tabIcon then
-                iconLbl = EZ_CreateIcon(btn, tabIcon, 17)
+                iconLbl = EZ_CreateIcon(btn, tabIcon, 16)
                 if iconLbl then
                     iconLbl.Position = UDim2.new(0, 20, 0.5, -8)
                     iconLbl.ImageColor3 = EZ_Theme.TextDim
-                    iconOffset = 46
+                    iconOffset = 44
                 end
             end
 
@@ -2186,7 +2199,7 @@ function EZ:CreateWindow(options)
             lbl.BackgroundTransparency = 1
             lbl.Text = tabTitle
             lbl.Font = EZ_Brand.FontBody
-            lbl.TextSize = 14
+            lbl.TextSize = 13
             lbl.TextColor3 = EZ_Theme.TextDim
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.TextTruncate = Enum.TextTruncate.AtEnd
@@ -2200,7 +2213,7 @@ function EZ:CreateWindow(options)
                 indicator.BackgroundColor3 = EZ_Theme.Accent
                 if data.Active then
                     lbl.TextColor3 = EZ_Theme.Text
-                    if iconLbl and iconLbl:IsA("ImageLabel") then iconLbl.ImageColor3 = EZ_Theme.Accent end
+                    if iconLbl and iconLbl:IsA("ImageLabel") then iconLbl.ImageColor3 = EZ_Theme.Text end
                 else
                     lbl.TextColor3 = EZ_Theme.TextDim
                     if iconLbl and iconLbl:IsA("ImageLabel") then iconLbl.ImageColor3 = EZ_Theme.TextDim end
@@ -2221,10 +2234,10 @@ function EZ:CreateWindow(options)
             page.Parent = content
             data.Page = page
             local play = Instance.new("UIListLayout")
-            play.Padding = UDim.new(0, 11); play.Parent = page
+            play.Padding = UDim.new(0, 8); play.Parent = page
             local ppad = Instance.new("UIPadding")
-            ppad.PaddingTop = UDim.new(0, 18); ppad.PaddingBottom = UDim.new(0, 18)
-            ppad.PaddingLeft = UDim.new(0, 20); ppad.PaddingRight = UDim.new(0, 20); ppad.Parent = page
+            ppad.PaddingTop = UDim.new(0, 16); ppad.PaddingBottom = UDim.new(0, 16)
+            ppad.PaddingLeft = UDim.new(0, 18); ppad.PaddingRight = UDim.new(0, 18); ppad.Parent = page
 
             table.insert(registry, data)
 
@@ -2251,30 +2264,30 @@ function EZ:CreateWindow(options)
                 o = o or {}
                 local holder = Instance.new("Frame")
                 holder:SetAttribute("EZ_Section", true)
-                holder.Size = UDim2.new(1, 0, 0, 26)
+                holder.Size = UDim2.new(1, 0, 0, 22)
                 holder.BackgroundTransparency = 1
                 holder.Parent = page
-                local bar = Instance.new("Frame")
-                bar.Size = UDim2.fromOffset(3, 14)
-                bar.Position = UDim2.new(0, 2, 0.5, -7)
-                bar.BackgroundColor3 = EZ_Theme.Accent
-                bar.BorderSizePixel = 0
-                bar.Parent = holder
-                EZ_RegTrans(bar, 1)
-                EZ_AddRadius(bar, 2)
-                EZ_Paint(function() bar.BackgroundColor3 = EZ_Theme.Accent end)
+                local dot = Instance.new("Frame")
+                dot.Size = UDim2.fromOffset(5, 5)
+                dot.Position = UDim2.new(0, 2, 0.5, -2)
+                dot.BackgroundColor3 = EZ_Theme.Accent
+                dot.BackgroundTransparency = 0.2
+                dot.BorderSizePixel = 0
+                dot.Parent = holder
+                EZ_AddRadius(dot, 3)
+                EZ_Paint(function() dot.BackgroundColor3 = EZ_Theme.Accent end)
                 local t = Instance.new("TextLabel")
                 t.Size = UDim2.new(1, -40, 1, 0)
-                t.Position = UDim2.new(0, 12, 0, 0)
+                t.Position = UDim2.new(0, 14, 0, 0)
                 t.BackgroundTransparency = 1
                 t.Text = string.upper(o.Title or "")
-                t.Font = EZ_Brand.FontBody
-                t.TextSize = 12
+                t.Font = EZ_Brand.Font
+                t.TextSize = 11
                 t.TextColor3 = EZ_Theme.TextDim
                 t.TextXAlignment = Enum.TextXAlignment.Left
                 t.Parent = holder
                 EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
-                local chev = EZ_CreateIcon(holder, "chevron-down", 13)
+                local chev = EZ_CreateIcon(holder, "chevron-down", 12)
                 if chev then
                     chev.AnchorPoint = Vector2.new(1, 0.5)
                     chev.Position = UDim2.new(1, -2, 0.5, 0)
@@ -2334,16 +2347,16 @@ function EZ:CreateWindow(options)
                 EZ_RegTrans(row)
                 EZ_Paint(function() row.BackgroundColor3 = EZ_Theme.Card end)
                 local lay = Instance.new("UIListLayout")
-                lay.Padding = UDim.new(0, 5); lay.Parent = row
+                lay.Padding = UDim.new(0, 4); lay.Parent = row
                 local pad = Instance.new("UIPadding")
-                pad.PaddingLeft = UDim.new(0, 16); pad.PaddingRight = UDim.new(0, 16)
-                pad.PaddingTop = UDim.new(0, 14); pad.PaddingBottom = UDim.new(0, 14); pad.Parent = row
+                pad.PaddingLeft = UDim.new(0, 14); pad.PaddingRight = UDim.new(0, 14)
+                pad.PaddingTop = UDim.new(0, 12); pad.PaddingBottom = UDim.new(0, 12); pad.Parent = row
                 local cl = nil
                 if o.Title and o.Title ~= "" then
                     local pt = Instance.new("TextLabel")
                     pt.Size = UDim2.new(1, 0, 0, 0); pt.AutomaticSize = Enum.AutomaticSize.Y
                     pt.BackgroundTransparency = 1; pt.Text = o.Title
-                    pt.Font = EZ_Brand.FontBody; pt.TextSize = 14; pt.TextColor3 = EZ_Theme.Text
+                    pt.Font = EZ_Brand.FontBody; pt.TextSize = 13; pt.TextColor3 = EZ_Theme.Text
                     pt.TextXAlignment = Enum.TextXAlignment.Left; pt.TextWrapped = true; pt.Parent = row
                     EZ_Paint(function() pt.TextColor3 = EZ_Theme.Text end)
                 end
@@ -2351,7 +2364,7 @@ function EZ:CreateWindow(options)
                     cl = Instance.new("TextLabel")
                     cl.Size = UDim2.new(1, 0, 0, 0); cl.AutomaticSize = Enum.AutomaticSize.Y
                     cl.BackgroundTransparency = 1; cl.Text = o.Content
-                    cl.Font = EZ_Brand.FontBody; cl.TextSize = 13; cl.TextColor3 = EZ_Theme.TextDim
+                    cl.Font = EZ_Brand.FontBody; cl.TextSize = 12; cl.TextColor3 = EZ_Theme.TextDim
                     cl.TextXAlignment = Enum.TextXAlignment.Left; cl.TextWrapped = true; cl.Parent = row
                     EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
                 end
@@ -2367,11 +2380,11 @@ function EZ:CreateWindow(options)
                 row.BackgroundTransparency = 1
                 row.Parent = page
                 local pad = Instance.new("UIPadding")
-                pad.PaddingLeft = UDim.new(0, 14); pad.PaddingRight = UDim.new(0, 14); pad.Parent = row
+                pad.PaddingLeft = UDim.new(0, 12); pad.PaddingRight = UDim.new(0, 12); pad.Parent = row
                 local t = Instance.new("TextLabel")
                 t.Size = UDim2.new(1, 0, 0, 0); t.AutomaticSize = Enum.AutomaticSize.Y
                 t.BackgroundTransparency = 1; t.Text = text or ""
-                t.Font = EZ_Brand.FontBody; t.TextSize = 13; t.TextColor3 = EZ_Theme.TextDim
+                t.Font = EZ_Brand.FontBody; t.TextSize = 12; t.TextColor3 = EZ_Theme.TextDim
                 t.TextXAlignment = Enum.TextXAlignment.Left; t.TextWrapped = true; t.Parent = row
                 EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
                 local obj = {}
@@ -2386,27 +2399,27 @@ function EZ:CreateWindow(options)
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local id = o.Flag or o.Id or o.Title or "toggle_" .. os.clock()
                 local obj = { Value = o.Default and true or false, Id = id, Flag = o.Flag, Type = "toggle", Default = o.Default and true or false }
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Toggle", o.Description, 48, nil, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Toggle", o.Description, 46, nil, obj)
                 local track = Instance.new("Frame")
-                track.Size = UDim2.fromOffset(44, 24)
-                track.Position = UDim2.new(1, -58, 0.5, -12)
+                track.Size = UDim2.fromOffset(38, 20)
+                track.Position = UDim2.new(1, -52, 0.5, -10)
                 track.BackgroundColor3 = EZ_Theme.BorderHover
                 track.BorderSizePixel = 0
                 track.Parent = row
-                EZ_AddRadius(track, 12)
+                EZ_AddRadius(track, 10)
                 local knob = Instance.new("Frame")
-                knob.Size = UDim2.fromOffset(18, 18)
+                knob.Size = UDim2.fromOffset(14, 14)
                 knob.Position = UDim2.fromOffset(3, 3)
                 knob.BackgroundColor3 = EZ_Theme.TextDim
                 knob.BorderSizePixel = 0
                 knob.Parent = track
-                EZ_AddRadius(knob, 9)
+                EZ_AddRadius(knob, 7)
                 local function renderTween()
                     local on = obj.Value
                     TweenService:Create(track, TweenInfo.new(0.15), { BackgroundColor3 = on and EZ_Theme.Accent or EZ_Theme.BorderHover }):Play()
                     TweenService:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quint), {
-                        Position = UDim2.fromOffset(on and 23 or 3, 3),
+                        Position = UDim2.fromOffset(on and 21 or 3, 3),
                         BackgroundColor3 = on and EZ_Theme.Background or EZ_Theme.TextDim
                     }):Play()
                 end
@@ -2439,16 +2452,16 @@ function EZ:CreateWindow(options)
                 local rightCb = o.RightClick or o.RightCallback or function() end
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local obj = {}
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Button", o.Description, 48, nil, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Button", o.Description, 46, nil, obj)
                 local act = Instance.new("TextButton")
-                act.Size = UDim2.fromOffset(104, 30)
-                act.Position = UDim2.new(1, -118, 0.5, -15)
+                act.Size = UDim2.fromOffset(96, 28)
+                act.Position = UDim2.new(1, -110, 0.5, -14)
                 act.BackgroundColor3 = EZ_Theme.Accent
                 act.BorderSizePixel = 0
                 act.Text = o.ButtonText or "Run"
                 act.Font = EZ_Brand.FontBody
-                act.TextSize = 13
+                act.TextSize = 12
                 act.TextColor3 = EZ_Theme.Background
                 act.AutoButtonColor = false
                 act.Parent = row
@@ -2461,10 +2474,10 @@ function EZ:CreateWindow(options)
                     TweenService:Create(act, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.Accent }):Play()
                 end)
                 function obj:Fire()
-                    TweenService:Create(act, TweenInfo.new(0.08), { Size = UDim2.fromOffset(98, 28) }):Play()
+                    TweenService:Create(act, TweenInfo.new(0.08), { Size = UDim2.fromOffset(90, 26) }):Play()
                     task.delay(0.08, function()
                         if act.Parent then
-                            TweenService:Create(act, TweenInfo.new(0.12, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(104, 30) }):Play()
+                            TweenService:Create(act, TweenInfo.new(0.12, Enum.EasingStyle.Back), { Size = UDim2.fromOffset(96, 28) }):Play()
                         end
                     end)
                     cb()
@@ -2487,48 +2500,48 @@ function EZ:CreateWindow(options)
                 local obj = { Value = o.Default or mn, Id = id, Flag = o.Flag, Type = "slider", Default = o.Default or mn }
                 local dragging = false
                 local lastCallbackValue = obj.Value
-                local row = EZ_NewRow(page, 66, obj)
+                local row = EZ_NewRow(page, 62, obj)
                 local tl = Instance.new("TextLabel")
-                tl.Position = UDim2.fromOffset(14, 12)
-                tl.Size = UDim2.new(1, -120, 0, 18)
+                tl.Position = UDim2.fromOffset(14, 11)
+                tl.Size = UDim2.new(1, -120, 0, 16)
                 tl.BackgroundTransparency = 1
                 tl.Text = o.Title or "Slider"
-                tl.Font = EZ_Brand.FontBody; tl.TextSize = 14; tl.TextColor3 = EZ_Theme.Text
+                tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left; tl.TextTruncate = Enum.TextTruncate.AtEnd
                 tl.Parent = row
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
-                vl.Position = UDim2.new(1, -14, 0, 12)
-                vl.Size = UDim2.fromOffset(90, 18)
+                vl.Position = UDim2.new(1, -14, 0, 11)
+                vl.Size = UDim2.fromOffset(90, 16)
                 vl.BackgroundTransparency = 1
-                vl.Font = EZ_Brand.FontMono; vl.TextSize = 14; vl.TextColor3 = EZ_Theme.Accent
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Accent
                 vl.TextXAlignment = Enum.TextXAlignment.Right
                 vl.Parent = row
                 EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end, obj)
                 local track = Instance.new("Frame")
-                track.Position = UDim2.fromOffset(14, 42)
-                track.Size = UDim2.new(1, -28, 0, 6)
-                track.BackgroundColor3 = EZ_Theme.BorderHover
+                track.Position = UDim2.fromOffset(14, 40)
+                track.Size = UDim2.new(1, -28, 0, 4)
+                track.BackgroundColor3 = EZ_Theme.Border
                 track.BorderSizePixel = 0
                 track.Parent = row
-                EZ_AddRadius(track, 3)
+                EZ_AddRadius(track, 2)
                 local fill = Instance.new("Frame")
                 fill.Size = UDim2.new(0, 0, 1, 0)
                 fill.BackgroundColor3 = EZ_Theme.Accent
                 fill.BorderSizePixel = 0
                 fill.Parent = track
-                EZ_AddRadius(fill, 3)
+                EZ_AddRadius(fill, 2)
                 local knob = Instance.new("Frame")
                 knob.AnchorPoint = Vector2.new(0.5, 0.5)
-                knob.Size = UDim2.fromOffset(16, 16)
+                knob.Size = UDim2.fromOffset(12, 12)
                 knob.Position = UDim2.new(0, 0, 0.5, 0)
                 knob.BackgroundColor3 = EZ_Theme.Accent
                 knob.BorderSizePixel = 0
                 knob.Parent = track
-                EZ_AddRadius(knob, 8)
+                EZ_AddRadius(knob, 6)
                 local cap = Instance.new("TextButton")
-                cap.Position = UDim2.fromOffset(14, 30)
+                cap.Position = UDim2.fromOffset(14, 28)
                 cap.Size = UDim2.new(1, -28, 0, 26)
                 cap.BackgroundTransparency = 1
                 cap.Text = ""
@@ -2545,7 +2558,7 @@ function EZ:CreateWindow(options)
                     vl.Text = fmt(obj.Value)
                 end
                 EZ_Paint(function()
-                    track.BackgroundColor3 = EZ_Theme.BorderHover
+                    track.BackgroundColor3 = EZ_Theme.Border
                     fill.BackgroundColor3 = EZ_Theme.Accent
                     knob.BackgroundColor3 = EZ_Theme.Accent
                     refreshVisual()
@@ -2605,8 +2618,8 @@ function EZ:CreateWindow(options)
                 end)
                 local editBtn = Instance.new("TextButton")
                 editBtn.AnchorPoint = Vector2.new(1, 0)
-                editBtn.Position = UDim2.new(1, -14, 0, 12)
-                editBtn.Size = UDim2.fromOffset(90, 18)
+                editBtn.Position = UDim2.new(1, -14, 0, 11)
+                editBtn.Size = UDim2.fromOffset(90, 16)
                 editBtn.BackgroundTransparency = 1
                 editBtn.Text = ""
                 editBtn.AutoButtonColor = false
@@ -2614,13 +2627,13 @@ function EZ:CreateWindow(options)
                 editBtn.MouseButton1Click:Connect(function()
                     local box = Instance.new("TextBox")
                     box.AnchorPoint = Vector2.new(1, 0)
-                    box.Position = UDim2.new(1, -14, 0, 10)
-                    box.Size = UDim2.fromOffset(90, 22)
+                    box.Position = UDim2.new(1, -14, 0, 9)
+                    box.Size = UDim2.fromOffset(90, 20)
                     box.BackgroundColor3 = EZ_Theme.Card
                     box.BorderSizePixel = 0
                     box.Text = fmt(obj.Value)
                     box.Font = EZ_Brand.FontMono
-                    box.TextSize = 14
+                    box.TextSize = 13
                     box.TextColor3 = EZ_Theme.Accent
                     box.TextXAlignment = Enum.TextXAlignment.Right
                     box.Parent = row
@@ -2661,55 +2674,55 @@ function EZ:CreateWindow(options)
                 local draggingMax = false
                 local lastCallbackMin = obj.MinValue
                 local lastCallbackMax = obj.MaxValue
-                local row = EZ_NewRow(page, 66, obj)
+                local row = EZ_NewRow(page, 62, obj)
                 local tl = Instance.new("TextLabel")
-                tl.Position = UDim2.fromOffset(14, 12)
-                tl.Size = UDim2.new(1, -190, 0, 18)
+                tl.Position = UDim2.fromOffset(14, 11)
+                tl.Size = UDim2.new(1, -190, 0, 16)
                 tl.BackgroundTransparency = 1
                 tl.Text = o.Title or "Range"
-                tl.Font = EZ_Brand.FontBody; tl.TextSize = 14; tl.TextColor3 = EZ_Theme.Text
+                tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left; tl.TextTruncate = Enum.TextTruncate.AtEnd
                 tl.Parent = row
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
-                vl.Position = UDim2.new(1, -14, 0, 12)
-                vl.Size = UDim2.fromOffset(160, 18)
+                vl.Position = UDim2.new(1, -14, 0, 11)
+                vl.Size = UDim2.fromOffset(160, 16)
                 vl.BackgroundTransparency = 1
-                vl.Font = EZ_Brand.FontMono; vl.TextSize = 14; vl.TextColor3 = EZ_Theme.Accent
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Accent
                 vl.TextXAlignment = Enum.TextXAlignment.Right
                 vl.Parent = row
                 EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end, obj)
                 local track = Instance.new("Frame")
-                track.Position = UDim2.fromOffset(14, 42)
-                track.Size = UDim2.new(1, -28, 0, 6)
-                track.BackgroundColor3 = EZ_Theme.BorderHover
+                track.Position = UDim2.fromOffset(14, 40)
+                track.Size = UDim2.new(1, -28, 0, 4)
+                track.BackgroundColor3 = EZ_Theme.Border
                 track.BorderSizePixel = 0
                 track.Parent = row
-                EZ_AddRadius(track, 3)
+                EZ_AddRadius(track, 2)
                 local fill = Instance.new("Frame")
                 fill.BackgroundColor3 = EZ_Theme.Accent
                 fill.BorderSizePixel = 0
                 fill.Parent = track
-                EZ_AddRadius(fill, 3)
+                EZ_AddRadius(fill, 2)
                 local knobMin = Instance.new("Frame")
                 knobMin.AnchorPoint = Vector2.new(0.5, 0.5)
-                knobMin.Size = UDim2.fromOffset(16, 16)
+                knobMin.Size = UDim2.fromOffset(12, 12)
                 knobMin.BackgroundColor3 = EZ_Theme.Accent
                 knobMin.BorderSizePixel = 0
                 knobMin.ZIndex = 2
                 knobMin.Parent = track
-                EZ_AddRadius(knobMin, 8)
+                EZ_AddRadius(knobMin, 6)
                 local knobMax = Instance.new("Frame")
                 knobMax.AnchorPoint = Vector2.new(0.5, 0.5)
-                knobMax.Size = UDim2.fromOffset(16, 16)
+                knobMax.Size = UDim2.fromOffset(12, 12)
                 knobMax.BackgroundColor3 = EZ_Theme.Accent
                 knobMax.BorderSizePixel = 0
                 knobMax.ZIndex = 2
                 knobMax.Parent = track
-                EZ_AddRadius(knobMax, 8)
+                EZ_AddRadius(knobMax, 6)
                 local capMin = Instance.new("TextButton")
-                capMin.Position = UDim2.fromOffset(14, 30)
+                capMin.Position = UDim2.fromOffset(14, 28)
                 capMin.Size = UDim2.new(0.5, -14, 0, 26)
                 capMin.BackgroundTransparency = 1
                 capMin.Text = ""
@@ -2717,7 +2730,7 @@ function EZ:CreateWindow(options)
                 capMin.ZIndex = 3
                 capMin.Parent = row
                 local capMax = Instance.new("TextButton")
-                capMax.Position = UDim2.new(0.5, 0, 0, 30)
+                capMax.Position = UDim2.new(0.5, 0, 0, 28)
                 capMax.Size = UDim2.new(0.5, -14, 0, 26)
                 capMax.BackgroundTransparency = 1
                 capMax.Text = ""
@@ -2738,7 +2751,7 @@ function EZ:CreateWindow(options)
                     vl.Text = fmt(obj.MinValue) .. " - " .. fmt(obj.MaxValue)
                 end
                 EZ_Paint(function()
-                    track.BackgroundColor3 = EZ_Theme.BorderHover
+                    track.BackgroundColor3 = EZ_Theme.Border
                     fill.BackgroundColor3 = EZ_Theme.Accent
                     knobMin.BackgroundColor3 = EZ_Theme.Accent
                     knobMax.BackgroundColor3 = EZ_Theme.Accent
@@ -2821,7 +2834,7 @@ function EZ:CreateWindow(options)
             function tab:AddBanner(o)
                 o = o or {}
                 local holder = Instance.new("Frame")
-                holder.Size = UDim2.new(1, 0, 0, o.Height or 100)
+                holder.Size = UDim2.new(1, 0, 0, o.Height or 96)
                 holder.BackgroundColor3 = EZ_Theme.Card
                 holder.BorderSizePixel = 0
                 holder.ClipsDescendants = true
@@ -2841,12 +2854,12 @@ function EZ:CreateWindow(options)
                 local titleLbl, subLbl
                 if o.Title then
                     titleLbl = Instance.new("TextLabel")
-                    titleLbl.Size = UDim2.new(1, -20, 0, 24)
-                    titleLbl.Position = UDim2.new(0, 16, 0, 14)
+                    titleLbl.Size = UDim2.new(1, -20, 0, 22)
+                    titleLbl.Position = UDim2.new(0, 14, 0, 12)
                     titleLbl.BackgroundTransparency = 1
                     titleLbl.Text = o.Title
                     titleLbl.Font = EZ_Brand.Font
-                    titleLbl.TextSize = 18
+                    titleLbl.TextSize = 16
                     titleLbl.TextColor3 = o.TextColor or EZ_Theme.Text
                     titleLbl.TextXAlignment = Enum.TextXAlignment.Left
                     titleLbl.Parent = holder
@@ -2854,12 +2867,12 @@ function EZ:CreateWindow(options)
                 end
                 if o.SubTitle then
                     subLbl = Instance.new("TextLabel")
-                    subLbl.Size = UDim2.new(1, -20, 0, 18)
-                    subLbl.Position = UDim2.new(0, 16, 0, 40)
+                    subLbl.Size = UDim2.new(1, -20, 0, 16)
+                    subLbl.Position = UDim2.new(0, 14, 0, 36)
                     subLbl.BackgroundTransparency = 1
                     subLbl.Text = o.SubTitle
                     subLbl.Font = EZ_Brand.FontBody
-                    subLbl.TextSize = 13
+                    subLbl.TextSize = 12
                     subLbl.TextColor3 = o.SubColor or EZ_Theme.TextDim
                     subLbl.TextXAlignment = Enum.TextXAlignment.Left
                     subLbl.Parent = holder
@@ -2884,12 +2897,12 @@ function EZ:CreateWindow(options)
                     Type = multi and "multi" or "dropdown",
                     Default = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default
                 }
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 48, 200, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 46, 200, obj)
                 local trigger = Instance.new("TextButton")
-                trigger.Size = UDim2.fromOffset(170, 30)
-                trigger.Position = UDim2.new(1, -184, 0.5, -15)
-                trigger.BackgroundColor3 = EZ_Theme.CardHover
+                trigger.Size = UDim2.fromOffset(170, 28)
+                trigger.Position = UDim2.new(1, -184, 0.5, -14)
+                trigger.BackgroundColor3 = EZ_Theme.Background
                 trigger.BorderSizePixel = 0
                 trigger.Text = ""
                 trigger.AutoButtonColor = false
@@ -2907,19 +2920,19 @@ function EZ:CreateWindow(options)
                     trigText.Text = obj.Value and tostring(obj.Value) or EZ_Locale.None
                 end
                 trigText.Font = EZ_Brand.FontBody
-                trigText.TextSize = 13
+                trigText.TextSize = 12
                 trigText.TextColor3 = EZ_Theme.Text
                 trigText.TextXAlignment = Enum.TextXAlignment.Left
                 trigText.TextTruncate = Enum.TextTruncate.AtEnd
                 trigText.Parent = trigger
-                local sign = EZ_CreateIcon(trigger, "chevron-down", 15)
+                local sign = EZ_CreateIcon(trigger, "chevron-down", 14)
                 if sign then
                     sign.AnchorPoint = Vector2.new(1, 0.5)
                     sign.Position = UDim2.new(1, -8, 0.5, 0)
                     sign.ImageColor3 = EZ_Theme.TextDim
                 end
                 EZ_Paint(function()
-                    trigger.BackgroundColor3 = EZ_Theme.CardHover
+                    trigger.BackgroundColor3 = EZ_Theme.Background
                     trigText.TextColor3 = EZ_Theme.Text
                     if sign and sign:IsA("ImageLabel") then sign.ImageColor3 = EZ_Theme.TextDim end
                 end, obj)
@@ -2984,16 +2997,16 @@ function EZ:CreateWindow(options)
                 local cb = o.Callback or function() end
                 local id = o.Flag or o.Id or o.Title or "input_" .. os.clock()
                 local obj = { Value = o.Default or "", Id = id, Flag = o.Flag, Type = "input", Default = o.Default or "" }
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Input", o.Description, 48, 200, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Input", o.Description, 46, 200, obj)
                 local box = Instance.new("TextBox")
-                box.Size = UDim2.fromOffset(170, 30)
-                box.Position = UDim2.new(1, -184, 0.5, -15)
+                box.Size = UDim2.fromOffset(170, 28)
+                box.Position = UDim2.new(1, -184, 0.5, -14)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono
-                box.TextSize = 13
+                box.TextSize = 12
                 box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
                 box.PlaceholderColor3 = EZ_Theme.TextDim
@@ -3010,7 +3023,7 @@ function EZ:CreateWindow(options)
                 end, obj)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 10); bpad.PaddingRight = UDim.new(0, 10); bpad.Parent = box
-                EZ_Connect(box, box.Focused, function() bst.Color = EZ_Theme.Accent end)
+                EZ_Connect(box, box.Focused, function() bst.Color = EZ_Theme.BorderHover end)
                 EZ_Connect(box, box.FocusLost, function()
                     bst.Color = EZ_Theme.Border
                     obj:Set(box.Text, false)
@@ -3037,7 +3050,7 @@ function EZ:CreateWindow(options)
                 local id = o.Flag or o.Id or o.Title or "textarea_" .. os.clock()
                 local obj = { Value = o.Default or "", Id = id, Flag = o.Flag, Type = "textarea", Default = o.Default or "" }
                 local row = Instance.new("Frame")
-                row.Size = UDim2.new(1, 0, 0, 120)
+                row.Size = UDim2.new(1, 0, 0, 116)
                 row.BackgroundColor3 = EZ_Theme.Card
                 row.BorderSizePixel = 0
                 row.Parent = page
@@ -3046,21 +3059,21 @@ function EZ:CreateWindow(options)
                 EZ_RegTrans(row)
                 EZ_Paint(function() row.BackgroundColor3 = EZ_Theme.Card end, obj)
                 local tl = Instance.new("TextLabel")
-                tl.Position = UDim2.fromOffset(16, 12)
-                tl.Size = UDim2.new(1, -26, 0, 18)
+                tl.Position = UDim2.fromOffset(14, 11)
+                tl.Size = UDim2.new(1, -24, 0, 16)
                 tl.BackgroundTransparency = 1
                 tl.Text = o.Title or "Text Area"
-                tl.Font = EZ_Brand.FontBody; tl.TextSize = 14; tl.TextColor3 = EZ_Theme.Text
+                tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left
                 tl.Parent = row
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local box = Instance.new("TextBox")
-                box.Size = UDim2.new(1, -32, 0, 78)
-                box.Position = UDim2.fromOffset(16, 36)
+                box.Size = UDim2.new(1, -28, 0, 76)
+                box.Position = UDim2.fromOffset(14, 34)
                 box.BackgroundColor3 = EZ_Theme.Background
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
-                box.Font = EZ_Brand.FontMono; box.TextSize = 13; box.TextColor3 = EZ_Theme.Text
+                box.Font = EZ_Brand.FontMono; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
                 box.PlaceholderText = o.Placeholder or "..."
                 box.PlaceholderColor3 = EZ_Theme.TextDim
                 box.TextXAlignment = Enum.TextXAlignment.Left
@@ -3080,7 +3093,7 @@ function EZ:CreateWindow(options)
                 local bpad = Instance.new("UIPadding")
                 bpad.PaddingLeft = UDim.new(0, 10); bpad.PaddingRight = UDim.new(0, 10)
                 bpad.PaddingTop = UDim.new(0, 8); bpad.PaddingBottom = UDim.new(0, 8); bpad.Parent = box
-                EZ_Connect(box, box.Focused, function() bst.Color = EZ_Theme.Accent end)
+                EZ_Connect(box, box.Focused, function() bst.Color = EZ_Theme.BorderHover end)
                 EZ_Connect(box, box.FocusLost, function()
                     bst.Color = EZ_Theme.Border
                     obj:Set(box.Text, false)
@@ -3104,41 +3117,41 @@ function EZ:CreateWindow(options)
             function tab:AddProgressBar(a, b)
                 local o = EZ_Normalize(a, b)
                 local obj = { Value = o.Default or 0 }
-                local row = EZ_NewRow(page, 54, obj)
+                local row = EZ_NewRow(page, 50, obj)
                 local tl = Instance.new("TextLabel")
-                tl.Position = UDim2.fromOffset(14, 12)
-                tl.Size = UDim2.new(1, -90, 0, 18)
+                tl.Position = UDim2.fromOffset(14, 11)
+                tl.Size = UDim2.new(1, -90, 0, 16)
                 tl.BackgroundTransparency = 1
                 tl.Text = o.Title or "Progress"
-                tl.Font = EZ_Brand.FontBody; tl.TextSize = 14; tl.TextColor3 = EZ_Theme.Text
+                tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left
                 tl.Parent = row
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
-                vl.Position = UDim2.new(1, -14, 0, 12)
-                vl.Size = UDim2.fromOffset(70, 18)
+                vl.Position = UDim2.new(1, -14, 0, 11)
+                vl.Size = UDim2.fromOffset(70, 16)
                 vl.BackgroundTransparency = 1
-                vl.Font = EZ_Brand.FontMono; vl.TextSize = 13; vl.TextColor3 = EZ_Theme.Accent
+                vl.Font = EZ_Brand.FontMono; vl.TextSize = 12; vl.TextColor3 = EZ_Theme.Accent
                 vl.TextXAlignment = Enum.TextXAlignment.Right
                 vl.Text = tostring(obj.Value) .. "%"
                 vl.Parent = row
                 EZ_Paint(function() vl.TextColor3 = EZ_Theme.Accent end, obj)
                 local track = Instance.new("Frame")
-                track.Position = UDim2.fromOffset(14, 36)
-                track.Size = UDim2.new(1, -28, 0, 6)
-                track.BackgroundColor3 = EZ_Theme.BorderHover
+                track.Position = UDim2.fromOffset(14, 34)
+                track.Size = UDim2.new(1, -28, 0, 4)
+                track.BackgroundColor3 = EZ_Theme.Border
                 track.BorderSizePixel = 0
                 track.Parent = row
-                EZ_AddRadius(track, 3)
+                EZ_AddRadius(track, 2)
                 local fill = Instance.new("Frame")
                 fill.Size = UDim2.new(obj.Value / 100, 0, 1, 0)
                 fill.BackgroundColor3 = EZ_Theme.Accent
                 fill.BorderSizePixel = 0
                 fill.Parent = track
-                EZ_AddRadius(fill, 3)
+                EZ_AddRadius(fill, 2)
                 EZ_Paint(function()
-                    track.BackgroundColor3 = EZ_Theme.BorderHover
+                    track.BackgroundColor3 = EZ_Theme.Border
                     fill.BackgroundColor3 = EZ_Theme.Accent
                 end, obj)
                 function obj:Set(val)
@@ -3158,11 +3171,11 @@ function EZ:CreateWindow(options)
                 local obj = { Value = def, Id = id, Flag = o.Flag, Type = "color", Default = def }
                 local open = false
                 local r, g, b = math.floor(def.R * 255), math.floor(def.G * 255), math.floor(def.B * 255)
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Color", o.Description, 48, 100, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Color", o.Description, 46, 100, obj)
                 local sw = Instance.new("Frame")
-                sw.Size = UDim2.fromOffset(30, 30)
-                sw.Position = UDim2.new(1, -54, 0.5, -15)
+                sw.Size = UDim2.fromOffset(28, 28)
+                sw.Position = UDim2.new(1, -52, 0.5, -14)
                 sw.BackgroundColor3 = obj.Value
                 sw.BorderSizePixel = 0
                 sw.Parent = row
@@ -3176,7 +3189,7 @@ function EZ:CreateWindow(options)
                 end
                 EZ_Paint(function() if sign and sign:IsA("ImageLabel") then sign.ImageColor3 = EZ_Theme.TextDim end end, obj)
                 local panel = Instance.new("Frame")
-                panel.Position = UDim2.fromOffset(1, 48)
+                panel.Position = UDim2.fromOffset(1, 46)
                 panel.Size = UDim2.new(1, -2, 0, 0)
                 panel.BackgroundColor3 = EZ_Theme.Background
                 panel.BorderSizePixel = 0
@@ -3207,12 +3220,12 @@ function EZ:CreateWindow(options)
                     end)
                 end
                 hexBox = Instance.new("TextBox")
-                hexBox.Size = UDim2.new(1, 0, 0, 26)
+                hexBox.Size = UDim2.new(1, 0, 0, 24)
                 hexBox.BackgroundColor3 = EZ_Theme.Card
                 hexBox.BorderSizePixel = 0
                 hexBox.Text = string.format("#%02X%02X%02X", r, g, b)
                 hexBox.Font = EZ_Brand.FontMono
-                hexBox.TextSize = 13
+                hexBox.TextSize = 12
                 hexBox.TextColor3 = EZ_Theme.Text
                 hexBox.TextXAlignment = Enum.TextXAlignment.Center
                 hexBox.Parent = panel
@@ -3230,21 +3243,21 @@ function EZ:CreateWindow(options)
                 end)
                 local function channel(letter, get, set)
                     local holder = Instance.new("Frame")
-                    holder.Size = UDim2.new(1, 0, 0, 26)
+                    holder.Size = UDim2.new(1, 0, 0, 24)
                     holder.BackgroundTransparency = 1
                     holder.Parent = panel
                     local lab = Instance.new("TextLabel")
-                    lab.Size = UDim2.fromOffset(15, 26)
+                    lab.Size = UDim2.fromOffset(14, 24)
                     lab.BackgroundTransparency = 1
                     lab.Text = letter
-                    lab.Font = EZ_Brand.FontMono; lab.TextSize = 13; lab.TextColor3 = EZ_Theme.TextDim
+                    lab.Font = EZ_Brand.FontMono; lab.TextSize = 12; lab.TextColor3 = EZ_Theme.TextDim
                     lab.TextXAlignment = Enum.TextXAlignment.Left
                     lab.Parent = holder
                     EZ_Paint(function() lab.TextColor3 = EZ_Theme.TextDim end, obj)
                     local track = Instance.new("Frame")
-                    track.Position = UDim2.fromOffset(26, 11)
-                    track.Size = UDim2.new(1, -76, 0, 4)
-                    track.BackgroundColor3 = EZ_Theme.BorderHover
+                    track.Position = UDim2.fromOffset(24, 10)
+                    track.Size = UDim2.new(1, -74, 0, 4)
+                    track.BackgroundColor3 = EZ_Theme.Border
                     track.BorderSizePixel = 0
                     track.Parent = holder
                     EZ_AddRadius(track, 2)
@@ -3256,21 +3269,21 @@ function EZ:CreateWindow(options)
                     EZ_AddRadius(fill, 2)
                     local cvl = Instance.new("TextLabel")
                     cvl.AnchorPoint = Vector2.new(1, 0)
-                    cvl.Position = UDim2.new(1, 0, 0, 5)
+                    cvl.Position = UDim2.new(1, 0, 0, 4)
                     cvl.Size = UDim2.fromOffset(40, 16)
                     cvl.BackgroundTransparency = 1
-                    cvl.Font = EZ_Brand.FontMono; cvl.TextSize = 13; cvl.TextColor3 = EZ_Theme.TextDim
+                    cvl.Font = EZ_Brand.FontMono; cvl.TextSize = 12; cvl.TextColor3 = EZ_Theme.TextDim
                     cvl.TextXAlignment = Enum.TextXAlignment.Right
                     cvl.Text = tostring(get())
                     cvl.Parent = holder
                     EZ_Paint(function()
-                        track.BackgroundColor3 = EZ_Theme.BorderHover
+                        track.BackgroundColor3 = EZ_Theme.Border
                         fill.BackgroundColor3 = EZ_Theme.Accent
                         cvl.TextColor3 = EZ_Theme.TextDim
                     end, obj)
                     local cap = Instance.new("TextButton")
-                    cap.Position = UDim2.fromOffset(26, 0)
-                    cap.Size = UDim2.new(1, -76, 0, 26)
+                    cap.Position = UDim2.fromOffset(24, 0)
+                    cap.Size = UDim2.new(1, -74, 0, 24)
                     cap.BackgroundTransparency = 1
                     cap.Text = ""
                     cap.AutoButtonColor = false
@@ -3303,13 +3316,13 @@ function EZ:CreateWindow(options)
                     if sign then
                         TweenService:Create(sign, EZ_Ease.Med, { Rotation = s and 180 or 0 }):Play()
                     end
-                    local h = s and 120 or 0
-                    TweenService:Create(row, EZ_Ease.Med, { Size = UDim2.new(1, 0, 0, 48 + h) }):Play()
+                    local h = s and 116 or 0
+                    TweenService:Create(row, EZ_Ease.Med, { Size = UDim2.new(1, 0, 0, 46 + h) }):Play()
                     TweenService:Create(panel, EZ_Ease.Med, { Size = UDim2.new(1, -2, 0, h) }):Play()
                 end
                 row.InputBegan:Connect(function(i)
                     if i.UserInputType == Enum.UserInputType.MouseButton1 then
-                        if i.Position.Y < row.AbsolutePosition.Y + 48 then setOpen(not open) end
+                        if i.Position.Y < row.AbsolutePosition.Y + 46 then setOpen(not open) end
                     end
                 end)
                 function obj:Set(color, silent)
@@ -3327,16 +3340,16 @@ function EZ:CreateWindow(options)
                 local id = o.Flag or o.Id or o.Title or "keybind_" .. os.clock()
                 local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "keybind", Default = o.Default, Mods = "" }
                 local listening = false
-                local row = EZ_NewRow(page, 48, obj)
-                EZ_RowTitle(row, o.Title or "Keybind", o.Description, 48, 110, obj)
+                local row = EZ_NewRow(page, 46, obj)
+                EZ_RowTitle(row, o.Title or "Keybind", o.Description, 46, 110, obj)
                 local kl = Instance.new("TextButton")
-                kl.Position = UDim2.new(1, -100, 0.5, -14)
-                kl.Size = UDim2.fromOffset(86, 28)
+                kl.Position = UDim2.new(1, -100, 0.5, -13)
+                kl.Size = UDim2.fromOffset(86, 26)
                 kl.BackgroundColor3 = EZ_Theme.Background
                 kl.BorderSizePixel = 0
                 kl.Text = obj.Value and obj.Value.Name or EZ_Locale.None
                 kl.Font = EZ_Brand.FontBody
-                kl.TextSize = 13
+                kl.TextSize = 12
                 kl.TextColor3 = EZ_Theme.Text
                 kl.TextXAlignment = Enum.TextXAlignment.Center
                 kl.AutoButtonColor = false
@@ -3392,7 +3405,7 @@ function EZ:CreateWindow(options)
                         end
                     end
                 end)
-                kl.MouseEnter:Connect(function() if not listening then klst.Color = EZ_Theme.Accent end end)
+                kl.MouseEnter:Connect(function() if not listening then klst.Color = EZ_Theme.BorderHover end end)
                 kl.MouseLeave:Connect(function() if not listening then klst.Color = EZ_Theme.Border end end)
                 kl.MouseButton1Click:Connect(function()
                     listening = true
