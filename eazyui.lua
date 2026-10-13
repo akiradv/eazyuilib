@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.43
+    Eazy UI v0.9.44
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.43"
+EZ.Version = "0.9.44"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1801,6 +1801,7 @@ function EZ:CreateWindow(options)
                 if d.type == "color" then
                     el:Set(Color3.fromRGB(d.value[1], d.value[2], d.value[3]), false)
                 elseif d.type == "keybind" then
+                    el.Mods = d.mods or ""
                     local key = d.value and Enum.KeyCode[d.value] or nil
                     el:Set(key, true)
                     if el.Id == "_minimize_key" and key then EZ_MinKey = key end
@@ -3648,12 +3649,17 @@ function EZ:CreateWindow(options)
             end
             EZ_Window.ConfigData = data
             EZ_Window.CurrentConfig = configName
-            if EZ_SaveQueued then return true end
-            EZ_SaveQueued = true
-            task.delay(1, function()
-                EZ_SaveQueued = false
-                EZ_SaveConfig(EZ_ConfigId, configName, data)
-            end)
+            EZ_PendingSave = { name = configName, data = data }
+            if not EZ_SaveTimer then
+                EZ_SaveTimer = task.delay(1, function()
+                    EZ_SaveTimer = nil
+                    if EZ_PendingSave then
+                        local p = EZ_PendingSave
+                        EZ_PendingSave = nil
+                        EZ_SaveConfig(EZ_ConfigId, p.name, p.data)
+                    end
+                end)
+            end
             return true
         end
 
@@ -3715,10 +3721,11 @@ function EZ:CreateWindow(options)
                 Callback = function()
                     local name = (configNameInput.Value ~= "" and configNameInput.Value) or EZ_Window.CurrentConfig
                     EZ_Window:SaveConfig(name)
+                    EZ_SetAutoloadName(EZ_ConfigId, name)
                     if savedConfigsDropdown then
                         savedConfigsDropdown:SetValues(EZ_Window:ListConfigs())
                     end
-                    EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' saved.", Style = "Success", Duration = 2 })
+                    EZ:Notify({ Title = "Config", Content = "Config '" .. name .. "' saved and set as autoload.", Style = "Success", Duration = 2 })
                 end
             })
             savedConfigsDropdown = tab:AddDropdown({
