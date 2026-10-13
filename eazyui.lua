@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.42
+    Eazy UI v0.9.43
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.42"
+EZ.Version = "0.9.43"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -306,7 +306,7 @@ EZ.Compat = {
     hooks = hookmetamethod and true or false,
 }
 
-local EZ_LogoUrl = "https://raw.githubusercontent.com/akiradv/eazyuilib/main/assets/logo.png"
+local EZ_LogoUrl = "https://raw.githubusercontent.com/akiradv/eazyuilib/main/assets/logonobg.png"
 
 local function EZ_LoadLogo()
     if EZ_LogoAsset then return EZ_LogoAsset end
