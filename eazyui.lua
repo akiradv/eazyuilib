@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.40
+    Eazy UI v0.9.41
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.40"
+EZ.Version = "0.9.41"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -3156,175 +3156,348 @@ function EZ:CreateWindow(options)
             end
 
             function tab:AddColorPicker(a, b)
-                local o = EZ_Normalize(a, b)
-                local cb = o.Callback or function() end
-                local id = o.Flag or o.Id or o.Title or "color_" .. os.clock()
-                local def = o.Default or Color3.fromRGB(255, 255, 255)
-                local obj = { Value = def, Id = id, Flag = o.Flag, Type = "color", Default = def }
-                local open = false
-                local r, g, b = math.floor(def.R * 255), math.floor(def.G * 255), math.floor(def.B * 255)
-                local row = EZ_NewRow(page, 46, obj)
-                EZ_RowTitle(row, o.Title or "Color", o.Description, 46, 100, obj)
-                local sw = Instance.new("Frame")
-                sw.Size = UDim2.fromOffset(28, 28)
-                sw.Position = UDim2.new(1, -52, 0.5, -14)
-                sw.BackgroundColor3 = obj.Value
-                sw.BorderSizePixel = 0
-                sw.Parent = row
-                EZ_AddStroke(sw, EZ_Theme.Border)
-                EZ_AddRadius(sw, EZ_Theme.Radius)
-                local sign = EZ_CreateIcon(row, "chevron-down", 14)
-                if sign then
-                    sign.AnchorPoint = Vector2.new(1, 0)
-                    sign.Position = UDim2.new(1, -14, 0, 0)
-                    sign.ImageColor3 = EZ_Theme.TextDim
-                end
-                EZ_Paint(function() if sign and sign:IsA("ImageLabel") then sign.ImageColor3 = EZ_Theme.TextDim end end, obj)
-                local panel = Instance.new("Frame")
-                panel.Position = UDim2.fromOffset(1, 46)
-                panel.Size = UDim2.new(1, -2, 0, 0)
-                panel.BackgroundColor3 = EZ_Theme.Background
-                panel.BorderSizePixel = 0
-                panel.ClipsDescendants = true
-                panel.Parent = row
-                EZ_RegTrans(panel)
-                EZ_Paint(function() panel.BackgroundColor3 = EZ_Theme.Background end, obj)
-                local play2 = Instance.new("UIListLayout"); play2.Padding = UDim.new(0, 8); play2.Parent = panel
-                local ppad2 = Instance.new("UIPadding")
-                ppad2.PaddingTop = UDim.new(0, 10); ppad2.PaddingBottom = UDim.new(0, 10)
-                ppad2.PaddingLeft = UDim.new(0, 14); ppad2.PaddingRight = UDim.new(0, 14); ppad2.Parent = panel
-                local updateScheduled = false
-                local hexBox
-                local function update(silent)
-                    obj.Value = Color3.fromRGB(r, g, b)
-                    sw.BackgroundColor3 = obj.Value
-                    if hexBox and hexBox.Parent then hexBox.Text = string.format("#%02X%02X%02X", r, g, b) end
-                    if silent then return end
-                    if updateScheduled then return end
-                    updateScheduled = true
-                    task.delay(0.08, function()
-                        updateScheduled = false
-                        cb(obj.Value)
-                        if obj.Flag and EZ_AutoSave then
-                            EZ_Window.ConfigData[id] = { type = "color", value = { math.floor(obj.Value.R * 255), math.floor(obj.Value.G * 255), math.floor(obj.Value.B * 255) } }
-                            EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
-                        end
-                    end)
-                end
-                hexBox = Instance.new("TextBox")
-                hexBox.Size = UDim2.new(1, 0, 0, 24)
-                hexBox.BackgroundColor3 = EZ_Theme.Card
-                hexBox.BorderSizePixel = 0
-                hexBox.Text = string.format("#%02X%02X%02X", r, g, b)
-                hexBox.Font = EZ_Brand.FontMono
-                hexBox.TextSize = 12
-                hexBox.TextColor3 = EZ_Theme.Text
-                hexBox.TextXAlignment = Enum.TextXAlignment.Center
-                hexBox.Parent = panel
-                EZ_AddRadius(hexBox, 4)
-                hexBox.FocusLost:Connect(function(enter)
-                    if enter then
-                        local hex = hexBox.Text:match("^#?(%x%x%x%x%x%x)$")
-                        if hex then
-                            r = tonumber(hex:sub(1, 2), 16)
-                            g = tonumber(hex:sub(3, 4), 16)
-                            b = tonumber(hex:sub(5, 6), 16)
-                            update(false)
-                        end
-                    end
-                end)
-                local function channel(letter, get, set)
-                    local holder = Instance.new("Frame")
-                    holder.Size = UDim2.new(1, 0, 0, 24)
-                    holder.BackgroundTransparency = 1
-                    holder.Parent = panel
-                    local lab = Instance.new("TextLabel")
-                    lab.Size = UDim2.fromOffset(14, 24)
-                    lab.BackgroundTransparency = 1
-                    lab.Text = letter
-                    lab.Font = EZ_Brand.FontMono; lab.TextSize = 12; lab.TextColor3 = EZ_Theme.TextDim
-                    lab.TextXAlignment = Enum.TextXAlignment.Left
-                    lab.Parent = holder
-                    EZ_Paint(function() lab.TextColor3 = EZ_Theme.TextDim end, obj)
-                    local track = Instance.new("Frame")
-                    track.Position = UDim2.fromOffset(24, 10)
-                    track.Size = UDim2.new(1, -74, 0, 4)
-                    track.BackgroundColor3 = EZ_Theme.Border
-                    track.BorderSizePixel = 0
-                    track.Parent = holder
-                    EZ_AddRadius(track, 2)
-                    local fill = Instance.new("Frame")
-                    fill.Size = UDim2.new(get() / 255, 0, 1, 0)
-                    fill.BackgroundColor3 = EZ_Theme.Accent
-                    fill.BorderSizePixel = 0
-                    fill.Parent = track
-                    EZ_AddRadius(fill, 2)
-                    local cvl = Instance.new("TextLabel")
-                    cvl.AnchorPoint = Vector2.new(1, 0)
-                    cvl.Position = UDim2.new(1, 0, 0, 4)
-                    cvl.Size = UDim2.fromOffset(40, 16)
-                    cvl.BackgroundTransparency = 1
-                    cvl.Font = EZ_Brand.FontMono; cvl.TextSize = 12; cvl.TextColor3 = EZ_Theme.TextDim
-                    cvl.TextXAlignment = Enum.TextXAlignment.Right
-                    cvl.Text = tostring(get())
-                    cvl.Parent = holder
-                    EZ_Paint(function()
-                        track.BackgroundColor3 = EZ_Theme.Border
-                        fill.BackgroundColor3 = EZ_Theme.Accent
-                        cvl.TextColor3 = EZ_Theme.TextDim
-                    end, obj)
-                    local cap = Instance.new("TextButton")
-                    cap.Position = UDim2.fromOffset(24, 0)
-                    cap.Size = UDim2.new(1, -74, 0, 24)
-                    cap.BackgroundTransparency = 1
-                    cap.Text = ""
-                    cap.AutoButtonColor = false
-                    cap.Parent = holder
-                    local drag = false
-                    local function apply(x)
-                        local w = track.AbsoluteSize.X
-                        if w <= 0 then return end
-                        local v = math.floor(EZ_Clamp((x - track.AbsolutePosition.X) / w, 0, 1) * 255)
-                        set(v)
-                        fill.Size = UDim2.new(v / 255, 0, 1, 0)
-                        cvl.Text = tostring(v)
-                        update(false)
-                    end
-                    cap.InputBegan:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = true; apply(i.Position.X) end
-                    end)
-                    cap.InputEnded:Connect(function(i)
-                        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then drag = false end
-                    end)
-                    UserInputService.InputChanged:Connect(function(i)
-                        if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then apply(i.Position.X) end
-                    end)
-                end
-                channel("R", function() return r end, function(v) r = v end)
-                channel("G", function() return g end, function(v) g = v end)
-                channel("B", function() return b end, function(v) b = v end)
-                local function setOpen(s)
-                    open = s
-                    if sign then
-                        TweenService:Create(sign, EZ_Ease.Med, { Rotation = s and 180 or 0 }):Play()
-                    end
-                    local h = s and 116 or 0
-                    TweenService:Create(row, EZ_Ease.Med, { Size = UDim2.new(1, 0, 0, 46 + h) }):Play()
-                    TweenService:Create(panel, EZ_Ease.Med, { Size = UDim2.new(1, -2, 0, h) }):Play()
-                end
-                row.InputBegan:Connect(function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then
-                        if i.Position.Y < row.AbsolutePosition.Y + 46 then setOpen(not open) end
-                    end
-                end)
-                function obj:Set(color, silent)
-                    r = math.floor(color.R * 255); g = math.floor(color.G * 255); b = math.floor(color.B * 255)
-                    update(silent)
-                end
-                if obj.Flag then table.insert(EZ_Window.Elements, obj) end
-                obj._row = row
-                return obj
+    local o = EZ_Normalize(a, b)
+    local cb = o.Callback or function() end
+    local id = o.Flag or o.Id or o.Title or "color_" .. os.clock()
+    local def = o.Default or Color3.fromRGB(255, 255, 255)
+    local obj = { Value = def, Id = id, Flag = o.Flag, Type = "color", Default = def }
+
+    local h, s, v = def:ToHSV()
+
+    local ROW_H = 46
+    local BODY_H = 170
+
+    local row = EZ_NewRow(page, ROW_H, obj)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Position = UDim2.fromOffset(14, 0)
+    lbl.Size = UDim2.new(1, -80, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = o.Title or "Color"
+    lbl.Font = EZ_Brand.FontBody
+    lbl.TextSize = 13
+    lbl.TextColor3 = EZ_Theme.Text
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+    EZ_Paint(function() lbl.TextColor3 = EZ_Theme.Text end, obj)
+
+    local swatch = Instance.new("Frame")
+    swatch.Size = UDim2.fromOffset(28, 28)
+    swatch.Position = UDim2.new(1, -52, 0.5, -14)
+    swatch.BackgroundColor3 = def
+    swatch.BorderSizePixel = 0
+    swatch.Parent = row
+    EZ_AddStroke(swatch, EZ_Theme.Border)
+    EZ_AddRadius(swatch, EZ_Theme.Radius)
+
+    local chev = EZ_CreateIcon(row, "chevron-down", 14)
+    if chev then
+        chev.AnchorPoint = Vector2.new(1, 0.5)
+        chev.Position = UDim2.new(1, -14, 0.5, 0)
+        chev.ImageColor3 = EZ_Theme.TextDim
+    end
+    EZ_Paint(function()
+        if chev and chev:IsA("ImageLabel") then chev.ImageColor3 = EZ_Theme.TextDim end
+    end, obj)
+
+    local panel = Instance.new("Frame")
+    panel.Position = UDim2.fromOffset(1, ROW_H)
+    panel.Size = UDim2.new(1, -2, 0, 0)
+    panel.BackgroundColor3 = EZ_Theme.Background
+    panel.BorderSizePixel = 0
+    panel.ClipsDescendants = true
+    panel.Parent = row
+    EZ_RegTrans(panel)
+    EZ_Paint(function() panel.BackgroundColor3 = EZ_Theme.Background end, obj)
+
+    local canvasBg = Instance.new("Frame")
+    canvasBg.Position = UDim2.fromOffset(12, 12)
+    canvasBg.Size = UDim2.new(1, -60, 0, 120)
+    canvasBg.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+    canvasBg.BorderSizePixel = 0
+    canvasBg.Parent = panel
+    EZ_AddRadius(canvasBg, 6)
+    EZ_AddStroke(canvasBg, EZ_Theme.Border, 1)
+    EZ_Paint(function()
+        canvasBg.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+    end, obj)
+
+    local whiteGrad = Instance.new("Frame")
+    whiteGrad.Size = UDim2.new(1, 0, 1, 0)
+    whiteGrad.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    whiteGrad.BorderSizePixel = 0
+    whiteGrad.Parent = canvasBg
+    EZ_AddRadius(whiteGrad, 6)
+    local wg = Instance.new("UIGradient")
+    wg.Color = ColorSequence.new(Color3.new(1, 1, 1))
+    wg.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    wg.Parent = whiteGrad
+
+    local blackGrad = Instance.new("Frame")
+    blackGrad.Size = UDim2.new(1, 0, 1, 0)
+    blackGrad.BackgroundColor3 = Color3.new(0, 0, 0)
+    blackGrad.BorderSizePixel = 0
+    blackGrad.Parent = canvasBg
+    EZ_AddRadius(blackGrad, 6)
+    local bg2 = Instance.new("UIGradient")
+    bg2.Rotation = 90
+    bg2.Color = ColorSequence.new(Color3.new(0, 0, 0))
+    bg2.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    bg2.Parent = blackGrad
+
+    local svCursor = Instance.new("Frame")
+    svCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+    svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+    svCursor.Size = UDim2.fromOffset(12, 12)
+    svCursor.BackgroundColor3 = Color3.new(1, 1, 1)
+    svCursor.BorderSizePixel = 0
+    svCursor.ZIndex = 5
+    svCursor.Parent = canvasBg
+    EZ_AddRadius(svCursor, 6)
+    EZ_AddStroke(svCursor, Color3.new(0, 0, 0), 2)
+
+    local hueBar = Instance.new("Frame")
+    hueBar.Position = UDim2.new(1, -40, 0, 12)
+    hueBar.Size = UDim2.fromOffset(20, 120)
+    hueBar.BackgroundColor3 = Color3.new(1, 1, 1)
+    hueBar.BorderSizePixel = 0
+    hueBar.Parent = panel
+    EZ_AddRadius(hueBar, 6)
+    EZ_AddStroke(hueBar, EZ_Theme.Border, 1)
+
+    local hueGrad = Instance.new("UIGradient")
+    hueGrad.Rotation = 90
+    hueGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),
+        ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+        ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0)),
+    })
+    hueGrad.Parent = hueBar
+
+    local hueCursor = Instance.new("Frame")
+    hueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+    hueCursor.Position = UDim2.new(0.5, 0, h, 0)
+    hueCursor.Size = UDim2.new(1, 4, 0, 4)
+    hueCursor.BackgroundColor3 = Color3.new(1, 1, 1)
+    hueCursor.BorderSizePixel = 0
+    hueCursor.ZIndex = 5
+    hueCursor.Parent = hueBar
+    EZ_AddRadius(hueCursor, 2)
+    EZ_AddStroke(hueCursor, Color3.new(0, 0, 0), 2)
+
+    local bottomRow = Instance.new("Frame")
+    bottomRow.Position = UDim2.fromOffset(12, 144)
+    bottomRow.Size = UDim2.new(1, -24, 0, 28)
+    bottomRow.BackgroundTransparency = 1
+    bottomRow.Parent = panel
+
+    local preview = Instance.new("Frame")
+    preview.Size = UDim2.new(0, 28, 1, 0)
+    preview.BackgroundColor3 = def
+    preview.BorderSizePixel = 0
+    preview.Parent = bottomRow
+    EZ_AddRadius(preview, 6)
+    EZ_AddStroke(preview, EZ_Theme.Border, 1)
+
+    local hexBox = Instance.new("TextBox")
+    hexBox.Position = UDim2.fromOffset(36, 0)
+    hexBox.Size = UDim2.new(1, -36, 1, 0)
+    hexBox.BackgroundColor3 = EZ_Theme.Card
+    hexBox.BorderSizePixel = 0
+    hexBox.Text = string.format("#%02X%02X%02X",
+        math.floor(def.R * 255 + 0.5),
+        math.floor(def.G * 255 + 0.5),
+        math.floor(def.B * 255 + 0.5))
+    hexBox.Font = EZ_Brand.FontMono
+    hexBox.TextSize = 13
+    hexBox.TextColor3 = EZ_Theme.Text
+    hexBox.TextXAlignment = Enum.TextXAlignment.Center
+    hexBox.ClearTextOnFocus = false
+    hexBox.Parent = bottomRow
+    EZ_AddRadius(hexBox, 6)
+    EZ_AddStroke(hexBox, EZ_Theme.Border, 1)
+    EZ_Paint(function()
+        hexBox.BackgroundColor3 = EZ_Theme.Card
+        hexBox.TextColor3 = EZ_Theme.Text
+    end, obj)
+
+    local updateScheduled = false
+    local function refreshUI()
+        local col = Color3.fromHSV(h, s, v)
+        obj.Value = col
+        swatch.BackgroundColor3 = col
+        preview.BackgroundColor3 = col
+        canvasBg.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+        svCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+        hueCursor.Position = UDim2.new(0.5, 0, h, 0)
+        if not hexBox:IsFocused() then
+            hexBox.Text = string.format("#%02X%02X%02X",
+                math.floor(col.R * 255 + 0.5),
+                math.floor(col.G * 255 + 0.5),
+                math.floor(col.B * 255 + 0.5))
+        end
+    end
+
+    local function fire()
+        if updateScheduled then return end
+        updateScheduled = true
+        task.delay(0.06, function()
+            updateScheduled = false
+            local col = obj.Value
+            cb(col)
+            if obj.Flag and EZ_AutoSave then
+                EZ_Window.ConfigData[id] = {
+                    type = "color",
+                    value = {
+                        math.floor(col.R * 255 + 0.5),
+                        math.floor(col.G * 255 + 0.5),
+                        math.floor(col.B * 255 + 0.5),
+                    }
+                }
+                EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
             end
+        end)
+    end
+
+    local draggingSV = false
+    local draggingHue = false
+
+    local function svFromPtr(x, y)
+        local ap = canvasBg.AbsolutePosition
+        local sz = canvasBg.AbsoluteSize
+        s = math.clamp((x - ap.X) / sz.X, 0, 1)
+        v = 1 - math.clamp((y - ap.Y) / sz.Y, 0, 1)
+        refreshUI()
+        fire()
+    end
+
+    local function hueFromPtr(y)
+        local ap = hueBar.AbsolutePosition
+        local sz = hueBar.AbsoluteSize
+        h = math.clamp((y - ap.Y) / sz.Y, 0, 1)
+        refreshUI()
+        fire()
+    end
+
+    local svCap = Instance.new("TextButton")
+    svCap.BackgroundTransparency = 1
+    svCap.Size = UDim2.new(1, 0, 1, 0)
+    svCap.Text = ""
+    svCap.AutoButtonColor = false
+    svCap.ZIndex = 4
+    svCap.Parent = canvasBg
+
+    svCap.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            draggingSV = true
+            svFromPtr(i.Position.X, i.Position.Y)
+        end
+    end)
+    svCap.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            draggingSV = false
+        end
+    end)
+
+    local hueCap = Instance.new("TextButton")
+    hueCap.BackgroundTransparency = 1
+    hueCap.Size = UDim2.new(1, 0, 1, 0)
+    hueCap.Text = ""
+    hueCap.AutoButtonColor = false
+    hueCap.ZIndex = 4
+    hueCap.Parent = hueBar
+
+    hueCap.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            draggingHue = true
+            hueFromPtr(i.Position.Y)
+        end
+    end)
+    hueCap.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            draggingHue = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(i)
+        if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
+        if draggingSV then svFromPtr(i.Position.X, i.Position.Y) end
+        if draggingHue then hueFromPtr(i.Position.Y) end
+    end)
+
+    hexBox.FocusLost:Connect(function(enter)
+        if not enter then return end
+        local hex = hexBox.Text:match("^#?(%x%x%x%x%x%x)$")
+        if hex then
+            local r = tonumber(hex:sub(1, 2), 16)
+            local g = tonumber(hex:sub(3, 4), 16)
+            local bl = tonumber(hex:sub(5, 6), 16)
+            local col = Color3.fromRGB(r, g, bl)
+            h, s, v = col:ToHSV()
+            refreshUI()
+            fire()
+        else
+            refreshUI()
+        end
+    end)
+
+    local function setOpen(state)
+        if state then
+            TweenService:Create(row, EZ_Ease.Med, {
+                Size = UDim2.new(1, 0, 0, ROW_H + BODY_H)
+            }):Play()
+            TweenService:Create(panel, EZ_Ease.Med, {
+                Size = UDim2.new(1, -2, 0, BODY_H)
+            }):Play()
+            if chev then
+                TweenService:Create(chev, EZ_Ease.Med, { Rotation = 180 }):Play()
+            end
+        else
+            TweenService:Create(row, EZ_Ease.Med, {
+                Size = UDim2.new(1, 0, 0, ROW_H)
+            }):Play()
+            TweenService:Create(panel, EZ_Ease.Med, {
+                Size = UDim2.new(1, -2, 0, 0)
+            }):Play()
+            if chev then
+                TweenService:Create(chev, EZ_Ease.Med, { Rotation = 0 }):Play()
+            end
+        end
+    end
+
+    row.InputBegan:Connect(function(i)
+        if i.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+        if i.Position.Y < row.AbsolutePosition.Y + ROW_H then
+            setOpen(row.Size.Y.Offset <= ROW_H)
+        end
+    end)
+
+    refreshUI()
+
+    function obj:Set(color, silent)
+        color = color or Color3.new(1, 1, 1)
+        h, s, v = color:ToHSV()
+        refreshUI()
+        if not silent then fire() end
+    end
+    function obj:Get()
+        return obj.Value
+    end
+
+    if obj.Flag then table.insert(EZ_Window.Elements, obj) end
+    obj._row = row
+    return obj
+end
 
             function tab:AddKeybind(a, b)
                 local o = EZ_Normalize(a, b)
