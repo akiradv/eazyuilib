@@ -17,7 +17,7 @@
         <a href="#about" class="logo">
             <span class="logo-mark">E</span>
             <span class="logo-name">Eazy UI</span>
-            <span class="version">v0.9.36</span>
+            <span class="version">v0.9.44</span>
         </a>
         <span class="logo-sub">docs</span>
     </div>
@@ -115,7 +115,7 @@
         <h1>Eazy UI</h1>
         <p class="lead">One file. One loadstring. Zero dependencies.</p>
         <div class="hero-badges">
-            <span class="badge badge-green">v0.9.36</span>
+            <span class="badge badge-green">v0.9.44</span>
             <span class="badge">Single file</span>
             <span class="badge">Open source</span>
             <span class="badge">MIT</span>
@@ -1281,7 +1281,7 @@ bar:Set(42)</code></pre>
     <div class="page-hero">
         <span class="eyebrow">Element</span>
         <h1>Color Picker</h1>
-        <p class="lead">Swatch that expands into R, G and B sliders plus an editable hex box. Callbacks are debounced at 80ms.</p>
+        <p class="lead">Swatch that expands into a full panel: saturation and value canvas, dedicated hue bar, live color preview and editable hex input. Callbacks are debounced at 80ms.</p>
     </div>
     <div class="code-block">
         <div class="code-header">
@@ -1303,7 +1303,7 @@ picker:Set(Color3.fromRGB(255, 0, 0))</code></pre>
         <div class="param"><code>Flag</code><span>"ESPColor"</span></div>
         <div class="param"><code>Set(Color3, silent)</code><span>programmatic color</span></div>
     </div>
-    <p>The expanded panel has an <code>#RRGGBB</code> input at the top. Press Enter to parse and apply the hex value. Invalid input is ignored.</p>
+    <p>The expanded panel is built from three parts: a large canvas where the X axis controls saturation and the Y axis controls value, a vertical hue bar on the right and a live preview strip at the bottom showing the current color. The <code>#RRGGBB</code> input sits at the top of the panel. Press Enter to parse and apply the hex value. Invalid input is ignored.</p>
 </section>
 
 <section class="page" id="el-keybind">
@@ -1375,6 +1375,10 @@ end
 
 if not EZ.Compat.http then
     warn("key system disabled: no HTTP support")
+end
+
+if EZ.Compat.hooks then
+    print("metamethod hooks available for optional features")
 end</code></pre>
     </div>
     <table class="options-table">
@@ -1418,6 +1422,17 @@ end</code></pre>
             <span class="badge badge-green">Built with Eazy UI</span>
             <h3>Muscle Legends Hub</h3>
             <p>Automation hub for Muscle Legends. Auto train, auto machines, teleport to gyms, auto kill players with whitelist, auto rebirth and a full stats panel.</p>
+            <div class="showcase-links">
+                <a class="btn" href="https://github.com/akiradv/scriptsroblox" target="_blank" rel="noopener">View source</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="showcase-card">
+        <div class="showcase-info">
+            <span class="badge badge-green">Built with Eazy UI</span>
+            <h3>Flick Hub</h3>
+            <p>Silent aim, trigger bot and full player ESP for [FPS] Flick. Wallcheck, 360 aim, rapid fire and a full config system.</p>
             <div class="showcase-links">
                 <a class="btn" href="https://github.com/akiradv/scriptsroblox" target="_blank" rel="noopener">View source</a>
             </div>
@@ -1586,6 +1601,35 @@ EZ:Notify({
         <p class="lead">Release history.</p>
     </div>
 
+    <h3>v0.9.44</h3>
+    <ul>
+        <li>Version bump for consistency with the library release. No functional changes.</li>
+    </ul>
+
+    <h3>v0.9.43</h3>
+    <ul>
+        <li>Logo asset now points to <code>logonobg.png</code> (no background) instead of the padded logo image.</li>
+    </ul>
+
+    <h3>v0.9.42</h3>
+    <ul>
+        <li>Fixed duplicated <code>UIPadding</code> on the color picker expanded panel that caused uneven spacing between the canvas, hue bar and hex input.</li>
+        <li>Color picker header now lives inside a fixed 46px frame so it does not collapse when content grows or when the hex input wraps.</li>
+        <li>Internal <code>BODY_H</code> adjusted to 184px for consistent spacing across all themes.</li>
+    </ul>
+
+    <h3>v0.9.41</h3>
+    <ul>
+        <li>Color picker fully redesigned: saturation and value canvas, dedicated hue bar, live color preview strip and editable <code>#RRGGBB</code> input at the top.</li>
+        <li>Callback debounce lowered to 80ms for smoother drag response.</li>
+    </ul>
+
+    <h3>v0.9.37 to v0.9.40</h3>
+    <ul>
+        <li>Internal refactors and stability tweaks across the color picker and the theme repaint pipeline.</li>
+        <li>Minor fixes on element spawn order so newly added sections respect collapse state from configs.</li>
+    </ul>
+
     <h3>v0.9.36</h3>
     <ul>
         <li>Fixed window opening stuck to the bottom-right corner on executors that clamp negative UDim2 offsets. Centering now uses <code>AnchorPoint</code> (0.5, 0.5) with scale position instead of negative pixel offsets.</li>
@@ -1699,7 +1743,7 @@ EZ:Notify({
                 <span class="logo-name">Eazy UI</span>
             </div>
             <p>Open source Roblox GUI library. One file, zero dependencies. Built to keep scripting easy.</p>
-            <span class="badge badge-green">v0.9.36</span>
+            <span class="badge badge-green">v0.9.44</span>
         </div>
         <div class="footer-col">
             <h5>Docs</h5>
@@ -1736,7 +1780,7 @@ EZ:Notify({
         </div>
     </div>
     <div class="footer-bottom">
-        <span>2026 Akira Dev. Eazy UI v0.9.36.</span>
+        <span>2026 Akira Dev. Eazy UI v0.9.44.</span>
         <span>Not affiliated with Roblox Corporation.</span>
     </div>
 </footer>
