@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.44
+    Eazy UI v0.9.45
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.44"
+EZ.Version = "0.9.45"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -183,6 +183,8 @@ local EZ_CurrentScale = 1
 local EZ_ScaleConns = {}
 local EZ_MIN_SIZE = Vector2.new(420, 300)
 local EZ_STROKE_BASE = 0.7
+local EZ_PendingSave = nil
+local EZ_SaveTimer = nil
 
 local EZ_Ease = {
     Fast = TweenInfo.new(0.14, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -196,6 +198,28 @@ local EZ_NotifyQueue = {}
 local EZ_NotifyVisible = {}
 local EZ_NotifyMax = 6
 local EZ_SaveQueued = false
+
+local EZ_HoveredSlider = nil
+local EZ_SliderDispatcherReady = false
+local function EZ_EnsureSliderDispatcher()
+    if EZ_SliderDispatcherReady then return end
+    EZ_SliderDispatcherReady = true
+    UserInputService.InputBegan:Connect(function(i, p)
+        if p then return end
+        if not EZ_HoveredSlider then return end
+        if UserInputService:GetFocusedTextBox() then return end
+        if i.KeyCode == Enum.KeyCode.Left then
+            EZ_HoveredSlider.dec()
+        elseif i.KeyCode == Enum.KeyCode.Right then
+            EZ_HoveredSlider.inc()
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if i.UserInputType ~= Enum.UserInputType.MouseWheel then return end
+        if not EZ_HoveredSlider then return end
+        EZ_HoveredSlider.wheel(i.Position.Z > 0)
+    end)
+end
 
 local function EZ_Paint(fn, element)
     local entry = { fn = fn, element = element }
@@ -1727,6 +1751,7 @@ function EZ:CreateWindow(options)
     EZ_Window.CurrentConfig = "default"
     EZ_Window._pendingConfigSync = nil
     EZ_Window.MinimizeMode = EZ_MinMode
+    EZ_Window.ConfigId = EZ_ConfigId
     EZ_CurrentWindow = EZ_Window
 
     function EZ_Window:SetAccent(color)
@@ -2594,19 +2619,25 @@ function EZ:CreateWindow(options)
                         applyVisual(fromPtr(i.Position.X))
                     end
                 end)
-                local hovering = false
-                row.MouseEnter:Connect(function() hovering = true end)
-                row.MouseLeave:Connect(function() hovering = false end)
-                UserInputService.InputChanged:Connect(function(i)
-                    if hovering and i.UserInputType == Enum.UserInputType.MouseWheel then
-                        applyVisual(obj.Value + (i.Position.Z > 0 and st or -st))
-                        applyFinal(false)
-                    end
+                EZ_EnsureSliderDispatcher()
+                local function sliderInc()
+                    applyVisual(obj.Value + st)
+                    applyFinal(false)
+                end
+                local function sliderDec()
+                    applyVisual(obj.Value - st)
+                    applyFinal(false)
+                end
+                local function sliderWheel(up)
+                    applyVisual(obj.Value + (up and st or -st))
+                    applyFinal(false)
+                end
+                row.MouseEnter:Connect(function()
+                    EZ_HoveredSlider = { inc = sliderInc, dec = sliderDec, wheel = sliderWheel }
                 end)
-                UserInputService.InputBegan:Connect(function(i, p)
-                    if hovering and not p and not UserInputService:GetFocusedTextBox() then
-                        if i.KeyCode == Enum.KeyCode.Left then applyVisual(obj.Value - st); applyFinal(false)
-                        elseif i.KeyCode == Enum.KeyCode.Right then applyVisual(obj.Value + st); applyFinal(false) end
+                row.MouseLeave:Connect(function()
+                    if EZ_HoveredSlider and EZ_HoveredSlider.inc == sliderInc then
+                        EZ_HoveredSlider = nil
                     end
                 end)
                 local editBtn = Instance.new("TextButton")
@@ -2884,11 +2915,23 @@ function EZ:CreateWindow(options)
                 local cb = o.Callback or function() end
                 local multi = o.Multi == true
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
+                local defaultVal
+                if multi then
+                    if type(o.Default) == "table" then
+                        defaultVal = o.Default
+                    elseif o.Default ~= nil then
+                        defaultVal = { o.Default }
+                    else
+                        defaultVal = {}
+                    end
+                else
+                    defaultVal = o.Default
+                end
                 local obj = {
-                    Value = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default,
+                    Value = defaultVal,
                     Id = id, Flag = o.Flag,
                     Type = multi and "multi" or "dropdown",
-                    Default = multi and (type(o.Default) == "table" and o.Default or {}) or o.Default
+                    Default = defaultVal
                 }
                 local row = EZ_NewRow(page, 46, obj)
                 EZ_RowTitle(row, o.Title or "Dropdown", o.Description, 46, 200, obj)
@@ -3156,7 +3199,7 @@ function EZ:CreateWindow(options)
                 return obj
             end
 
-                       function tab:AddColorPicker(a, b)
+            function tab:AddColorPicker(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
                 local id = o.Flag or o.Id or o.Title or "color_" .. os.clock()
@@ -3505,12 +3548,13 @@ function EZ:CreateWindow(options)
                 obj._row = row
                 return obj
             end
-            
+
             function tab:AddKeybind(a, b)
                 local o = EZ_Normalize(a, b)
                 local cb = o.Callback or function() end
                 local id = o.Flag or o.Id or o.Title or "keybind_" .. os.clock()
-                local obj = { Value = o.Default, Id = id, Flag = o.Flag, Type = "keybind", Default = o.Default, Mods = "" }
+                local defaultKey = o.Default or Enum.KeyCode.RightShift
+                local obj = { Value = defaultKey, Id = id, Flag = o.Flag, Type = "keybind", Default = defaultKey, Mods = "" }
                 local listening = false
                 local row = EZ_NewRow(page, 46, obj)
                 EZ_RowTitle(row, o.Title or "Keybind", o.Description, 46, 110, obj)
