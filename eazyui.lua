@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.45
+    Eazy UI v0.9.46
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.45"
+EZ.Version = "0.9.46"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -3636,7 +3636,20 @@ function EZ:CreateWindow(options)
                         EZ_Window:SaveConfig(EZ_Window.CurrentConfig)
                     end
                 end
-                if obj.Flag then table.insert(EZ_Window.Elements, obj) end
+                if obj.Flag then
+                    table.insert(EZ_Window.Elements, obj)
+                    if EZ_Window._autoLoaded and EZ_Window.ConfigData then
+                        local saved = EZ_Window.ConfigData[obj.Flag]
+                        if saved and saved.value then
+                            local savedKey = Enum.KeyCode[saved.value]
+                            if savedKey then
+                                obj.Value = savedKey
+                                obj.Mods = saved.mods or ""
+                                kl.Text = obj.Mods .. savedKey.Name
+                            end
+                        end
+                    end
+                end
                 obj._row = row
                 return obj
             end
