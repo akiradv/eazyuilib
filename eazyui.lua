@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.48
+    Eazy UI v0.9.49
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.48"
+EZ.Version = "0.9.49"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -2134,6 +2134,7 @@ function EZ:CreateWindow(options)
             fab.TextSize = 22
             fab.TextColor3 = EZ_Theme.Background
             fab.AutoButtonColor = false
+            fab.Active = true
             fab.Visible = false
             fab.ZIndex = 100
             fab.Parent = EZ_Gui
@@ -2141,8 +2142,21 @@ function EZ:CreateWindow(options)
             EZ_AddRadius(fab, 24)
             EZ_MakeDraggable(fab, fab)
             EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent; fab.TextColor3 = EZ_Theme.Background end)
-            fab.MouseButton1Click:Connect(function()
-                if EZ_Window.Minimized then setMinimized(false) end
+            
+            local fabStart = nil
+            fab.InputBegan:Connect(function(i)
+                if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
+                    fabStart = i.Position
+                end
+            end)
+            fab.InputEnded:Connect(function(i)
+                if fabStart then
+                    local dist = (i.Position - fabStart).Magnitude
+                    if dist < 10 then
+                        if EZ_Window.Minimized then setMinimized(false) end
+                    end
+                    fabStart = nil
+                end
             end)
         end
 
