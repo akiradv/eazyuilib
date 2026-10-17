@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.49
+    Eazy UI v0.9.50
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.49"
+EZ.Version = "0.9.50"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -832,7 +832,13 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
     local usable, inset = EZ_ViewportUsable()
     local margin = 24
     local fit = math.min((usable.X - margin) / baseSize.X, (usable.Y - margin) / baseSize.Y)
-    local scale = math.clamp(fit, 0.55, 1.15)
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local minScale = isMobile and 0.85 or 0.55
+    local maxScale = isMobile and 1.35 or 1.15
+    local scale = math.clamp(fit, minScale, maxScale)
+    if isMobile then
+        scale = scale * 1.15
+    end
     EZ_CurrentScale = scale
     local scaler = frame:FindFirstChild("EZ_WindowScale")
     if not scaler then
@@ -2125,13 +2131,13 @@ function EZ:CreateWindow(options)
         if isMobile then
             fab = Instance.new("TextButton")
             fab.Name = "EZ_MobileFab"
-            fab.Size = UDim2.fromOffset(48, 48)
-            fab.Position = UDim2.new(0, 20, 0.5, -24)
+            fab.Size = UDim2.fromOffset(52, 52)
+            fab.Position = UDim2.new(0, 20, 0.5, -26)
             fab.BackgroundColor3 = EZ_Theme.Accent
             fab.BorderSizePixel = 0
             fab.Text = "E"
             fab.Font = EZ_Brand.Font
-            fab.TextSize = 22
+            fab.TextSize = 24
             fab.TextColor3 = EZ_Theme.Background
             fab.AutoButtonColor = false
             fab.Active = true
@@ -2139,23 +2145,13 @@ function EZ:CreateWindow(options)
             fab.ZIndex = 100
             fab.Parent = EZ_Gui
             EZ_AddStroke(fab, EZ_Theme.Border)
-            EZ_AddRadius(fab, 24)
+            EZ_AddRadius(fab, 26)
             EZ_MakeDraggable(fab, fab)
             EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent; fab.TextColor3 = EZ_Theme.Background end)
             
-            local fabStart = nil
-            fab.InputBegan:Connect(function(i)
-                if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then
-                    fabStart = i.Position
-                end
-            end)
-            fab.InputEnded:Connect(function(i)
-                if fabStart then
-                    local dist = (i.Position - fabStart).Magnitude
-                    if dist < 10 then
-                        if EZ_Window.Minimized then setMinimized(false) end
-                    end
-                    fabStart = nil
+            fab.Activated:Connect(function()
+                if EZ_Window.Minimized then
+                    setMinimized(false)
                 end
             end)
         end
