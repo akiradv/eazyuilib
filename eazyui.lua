@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.47
+    Eazy UI v0.9.48
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.47"
+EZ.Version = "0.9.48"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -979,8 +979,9 @@ local function EZ_NewRow(page, height, element, useHitbox)
     EZ_RegTrans(row)
 
     local hoverTarget = row
+    local hitbox = nil
     if useHitbox then
-        local hitbox = Instance.new("TextButton")
+        hitbox = Instance.new("TextButton")
         hitbox.Name = "Hitbox"
         hitbox.Size = UDim2.new(1, 0, 1, 0)
         hitbox.BackgroundTransparency = 1
@@ -988,7 +989,6 @@ local function EZ_NewRow(page, height, element, useHitbox)
         hitbox.ZIndex = 2
         hitbox.AutoButtonColor = false
         hitbox.Parent = row
-        row.Hitbox = hitbox
         hoverTarget = hitbox
     end
 
@@ -1007,7 +1007,7 @@ local function EZ_NewRow(page, height, element, useHitbox)
         TweenService:Create(st, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play()
         TweenService:Create(row, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.Card }):Play()
     end)
-    return row
+    return row, hitbox
 end
 
 local function EZ_RowTitle(row, text, desc, height, rightPad, element)
@@ -2461,8 +2461,7 @@ function EZ:CreateWindow(options)
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local id = o.Flag or o.Id or o.Title or "toggle_" .. os.clock()
                 local obj = { Value = o.Default and true or false, Id = id, Flag = o.Flag, Type = "toggle", Default = o.Default and true or false }
-                local row = EZ_NewRow(page, 46, obj, true)
-                local hitbox = row.Hitbox
+                local row, hitbox = EZ_NewRow(page, 46, obj, true)
                 EZ_RowTitle(row, o.Title or "Toggle", o.Description, 46, nil, obj)
                 local track = Instance.new("Frame")
                 track.Size = UDim2.fromOffset(38, 20)
@@ -2521,8 +2520,7 @@ function EZ:CreateWindow(options)
                 local rightCb = o.RightClick or o.RightCallback or function() end
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local obj = {}
-                local row = EZ_NewRow(page, 46, obj, true)
-                local hitbox = row.Hitbox
+                local row, hitbox = EZ_NewRow(page, 46, obj, true)
                 EZ_RowTitle(row, o.Title or "Button", o.Description, 46, nil, obj)
                 local act = Instance.new("TextButton")
                 act.Size = UDim2.fromOffset(96, 28)
