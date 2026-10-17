@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.46
+    Eazy UI v0.9.47
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.46"
+EZ.Version = "0.9.47"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -967,7 +967,7 @@ local function EZ_MakeResizable(frame)
     end)
 end
 
-local function EZ_NewRow(page, height, element)
+local function EZ_NewRow(page, height, element, useHitbox)
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, height)
     row.BackgroundColor3 = EZ_Theme.Card
@@ -977,17 +977,32 @@ local function EZ_NewRow(page, height, element)
     local st = EZ_AddStroke(row, EZ_Theme.Border, 1)
     EZ_AddRadius(row, EZ_Theme.Radius)
     EZ_RegTrans(row)
+
+    local hoverTarget = row
+    if useHitbox then
+        local hitbox = Instance.new("TextButton")
+        hitbox.Name = "Hitbox"
+        hitbox.Size = UDim2.new(1, 0, 1, 0)
+        hitbox.BackgroundTransparency = 1
+        hitbox.Text = ""
+        hitbox.ZIndex = 2
+        hitbox.AutoButtonColor = false
+        hitbox.Parent = row
+        row.Hitbox = hitbox
+        hoverTarget = hitbox
+    end
+
     local hovering = false
     EZ_Paint(function()
         row.BackgroundColor3 = hovering and EZ_Theme.CardHover or EZ_Theme.Card
         st.Color = hovering and EZ_Theme.BorderHover or EZ_Theme.Border
     end, element)
-    EZ_Connect(row, row.MouseEnter, function()
+    EZ_Connect(hoverTarget, hoverTarget.MouseEnter, function()
         hovering = true
         TweenService:Create(st, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play()
         TweenService:Create(row, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.CardHover }):Play()
     end)
-    EZ_Connect(row, row.MouseLeave, function()
+    EZ_Connect(hoverTarget, hoverTarget.MouseLeave, function()
         hovering = false
         TweenService:Create(st, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play()
         TweenService:Create(row, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.Card }):Play()
@@ -2105,6 +2120,32 @@ function EZ:CreateWindow(options)
             end
         end
 
+        local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        local fab = nil
+        if isMobile then
+            fab = Instance.new("TextButton")
+            fab.Name = "EZ_MobileFab"
+            fab.Size = UDim2.fromOffset(48, 48)
+            fab.Position = UDim2.new(0, 20, 0.5, -24)
+            fab.BackgroundColor3 = EZ_Theme.Accent
+            fab.BorderSizePixel = 0
+            fab.Text = "E"
+            fab.Font = EZ_Brand.Font
+            fab.TextSize = 22
+            fab.TextColor3 = EZ_Theme.Background
+            fab.AutoButtonColor = false
+            fab.Visible = false
+            fab.ZIndex = 100
+            fab.Parent = EZ_Gui
+            EZ_AddStroke(fab, EZ_Theme.Border)
+            EZ_AddRadius(fab, 24)
+            EZ_MakeDraggable(fab, fab)
+            EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent; fab.TextColor3 = EZ_Theme.Background end)
+            fab.MouseButton1Click:Connect(function()
+                if EZ_Window.Minimized then setMinimized(false) end
+            end)
+        end
+
         local function applyMinimizeFade(state)
             if state then
                 TweenService:Create(frame, TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { GroupTransparency = 1 }):Play()
@@ -2153,6 +2194,9 @@ function EZ:CreateWindow(options)
                 if focused then focused:ReleaseFocus() end
             end
             EZ_Window.Minimized = state
+            if isMobile and fab then
+                fab.Visible = state
+            end
             if EZ_Window.MinimizeMode == "shrink" then
                 applyMinimizeShrink(state)
             else
@@ -2417,13 +2461,15 @@ function EZ:CreateWindow(options)
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local id = o.Flag or o.Id or o.Title or "toggle_" .. os.clock()
                 local obj = { Value = o.Default and true or false, Id = id, Flag = o.Flag, Type = "toggle", Default = o.Default and true or false }
-                local row = EZ_NewRow(page, 46, obj)
+                local row = EZ_NewRow(page, 46, obj, true)
+                local hitbox = row.Hitbox
                 EZ_RowTitle(row, o.Title or "Toggle", o.Description, 46, nil, obj)
                 local track = Instance.new("Frame")
                 track.Size = UDim2.fromOffset(38, 20)
                 track.Position = UDim2.new(1, -52, 0.5, -10)
                 track.BackgroundColor3 = EZ_Theme.BorderHover
                 track.BorderSizePixel = 0
+                track.ZIndex = 1
                 track.Parent = row
                 EZ_AddRadius(track, 10)
                 local knob = Instance.new("Frame")
@@ -2431,6 +2477,7 @@ function EZ:CreateWindow(options)
                 knob.Position = UDim2.fromOffset(3, 3)
                 knob.BackgroundColor3 = EZ_Theme.TextDim
                 knob.BorderSizePixel = 0
+                knob.ZIndex = 1
                 knob.Parent = track
                 EZ_AddRadius(knob, 7)
                 local function renderTween()
@@ -2453,10 +2500,14 @@ function EZ:CreateWindow(options)
                         end
                     end
                 end
-                EZ_Connect(row, row.InputBegan, function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton1 then obj:Set(not obj.Value)
-                    elseif i.UserInputType == Enum.UserInputType.MouseButton2 then rightCb(obj)
-                    elseif i.UserInputType == Enum.UserInputType.MouseButton3 then middleCb(obj) end
+                EZ_Connect(hitbox, hitbox.InputBegan, function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        obj:Set(not obj.Value)
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton2 then
+                        rightCb(obj)
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
+                        middleCb(obj)
+                    end
                 end)
                 renderTween()
                 if obj.Flag then table.insert(EZ_Window.Elements, obj) end
@@ -2470,7 +2521,8 @@ function EZ:CreateWindow(options)
                 local rightCb = o.RightClick or o.RightCallback or function() end
                 local middleCb = o.MiddleClick or o.MiddleCallback or function() end
                 local obj = {}
-                local row = EZ_NewRow(page, 46, obj)
+                local row = EZ_NewRow(page, 46, obj, true)
+                local hitbox = row.Hitbox
                 EZ_RowTitle(row, o.Title or "Button", o.Description, 46, nil, obj)
                 local act = Instance.new("TextButton")
                 act.Size = UDim2.fromOffset(96, 28)
@@ -2482,6 +2534,7 @@ function EZ:CreateWindow(options)
                 act.TextSize = 12
                 act.TextColor3 = EZ_Theme.Background
                 act.AutoButtonColor = false
+                act.ZIndex = 3
                 act.Parent = row
                 EZ_AddRadius(act, EZ_Theme.Radius)
                 EZ_Paint(function() act.BackgroundColor3 = EZ_Theme.Accent; act.TextColor3 = EZ_Theme.Background end, obj)
@@ -2504,6 +2557,15 @@ function EZ:CreateWindow(options)
                 act.MouseButton2Click:Connect(function() rightCb(obj) end)
                 EZ_Connect(act, act.InputBegan, function(i)
                     if i.UserInputType == Enum.UserInputType.MouseButton3 then middleCb(obj) end
+                end)
+                EZ_Connect(hitbox, hitbox.InputBegan, function(i)
+                    if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                        obj:Fire()
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton2 then
+                        rightCb(obj)
+                    elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
+                        middleCb(obj)
+                    end
                 end)
                 function obj:SetTitle(t) act.Text = t or "" end
                 obj._row = row
@@ -2564,6 +2626,7 @@ function EZ:CreateWindow(options)
                 cap.BackgroundTransparency = 1
                 cap.Text = ""
                 cap.AutoButtonColor = false
+                cap.ZIndex = 2
                 cap.Parent = row
                 local function fmt(n)
                     if st >= 1 then return tostring(math.floor(n + 0.5)) end
