@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.51
+    Eazy UI v0.9.52
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.51"
+EZ.Version = "0.9.52"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -834,10 +834,10 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
     local fit = math.min((usable.X - margin) / baseSize.X, (usable.Y - margin) / baseSize.Y)
     local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
     local minScale = isMobile and 0.85 or 0.55
-    local maxScale = isMobile and 1.35 or 1.15
+    local maxScale = isMobile and 1.45 or 1.15
     local scale = math.clamp(fit, minScale, maxScale)
     if isMobile then
-        scale = scale * 1.15
+        scale = scale * 1.3
     end
     EZ_CurrentScale = scale
     local scaler = frame:FindFirstChild("EZ_WindowScale")
@@ -2129,24 +2129,37 @@ function EZ:CreateWindow(options)
         local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
         local fab = nil
         if isMobile then
-            fab = Instance.new("TextButton")
+            fab = Instance.new("Frame")
             fab.Name = "EZ_MobileFab"
-            fab.Size = UDim2.fromOffset(56, 56)
-            fab.Position = UDim2.new(0, 20, 0.5, -28)
+            fab.Size = UDim2.fromOffset(60, 60)
+            fab.Position = UDim2.new(0, 20, 0.5, -30)
             fab.BackgroundColor3 = EZ_Theme.Accent
             fab.BorderSizePixel = 0
-            fab.Text = "E"
-            fab.Font = EZ_Brand.Font
-            fab.TextSize = 26
-            fab.TextColor3 = EZ_Theme.Background
-            fab.AutoButtonColor = false
             fab.Active = true
             fab.Visible = false
             fab.ZIndex = 200
             fab.Parent = EZ_Gui
             EZ_AddStroke(fab, EZ_Theme.Border)
-            EZ_AddRadius(fab, 28)
-            EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent; fab.TextColor3 = EZ_Theme.Background end)
+            EZ_AddRadius(fab, 30)
+            EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent end)
+
+            local fabBtn = Instance.new("TextButton")
+            fabBtn.Size = UDim2.new(1, 0, 1, 0)
+            fabBtn.BackgroundTransparency = 1
+            fabBtn.Text = "E"
+            fabBtn.Font = EZ_Brand.Font
+            fabBtn.TextSize = 28
+            fabBtn.TextColor3 = EZ_Theme.Background
+            fabBtn.AutoButtonColor = false
+            fabBtn.Active = true
+            fabBtn.Parent = fab
+            EZ_Paint(function() fabBtn.TextColor3 = EZ_Theme.Background end)
+
+            fabBtn.Activated:Connect(function()
+                if EZ_Window.Minimized then
+                    setMinimized(false)
+                end
+            end)
 
             local fabDragging = false
             local fabStartPos = nil
@@ -2163,20 +2176,12 @@ function EZ:CreateWindow(options)
             UserInputService.InputChanged:Connect(function(input)
                 if fabDragging and fabStartInput and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local delta = input.Position - fabStartInput
-                    if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
-                        fabStartInput = nil
-                        fab.Position = UDim2.new(fabStartPos.X.Scale, fabStartPos.X.Offset + delta.X, fabStartPos.Y.Scale, fabStartPos.Y.Offset + delta.Y)
-                    end
+                    fab.Position = UDim2.new(fabStartPos.X.Scale, fabStartPos.X.Offset + delta.X, fabStartPos.Y.Scale, fabStartPos.Y.Offset + delta.Y)
                 end
             end)
 
             fab.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    if fabDragging and fabStartInput ~= nil then
-                        if EZ_Window.Minimized then
-                            setMinimized(false)
-                        end
-                    end
                     fabDragging = false
                     fabStartInput = nil
                 end
