@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.50
+    Eazy UI v0.9.51
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.50"
+EZ.Version = "0.9.51"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -2131,27 +2131,54 @@ function EZ:CreateWindow(options)
         if isMobile then
             fab = Instance.new("TextButton")
             fab.Name = "EZ_MobileFab"
-            fab.Size = UDim2.fromOffset(52, 52)
-            fab.Position = UDim2.new(0, 20, 0.5, -26)
+            fab.Size = UDim2.fromOffset(56, 56)
+            fab.Position = UDim2.new(0, 20, 0.5, -28)
             fab.BackgroundColor3 = EZ_Theme.Accent
             fab.BorderSizePixel = 0
             fab.Text = "E"
             fab.Font = EZ_Brand.Font
-            fab.TextSize = 24
+            fab.TextSize = 26
             fab.TextColor3 = EZ_Theme.Background
             fab.AutoButtonColor = false
             fab.Active = true
             fab.Visible = false
-            fab.ZIndex = 100
+            fab.ZIndex = 200
             fab.Parent = EZ_Gui
             EZ_AddStroke(fab, EZ_Theme.Border)
-            EZ_AddRadius(fab, 26)
-            EZ_MakeDraggable(fab, fab)
+            EZ_AddRadius(fab, 28)
             EZ_Paint(function() fab.BackgroundColor3 = EZ_Theme.Accent; fab.TextColor3 = EZ_Theme.Background end)
-            
-            fab.Activated:Connect(function()
-                if EZ_Window.Minimized then
-                    setMinimized(false)
+
+            local fabDragging = false
+            local fabStartPos = nil
+            local fabStartInput = nil
+
+            fab.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    fabDragging = true
+                    fabStartInput = input.Position
+                    fabStartPos = fab.Position
+                end
+            end)
+
+            UserInputService.InputChanged:Connect(function(input)
+                if fabDragging and fabStartInput and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local delta = input.Position - fabStartInput
+                    if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
+                        fabStartInput = nil
+                        fab.Position = UDim2.new(fabStartPos.X.Scale, fabStartPos.X.Offset + delta.X, fabStartPos.Y.Scale, fabStartPos.Y.Offset + delta.Y)
+                    end
+                end
+            end)
+
+            fab.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if fabDragging and fabStartInput ~= nil then
+                        if EZ_Window.Minimized then
+                            setMinimized(false)
+                        end
+                    end
+                    fabDragging = false
+                    fabStartInput = nil
                 end
             end)
         end
