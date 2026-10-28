@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.54
+    Eazy UI v0.9.55
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.54"
+EZ.Version = "0.9.55"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -27,7 +27,8 @@ local EZ_Brand = {
 local EZ_Locale = {
     Search = "Search...", SearchTab = "Search this tab...", SearchEmpty = "No results found.",
     Language = "Language", LanguageDesc = "Change the language of Eazy UI",
-    InputPlaceholder = "Type here...",
+    InputPlaceholder = "Type here...", LogoutMessage = "Logged out. Restart to re-enter key.",
+    ConfigUnregistered = "%d saved field(s) were not registered and were kept.",
     Loading = "Loading",
     PleaseWait = "Please wait...",
     JoinDiscord = "Join our Discord",
@@ -63,6 +64,8 @@ local EZ_Locale = {
     ConfigDeleted = "Config '%s' deleted.", ConfigReset = "Defaults restored and saved.",
     ConfigFailed = "Config operation failed: %s", AutoloadSet = "Autoload set to '%s'.",
     ConfigSavedAutoloadFailed = "Config '%s' was saved, but autoload failed: %s",
+    ConfigDeletedAutoloadFailed = "Config deleted, but autoload could not be reset: %s",
+    LegacyConfigManual = "Legacy file must be removed manually: %s",
     KeyChanged = "Minimize key set to %s", ThemeChanged = "Switched to %s theme",
     KeyTimeout = "Timeout validating key.",
 }
@@ -75,6 +78,8 @@ local EZ_Languages = {
     ["pt-BR"] = {
         Search = "Buscar...", SearchTab = "Buscar nesta aba...", SearchEmpty = "Nenhum resultado encontrado.",
         Language = "Idioma", LanguageDesc = "Mudar o idioma da Eazy UI", InputPlaceholder = "Digite aqui...",
+        LogoutMessage = "Sessão encerrada. Reinicie para inserir a chave novamente.",
+        ConfigUnregistered = "%d campo(s) salvo(s) ainda não foram registrados e foram mantidos.",
         Loading = "Carregando", PleaseWait = "Aguarde...", JoinDiscord = "Entre no nosso Discord",
         DiscordSubtitle = "Receba novidades, suporte e recursos exclusivos.\nCopie o link abaixo para entrar.",
         EnterKey = "Digite a chave", EnterKeySubtitle = "Digite sua chave de acesso para continuar",
@@ -100,12 +105,16 @@ local EZ_Languages = {
         ConfigDeleted = "Configuração '%s' excluída.", ConfigReset = "Padrões restaurados e salvos.",
         ConfigFailed = "Falha na configuração: %s", AutoloadSet = "Carregamento automático definido para '%s'.",
         ConfigSavedAutoloadFailed = "Configuração '%s' salva, mas houve falha no carregamento automático: %s",
+        ConfigDeletedAutoloadFailed = "Configuração excluída, mas não foi possível redefinir o carregamento automático: %s",
+        LegacyConfigManual = "O arquivo antigo deve ser removido manualmente: %s",
         KeyChanged = "Tecla para minimizar definida como %s", ThemeChanged = "Tema alterado para %s",
         KeyTimeout = "Tempo esgotado ao validar a chave.",
     },
     es = {
         Search = "Buscar...", SearchTab = "Buscar en esta pestaña...", SearchEmpty = "No se encontraron resultados.",
         Language = "Idioma", LanguageDesc = "Cambiar el idioma de Eazy UI", InputPlaceholder = "Escribe aquí...",
+        LogoutMessage = "Sesión cerrada. Reinicia para introducir la clave de nuevo.",
+        ConfigUnregistered = "%d campo(s) guardado(s) no estaban registrados y se conservaron.",
         Loading = "Cargando", PleaseWait = "Espera...", JoinDiscord = "Únete a nuestro Discord",
         DiscordSubtitle = "Recibe novedades, soporte y funciones exclusivas.\nCopia el enlace para unirte.",
         EnterKey = "Introduce la clave", EnterKeySubtitle = "Introduce tu clave de acceso para continuar",
@@ -131,12 +140,143 @@ local EZ_Languages = {
         ConfigDeleted = "Configuración '%s' eliminada.", ConfigReset = "Valores restaurados y guardados.",
         ConfigFailed = "Error de configuración: %s", AutoloadSet = "Carga automática definida para '%s'.",
         ConfigSavedAutoloadFailed = "Configuración '%s' guardada, pero falló la carga automática: %s",
+        ConfigDeletedAutoloadFailed = "Configuración eliminada, pero no se pudo restablecer la carga automática: %s",
+        LegacyConfigManual = "El archivo antiguo debe eliminarse manualmente: %s",
         KeyChanged = "Tecla para minimizar: %s", ThemeChanged = "Tema cambiado a %s",
         KeyTimeout = "Se agotó el tiempo para validar la clave.",
     },
 }
 local EZ_LanguageNames = { en = "English", ["pt-BR"] = "Português (Brasil)", es = "Español" }
 local EZ_LanguageCodes = { ["English"] = "en", ["Português (Brasil)"] = "pt-BR", ["Español"] = "es" }
+local EZ_TextPresets = {
+    en = {},
+    ["pt-BR"] = {
+        ["Tab"] = "Aba", ["Button"] = "Botão", ["Run"] = "Executar", ["Toggle"] = "Alternar",
+        ["Slider"] = "Controle", ["Range"] = "Intervalo", ["Dropdown"] = "Lista", ["Input"] = "Entrada",
+        ["Text Area"] = "Área de texto", ["Progress"] = "Progresso", ["Color"] = "Cor", ["Keybind"] = "Atalho",
+        ["Fade"] = "Desvanecer", ["Shrink"] = "Encolher", ["Default"] = "Padrão", ["None"] = "Nenhum",
+        ["Main"] = "Principal", ["Settings"] = "Configurações", ["General"] = "Geral", ["Home"] = "Início",
+        ["About"] = "Sobre", ["Information"] = "Informações", ["Community"] = "Comunidade", ["Objective"] = "Objetivo",
+        ["Local & Security"] = "Local e segurança", ["Version Info"] = "Informações da versão",
+        ["Join Discord"] = "Entrar no Discord", ["Copy Link"] = "Copiar link", ["Copy link"] = "Copiar link",
+        ["Player"] = "Jogador", ["Movement"] = "Movimentação", ["Combat"] = "Combate", ["Misc"] = "Diversos",
+        ["Auto Farm"] = "Coleta automática", ["Config"] = "Configuração", ["Status"] = "Estado",
+        ["Invalid config name"] = "Nome de configuração inválido", ["Filesystem is unavailable"] = "Sistema de arquivos indisponível",
+        ["Config not found"] = "Configuração não encontrada", ["Config not found or invalid"] = "Configuração não encontrada ou inválida",
+        ["Window is applying a config or destroyed"] = "A janela está aplicando uma configuração ou foi destruída", ["unknown error"] = "erro desconhecido",
+    },
+    es = {
+        ["Tab"] = "Pestaña", ["Button"] = "Botón", ["Run"] = "Ejecutar", ["Toggle"] = "Interruptor",
+        ["Slider"] = "Control", ["Range"] = "Intervalo", ["Dropdown"] = "Lista", ["Input"] = "Entrada",
+        ["Text Area"] = "Área de texto", ["Progress"] = "Progreso", ["Color"] = "Color", ["Keybind"] = "Atajo",
+        ["Fade"] = "Desvanecer", ["Shrink"] = "Reducir", ["Default"] = "Predeterminado", ["None"] = "Ninguno",
+        ["Main"] = "Principal", ["Settings"] = "Configuración", ["General"] = "General", ["Home"] = "Inicio",
+        ["About"] = "Acerca de", ["Information"] = "Información", ["Community"] = "Comunidad", ["Objective"] = "Objetivo",
+        ["Local & Security"] = "Local y seguridad", ["Version Info"] = "Información de la versión",
+        ["Join Discord"] = "Unirse a Discord", ["Copy Link"] = "Copiar enlace", ["Copy link"] = "Copiar enlace",
+        ["Player"] = "Jugador", ["Movement"] = "Movimiento", ["Combat"] = "Combate", ["Misc"] = "Varios",
+        ["Auto Farm"] = "Recolección automática", ["Config"] = "Configuración", ["Status"] = "Estado",
+        ["Invalid config name"] = "Nombre de configuración inválido", ["Filesystem is unavailable"] = "Sistema de archivos no disponible",
+        ["Config not found"] = "Configuración no encontrada", ["Config not found or invalid"] = "Configuración no encontrada o inválida",
+        ["Window is applying a config or destroyed"] = "La ventana está aplicando una configuración o fue destruida", ["unknown error"] = "error desconocido",
+    },
+}
+local EZ_CustomTexts = { en = {}, ["pt-BR"] = {}, es = {} }
+local EZ_TextBindings = {}
+local EZ_TextBindingsByOwner = {}
+local EZ_TextOwnerConnections = {}
+local EZ_ClearTextBindings
+
+local function EZ_ResolveLanguage(language)
+    if type(language) ~= "string" then return nil end
+    local code = language:lower():gsub("_", "-"):gsub("^%s+", ""):gsub("%s+$", "")
+    return ({ en = "en", ["en-us"] = "en", ["en-gb"] = "en", pt = "pt-BR", ["pt-br"] = "pt-BR", es = "es", ["es-es"] = "es", ["es-mx"] = "es" })[code]
+end
+
+local function EZ_TranslateText(value)
+    if type(value) ~= "string" then return tostring(value or "") end
+    local key = value:match("^loc:(.+)$")
+    local lookup = key or value
+    local custom = EZ_CustomTexts[EZ_CurrentLanguage]
+    local preset = EZ_TextPresets[EZ_CurrentLanguage]
+    local translated = (custom and custom[lookup]) or (preset and preset[lookup])
+    if translated ~= nil then return translated end
+    if key then return EZ_CustomTexts.en[key] or EZ_TextPresets.en[key] or ("[" .. key .. "]") end
+    return value
+end
+
+local function EZ_TranslateError(value)
+    local message = tostring(value or "")
+    local legacyPath = message:match("Legacy file must be removed manually: (.+)$")
+    if legacyPath then return string.format(EZ_Locale.LegacyConfigManual, legacyPath) end
+    if message:match("Config not found$") then return EZ_TranslateText("Config not found") end
+    return EZ_TranslateText(message)
+end
+
+local function EZ_SearchOriginal(value)
+    local source = tostring(value or "")
+    local key = source:match("^loc:(.+)$")
+    if key then
+        local english = EZ_CustomTexts.en[key] or EZ_TextPresets.en[key]
+        if english then return source .. " " .. english end
+    end
+    return source
+end
+
+local function EZ_ApplyTextBinding(binding)
+    local target = binding.target
+    if not target or not target.Parent then return end
+    if binding.apply then
+        binding.apply()
+        return
+    end
+    local text = EZ_TranslateText(binding.source)
+    if binding.transform then text = binding.transform(text) end
+    target[binding.property] = text
+    if binding.onChange then binding.onChange(text) end
+end
+
+local function EZ_TrackTextBinding(binding, owner)
+    owner = owner or binding.target
+    binding.owner = owner
+    EZ_TextBindings[binding] = true
+    if not EZ_TextBindingsByOwner[owner] then
+        EZ_TextBindingsByOwner[owner] = {}
+        local ok, connection = pcall(function()
+            return owner.Destroying:Connect(function() EZ_ClearTextBindings(owner) end)
+        end)
+        if ok then EZ_TextOwnerConnections[owner] = connection end
+    end
+    EZ_TextBindingsByOwner[owner][binding] = true
+    EZ_ApplyTextBinding(binding)
+    return binding
+end
+
+local function EZ_BindText(target, property, source, owner, onChange, transform)
+    return EZ_TrackTextBinding({ target = target, property = property, source = source, onChange = onChange, transform = transform }, owner)
+end
+
+local function EZ_BindLocaleRefresh(owner, callback)
+    return EZ_TrackTextBinding({ target = owner, apply = callback }, owner)
+end
+
+local function EZ_SetTextSource(binding, source)
+    binding.source = source
+    EZ_ApplyTextBinding(binding)
+end
+
+EZ_ClearTextBindings = function(owner)
+    local list = EZ_TextBindingsByOwner[owner]
+    if list then
+        for binding in pairs(list) do EZ_TextBindings[binding] = nil end
+        EZ_TextBindingsByOwner[owner] = nil
+    end
+    local connection = EZ_TextOwnerConnections[owner]
+    if connection then
+        if connection.Connected then connection:Disconnect() end
+        EZ_TextOwnerConnections[owner] = nil
+    end
+end
 
 local function EZ_OnLocaleChange(fn)
     table.insert(EZ_LocaleListeners, fn)
@@ -144,6 +284,10 @@ local function EZ_OnLocaleChange(fn)
 end
 
 local function EZ_RefreshLocale()
+    for binding in pairs(EZ_TextBindings) do
+        local ok, err = pcall(EZ_ApplyTextBinding, binding)
+        if not ok then warn("[Eazy UI] Could not update localized text: " .. tostring(err)) end
+    end
     for _, fn in ipairs(EZ_LocaleListeners) do pcall(fn) end
 end
 
@@ -161,10 +305,8 @@ end
 
 function EZ:SetLanguage(language)
     if EZ_Destroyed then return false, "Library was destroyed" end
-    if type(language) ~= "string" then return false, "Invalid language" end
-    local code = language:lower():gsub("_", "-"):gsub("^%s+", ""):gsub("%s+$", "")
-    local resolved = ({ en = "en", ["en-us"] = "en", ["en-gb"] = "en", pt = "pt-BR", ["pt-br"] = "pt-BR", es = "es", ["es-es"] = "es", ["es-mx"] = "es" })[code]
-    if not resolved then return false, "Unknown language: " .. language end
+    local resolved = EZ_ResolveLanguage(language)
+    if not resolved then return false, "Unknown language: " .. tostring(language) end
     for k, v in pairs(EZ_DefaultLocale) do EZ_Locale[k] = v end
     for k, v in pairs(EZ_Languages[resolved]) do EZ_Locale[k] = v end
     EZ_CurrentLanguage = resolved
@@ -178,6 +320,37 @@ end
 
 function EZ:ListLanguages()
     return { "en", "pt-BR", "es" }
+end
+
+function EZ:Translate(text)
+    return EZ_TranslateText(text)
+end
+
+function EZ:RegisterTranslations(language, translations)
+    if EZ_Destroyed then return false, "Library was destroyed" end
+    local incoming
+    if type(language) == "table" and translations == nil then
+        incoming = language
+    elseif type(language) == "string" and type(translations) == "table" then
+        incoming = { [language] = translations }
+    else
+        return false, "Expected a language and a translation table"
+    end
+    local pending = {}
+    for name, values in pairs(incoming) do
+        local resolved = EZ_ResolveLanguage(name)
+        if not resolved or type(values) ~= "table" then return false, "Invalid translation language: " .. tostring(name) end
+        pending[resolved] = pending[resolved] or {}
+        for key, value in pairs(values) do
+            if type(key) ~= "string" or key == "" or type(value) ~= "string" then return false, "Translations must map non-empty strings to strings" end
+            pending[resolved][key] = value
+        end
+    end
+    for name, values in pairs(pending) do
+        for key, value in pairs(values) do EZ_CustomTexts[name][key] = value end
+    end
+    EZ_RefreshLocale()
+    return true
 end
 
 local EZ_Themes = {
@@ -928,9 +1101,10 @@ local EZ_UpperAccents = {
 local function EZ_Upper(value)
     return (tostring(value or ""):upper():gsub("[\194-\244][\128-\191]*", function(c) return EZ_UpperAccents[c] or c end))
 end
-local function EZ_SetSearchText(row, title, description)
+local function EZ_SetSearchText(row, title, description, originalTitle, originalDescription)
     if not row then return end
-    local text = tostring(title or "") .. " " .. tostring(description or "")
+    local text = tostring(title or "") .. " " .. tostring(description or "") .. " " .. EZ_SearchOriginal(originalTitle) .. " " .. EZ_SearchOriginal(originalDescription)
+    if row:GetAttribute("EZ_SearchText") == text then return end
     row:SetAttribute("EZ_SearchText", text)
     row:SetAttribute("EZ_SearchFolded", EZ_SearchText(text))
     local refresh = EZ_SearchRefresh[row]
@@ -1086,6 +1260,7 @@ local function EZ_UpdateNotifyPosition()
         EZ_NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     end
 end
+EZ_OnLocaleChange(EZ_UpdateNotifyPosition)
 EZ_UpdateNotifyPosition()
 
 local function EZ_AddStroke(parent, color, thickness, owner)
@@ -1173,12 +1348,14 @@ local EZ_DropdownCurrent = nil
 EZ_OnLocaleChange(function()
     local search = EZ_DropdownList:FindFirstChild("EZ_DropdownSearch")
     if search then search.PlaceholderText = EZ_Locale.Search end
+    if EZ_DropdownCurrent and EZ_DropdownCurrent.refreshOptions then EZ_DropdownCurrent.refreshOptions() end
 end)
 
 local function EZ_CloseDropdown()
     if not EZ_DropdownCurrent then return end
     local prev = EZ_DropdownCurrent
     EZ_DropdownCurrent = nil
+    prev.refreshOptions = nil
     local focused = UserInputService:GetFocusedTextBox()
     if focused and focused:IsDescendantOf(EZ_DropdownPopup) then focused:ReleaseFocus() end
     if prev.sign and prev.sign.Parent then
@@ -1197,14 +1374,30 @@ local function EZ_OpenDropdown(entry)
         EZ_CloseDropdown()
         return
     end
-    if EZ_DropdownCurrent and EZ_DropdownCurrent.sign and EZ_DropdownCurrent.sign.Parent then
-        TweenService:Create(EZ_DropdownCurrent.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
+    if EZ_DropdownCurrent then
+        if EZ_DropdownCurrent.sign and EZ_DropdownCurrent.sign.Parent then
+            TweenService:Create(EZ_DropdownCurrent.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
+        end
+        EZ_DropdownCurrent.refreshOptions = nil
     end
     EZ_DropdownCurrent = entry
     for _, child in ipairs(EZ_DropdownList:GetChildren()) do
         if child:IsA("TextButton") or child:IsA("TextBox") then child:Destroy() end
     end
     local optionButtons = {}
+    local searchBox
+    local function filterOptions()
+        local q = searchBox and EZ_SearchText(searchBox.Text) or ""
+        for _, data in ipairs(optionButtons) do
+            local combined = EZ_SearchOriginal(data.name) .. " " .. data.btn.Text
+            data.btn.Visible = q == "" or EZ_SearchText(combined):find(q, 1, true) ~= nil
+        end
+        EZ_DropdownList.CanvasPosition = Vector2.new(0, 0)
+    end
+    entry.refreshOptions = function()
+        for _, data in ipairs(optionButtons) do data.btn.Text = entry.getDisplay(data.value) end
+        filterOptions()
+    end
     local optionHeight = UserInputService.TouchEnabled and 40 or 30
     if entry.searchable then
         local search = Instance.new("TextBox")
@@ -1223,16 +1416,11 @@ local function EZ_OpenDropdown(entry)
         search.ClearTextOnFocus = false
         search.ZIndex = 61
         search.Parent = EZ_DropdownList
+        searchBox = search
         local sp = Instance.new("UIPadding")
         sp.PaddingLeft = UDim.new(0, 10)
         sp.Parent = search
-        search:GetPropertyChangedSignal("Text"):Connect(function()
-            local q = EZ_SearchText(search.Text)
-            for _, data in ipairs(optionButtons) do
-                data.btn.Visible = q == "" or EZ_SearchText(data.name):find(q, 1, true) ~= nil
-            end
-            EZ_DropdownList.CanvasPosition = Vector2.new(0, 0)
-        end)
+        search:GetPropertyChangedSignal("Text"):Connect(filterOptions)
     end
     local values = entry.getValues()
     local function isSelected(v)
@@ -1248,7 +1436,7 @@ local function EZ_OpenDropdown(entry)
         op.LayoutOrder = index
         op.Size = UDim2.new(1, 0, 0, optionHeight)
         op.BackgroundTransparency = 1
-        op.Text = tostring(v)
+        op.Text = entry.getDisplay(v)
         op.Font = EZ_Brand.FontBody
         op.TextSize = 13
         op.TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.Text
@@ -1402,6 +1590,7 @@ local function EZ_CleanupTransientGui(gui)
     local data = EZ_TransientGuis[gui]
     if not data then return end
     EZ_TransientGuis[gui] = nil
+    EZ_ClearTextBindings(gui)
     if data.connection then
         if data.connection.Connected then data.connection:Disconnect() end
         EZ_ServiceConnections[data.connection] = nil
@@ -1577,14 +1766,13 @@ local function EZ_RowTitle(row, text, desc, height, rightPad, element)
     l.Position = UDim2.fromOffset(14, desc and 9 or 0)
     l.Size = UDim2.new(1, -pad, 0, desc and 16 or (height or 46))
     l.BackgroundTransparency = 1
-    l.Text = text
+    l.Text = EZ_TranslateText(text)
     l.Font = EZ_Brand.FontBody
     l.TextSize = 13
     l.TextColor3 = EZ_Theme.Text
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.TextTruncate = Enum.TextTruncate.AtEnd
     l.Parent = row
-    EZ_SetSearchText(row, text, desc)
     if element then element._titleLabel = l end
     EZ_Paint(function() l.TextColor3 = EZ_Theme.Text end, element)
     local descriptionLabel
@@ -1594,7 +1782,7 @@ local function EZ_RowTitle(row, text, desc, height, rightPad, element)
         d.Position = UDim2.fromOffset(14, 27)
         d.Size = UDim2.new(1, -pad, 0, 14)
         d.BackgroundTransparency = 1
-        d.Text = desc
+        d.Text = EZ_TranslateText(desc)
         d.Font = EZ_Brand.FontBody
         d.TextSize = 11
         d.TextColor3 = EZ_Theme.TextDim
@@ -1604,6 +1792,11 @@ local function EZ_RowTitle(row, text, desc, height, rightPad, element)
         if element then element._descriptionLabel = d end
         EZ_Paint(function() d.TextColor3 = EZ_Theme.TextDim end, element)
     end
+    local function updateSearch()
+        EZ_SetSearchText(row, l.Text, descriptionLabel and descriptionLabel.Text or "", text, desc)
+    end
+    EZ_BindText(l, "Text", text, row, updateSearch)
+    if descriptionLabel then EZ_BindText(descriptionLabel, "Text", desc, row, updateSearch) end
     return l, descriptionLabel
 end
 
@@ -1807,7 +2000,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.fromOffset(420, 24)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title or EZ_Locale.Loading
+    titleLabel.Text = title and EZ_TranslateText(title) or EZ_Locale.Loading
     titleLabel.Font = EZ_Brand.Font
     titleLabel.TextSize = 18
     titleLabel.TextColor3 = EZ_Theme.Text
@@ -1819,7 +2012,7 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local subLabel = Instance.new("TextLabel")
     subLabel.Size = UDim2.fromOffset(420, 18)
     subLabel.BackgroundTransparency = 1
-    subLabel.Text = subtitle or EZ_Locale.PleaseWait
+    subLabel.Text = subtitle and EZ_TranslateText(subtitle) or EZ_Locale.PleaseWait
     subLabel.Font = EZ_Brand.FontBody
     subLabel.TextSize = 13
     subLabel.TextColor3 = EZ_Theme.TextDim
@@ -1828,6 +2021,10 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     subLabel.TextTransparency = 1
     subLabel.Parent = holder
     EZ_Paint(function() subLabel.TextColor3 = EZ_Theme.TextDim end, gui)
+    EZ_BindLocaleRefresh(gui, function()
+        titleLabel.Text = title and EZ_TranslateText(title) or EZ_Locale.Loading
+        subLabel.Text = subtitle and EZ_TranslateText(subtitle) or EZ_Locale.PleaseWait
+    end)
     local fadeInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     TweenService:Create(letter, fadeInfo, { [fadeProp] = 0 }):Play()
     TweenService:Create(titleLabel, fadeInfo, { TextTransparency = 0 }):Play()
@@ -1944,6 +2141,13 @@ local function EZ_ShowDiscordPrompt(invite, callback)
     skipBtn.TextColor3 = EZ_Theme.TextDim
     skipBtn.AutoButtonColor = false
     skipBtn.Parent = frame
+    local showingLink = false
+    EZ_BindLocaleRefresh(gui, function()
+        title.Text = EZ_Locale.JoinDiscord
+        sub.Text = EZ_Locale.DiscordSubtitle
+        skipBtn.Text = EZ_Locale.Skip
+        if not showingLink then copyBtn.Text = EZ_Locale.CopyLink end
+    end)
     local skipSt = EZ_AddStroke(skipBtn, EZ_Theme.Border)
     EZ_AddRadius(skipBtn, "Theme")
     EZ_Paint(function() skipBtn.BackgroundColor3 = EZ_Theme.CardHover; skipBtn.TextColor3 = EZ_Theme.TextDim end, gui)
@@ -1960,8 +2164,10 @@ local function EZ_ShowDiscordPrompt(invite, callback)
                 if copyBtn.Parent then copyBtn.Text = EZ_Locale.CopyLink end
             end)
         else
+            showingLink = true
             copyBtn.Text = link
             task.delay(3, function()
+                showingLink = false
                 if copyBtn.Parent then copyBtn.Text = EZ_Locale.CopyLink end
             end)
             return
@@ -1997,7 +2203,7 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     title.Size = UDim2.new(1, -24, 0, 24)
     title.Position = UDim2.fromOffset(16, 18)
     title.BackgroundTransparency = 1
-    title.Text = options.Title or EZ_Locale.EnterKey
+    title.Text = options.Title and EZ_TranslateText(options.Title) or EZ_Locale.EnterKey
     title.Font = EZ_Brand.Font
     title.TextSize = 16
     title.TextColor3 = EZ_Theme.Text
@@ -2008,7 +2214,7 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     sub.Size = UDim2.new(1, -24, 0, 18)
     sub.Position = UDim2.fromOffset(16, 46)
     sub.BackgroundTransparency = 1
-    sub.Text = options.Subtitle or EZ_Locale.EnterKeySubtitle
+    sub.Text = options.Subtitle and EZ_TranslateText(options.Subtitle) or EZ_Locale.EnterKeySubtitle
     sub.Font = EZ_Brand.FontBody
     sub.TextSize = 12
     sub.TextColor3 = EZ_Theme.TextDim
@@ -2041,7 +2247,7 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     note.Size = UDim2.new(1, -32, 0, 18)
     note.Position = UDim2.fromOffset(16, 124)
     note.BackgroundTransparency = 1
-    note.Text = options.Note or ""
+    note.Text = EZ_TranslateText(options.Note or "")
     note.Font = EZ_Brand.FontBody
     note.TextSize = 11
     note.TextColor3 = EZ_Theme.TextDim
@@ -2087,12 +2293,23 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     err.TextColor3 = EZ_Theme.Error
     err.TextXAlignment = Enum.TextXAlignment.Left
     err.Parent = frame
+    local statusKey
+    EZ_BindLocaleRefresh(gui, function()
+        title.Text = options.Title and EZ_TranslateText(options.Title) or EZ_Locale.EnterKey
+        sub.Text = options.Subtitle and EZ_TranslateText(options.Subtitle) or EZ_Locale.EnterKeySubtitle
+        note.Text = EZ_TranslateText(options.Note or "")
+        input.PlaceholderText = EZ_Locale.EnterKeyPlaceholder
+        submit.Text = EZ_Locale.Submit
+        cancel.Text = EZ_Locale.Cancel
+        err.Text = statusKey and EZ_Locale[statusKey] or ""
+    end)
     local submitting = false
     local function doSubmit()
         if submitting or not gui.Parent then return end
         submitting = true
         local key = input.Text
-        err.Text = EZ_Locale.Validating
+        statusKey = "Validating"
+        err.Text = EZ_Locale[statusKey]
         err.TextColor3 = EZ_Theme.TextDim
         task.spawn(function()
             local resolved = false
@@ -2106,7 +2323,8 @@ local function EZ_ShowKeyScreen(options, validator, callback)
             if not gui.Parent then return end
             submitting = false
             if not resolved then
-                err.Text = EZ_Locale.KeyTimeout
+                statusKey = "KeyTimeout"
+                err.Text = EZ_Locale[statusKey]
                 err.TextColor3 = EZ_Theme.Error
                 return
             end
@@ -2115,7 +2333,8 @@ local function EZ_ShowKeyScreen(options, validator, callback)
                 EZ_CloseTransientGui(gui)
                 callback(true, key)
             else
-                err.Text = EZ_Locale.InvalidKey
+                statusKey = "InvalidKey"
+                err.Text = EZ_Locale[statusKey]
                 err.TextColor3 = EZ_Theme.Error
                 input.Text = ""
             end
@@ -2186,9 +2405,11 @@ end
 function EZ:Notify(options)
     if EZ_Destroyed then return false, "Library was destroyed" end
     options = options or {}
-    local t = tostring(options.Title or "Eazy UI")
-    local c = tostring(options.Content or "")
+    local titleSource = tostring(options.Title or "Eazy UI")
+    local contentSource = tostring(options.Content or "")
+    local t, c
     local d = options.Duration
+    local automaticDuration = d == nil
     local style = (options.Style or "Info"):lower()
     local buttons = options.Buttons or {}
     local onOpen = options.OnOpen
@@ -2197,7 +2418,29 @@ function EZ:Notify(options)
     local hasInput = options.Input == true
     local hasButtons = #buttons > 0 or hasInput
     local cachedWidth, cachedAvailable, cachedMetrics
+    local function resolveText(source, key, args, translateArg)
+        local text = key and EZ_Locale[key] or nil
+        if text == nil then return EZ_TranslateText(source) end
+        if args then
+            local formatted = table.clone(args)
+            if translateArg and formatted[translateArg] ~= nil then
+                formatted[translateArg] = EZ_TranslateError(formatted[translateArg])
+            end
+            local ok, result = pcall(string.format, text, table.unpack(formatted))
+            if ok then return result end
+        end
+        return text
+    end
+    local function updateText()
+        local newTitle = resolveText(titleSource, options._TitleKey, options._TitleArgs)
+        local newContent = resolveText(contentSource, options._ContentKey, options._ContentArgs, options._TranslateArg)
+        if t ~= newTitle or c ~= newContent then
+            t, c = newTitle, newContent
+            cachedWidth, cachedAvailable, cachedMetrics = nil, nil, nil
+        end
+    end
     local function measure(width)
+        updateText()
         width = width or EZ_NOTIFY_WIDTH
         local usable = EZ_ViewportUsable()
         local available = math.max(1, usable.Y - 40)
@@ -2300,7 +2543,7 @@ function EZ:Notify(options)
             inputBox.BackgroundColor3 = EZ_Theme.Background
             inputBox.BorderSizePixel = 0
             inputBox.Text = ""
-            inputBox.PlaceholderText = options.InputPlaceholder or EZ_Locale.InputPlaceholder
+            inputBox.PlaceholderText = options.InputPlaceholder and EZ_TranslateText(options.InputPlaceholder) or EZ_Locale.InputPlaceholder
             inputBox.Font = EZ_Brand.FontMono
             inputBox.TextSize = 12
             inputBox.TextColor3 = EZ_Theme.Text
@@ -2339,7 +2582,7 @@ function EZ:Notify(options)
                 submit.BackgroundColor3 = EZ_Theme.Background
                 submit.TextColor3 = EZ_Theme.Text
                 submit.Text = EZ_Locale.Submit
-                if not options.InputPlaceholder then inputBox.PlaceholderText = EZ_Locale.InputPlaceholder end
+                inputBox.PlaceholderText = options.InputPlaceholder and EZ_TranslateText(options.InputPlaceholder) or EZ_Locale.InputPlaceholder
             end, holder)
             submit.Activated:Connect(submitInput)
         end
@@ -2359,12 +2602,13 @@ function EZ:Notify(options)
                 btn.Size = UDim2.new(1 / #buttons, -6 * (#buttons - 1) / #buttons, 1, 0)
                 btn.BackgroundColor3 = EZ_Theme.Background
                 btn.BorderSizePixel = 0
-                btn.Text = btnData.Title
+                btn.Text = EZ_TranslateText(btnData.Title or "")
                 btn.Font = EZ_Brand.FontBody
                 btn.TextSize = 12
                 btn.TextColor3 = EZ_Theme.Text
                 btn.AutoButtonColor = false
                 btn.Parent = btnRow
+                EZ_BindText(btn, "Text", btnData.Title or "", holder)
                 local bst = EZ_AddStroke(btn, EZ_Theme.Border, nil, holder)
                 EZ_AddRadius(btn, 5)
                 EZ_Paint(function() btn.BackgroundColor3 = EZ_Theme.Background; btn.TextColor3 = EZ_Theme.Text end, holder)
@@ -2405,12 +2649,20 @@ function EZ:Notify(options)
             if inputBox then inputBox.Position = UDim2.fromOffset(20, controlsY) end
             if submit then submit.Position = UDim2.new(1, -92, 0, controlsY) end
             if btnRow then btnRow.Position = UDim2.fromOffset(20, controlsY) end
+            if timer then timer.Visible = not (automaticDuration and metrics.contentHeight > metrics.visibleHeight) end
         end
+        EZ_BindLocaleRefresh(holder, function()
+            updateText()
+            tl.Text, cl.Text = t, c
+            if inputBox then inputBox.PlaceholderText = options.InputPlaceholder and EZ_TranslateText(options.InputPlaceholder) or EZ_Locale.InputPlaceholder end
+            if submit then submit.Text = EZ_Locale.Submit end
+        end)
         entry.resize(EZ_NOTIFY_WIDTH)
         table.insert(EZ_NotifyVisible, entry)
         destroyNotify = function(reason)
             if entry.closed then return end
             entry.closed = true
+            EZ_ClearTextBindings(holder)
             for i, e in ipairs(EZ_NotifyVisible) do
                 if e == entry then table.remove(EZ_NotifyVisible, i); break end
             end
@@ -2439,7 +2691,10 @@ function EZ:Notify(options)
         end
         if d > 0 and not hasInput then
             task.delay(d, function()
-                if holder.Parent then destroyNotify("Timeout") end
+                if holder.Parent then
+                    local metrics = measure()
+                    if not automaticDuration or metrics.contentHeight <= metrics.visibleHeight then destroyNotify("Timeout") end
+                end
             end)
         end
         EZ_SafeCall(onOpen)
@@ -2453,6 +2708,10 @@ function EZ:CreateWindow(options)
     if EZ_Destroyed then return nil, "Library was destroyed" end
     options = options or {}
     local EZ_PreviousCount = EZ_PrepareInstance(options.AllowMultiple == true)
+    if options.Translations ~= nil then
+        local ok, err = EZ:RegisterTranslations(options.Translations)
+        if not ok then warn("[Eazy UI] Invalid translations: " .. tostring(err)) end
+    end
     if options.AllowMultiple == true and not EZ_Environment then
         warn("[Eazy UI] No shared environment is available; use a unique ConfigId and MinimizeKey for each execution.")
     end
@@ -2528,7 +2787,7 @@ function EZ:CreateWindow(options)
             while not resolved and not EZ_Destroyed and tick() - start < 30 do task.wait(0.1) end
             if prompt and prompt.Parent then EZ_CloseTransientGui(prompt) end
             if not success then
-                EZ:Notify({ Title = "Eazy UI", Content = EZ_Locale.AccessDenied, Style = "Error", Duration = 3 })
+                EZ:Notify({ Title = "Eazy UI", _ContentKey = "AccessDenied", Style = "Error", Duration = 3 })
                 return nil
             end
         end
@@ -2677,7 +2936,7 @@ function EZ:CreateWindow(options)
         end
         if ignored > 0 and not isAutoLoad then
             task.defer(function()
-                if not EZ_Destroyed then EZ:Notify({ Title = "Config", Content = ignored .. " saved field(s) were not registered and were kept.", Style = "Warning", Duration = 3 }) end
+                if not EZ_Destroyed then EZ:Notify({ Title = "Config", _ContentKey = "ConfigUnregistered", _ContentArgs = { ignored }, Style = "Warning", Duration = 3 }) end
             end)
         end
         return true
@@ -2810,11 +3069,12 @@ function EZ:CreateWindow(options)
         tlabel.BackgroundTransparency = 1
         tlabel.Size = UDim2.fromOffset(0, 20)
         tlabel.AutomaticSize = Enum.AutomaticSize.X
-        tlabel.Text = EZ_Name
+        tlabel.Text = EZ_TranslateText(EZ_Name)
         tlabel.Font = EZ_Brand.Font
         tlabel.TextSize = 15
         tlabel.TextColor3 = EZ_Theme.Text
         tlabel.Parent = tholder
+        EZ_BindText(tlabel, "Text", EZ_Name, frame)
         EZ_Paint(function() tlabel.TextColor3 = EZ_Theme.Text end)
 
         local tdiv = Instance.new("TextLabel")
@@ -2831,11 +3091,12 @@ function EZ:CreateWindow(options)
         slabel.BackgroundTransparency = 1
         slabel.Size = UDim2.fromOffset(0, 18)
         slabel.AutomaticSize = Enum.AutomaticSize.X
-        slabel.Text = EZ_SubTitle
+        slabel.Text = EZ_TranslateText(EZ_SubTitle)
         slabel.Font = EZ_Brand.FontBody
         slabel.TextSize = 12
         slabel.TextColor3 = EZ_Theme.TextDim
         slabel.Parent = tholder
+        EZ_BindText(slabel, "Text", EZ_SubTitle, frame)
         EZ_Paint(function() slabel.TextColor3 = EZ_Theme.TextDim end)
 
         local minbtn = Instance.new("TextButton")
@@ -3507,7 +3768,7 @@ function EZ:CreateWindow(options)
             lbl.Position = UDim2.fromOffset(iconOffset, 0)
             lbl.Size = UDim2.new(1, -(iconOffset + 6), 1, 0)
             lbl.BackgroundTransparency = 1
-            lbl.Text = tabTitle
+            lbl.Text = EZ_TranslateText(tabTitle)
             lbl.Font = EZ_Brand.FontBody
             lbl.TextSize = 13
             lbl.TextColor3 = EZ_Theme.TextDim
@@ -3516,7 +3777,7 @@ function EZ:CreateWindow(options)
             lbl.Parent = btn
 
             data.Button = btn; data.Label = lbl; data.Page = nil; data.Icon = iconLbl
-            data.Indicator = indicator; data.Active = false; data.Title = tabTitle
+            data.Indicator = indicator; data.Active = false; data.Title = EZ_TranslateText(tabTitle)
 
             EZ_Paint(function()
                 btn.BackgroundColor3 = EZ_Theme.TabActive
@@ -3583,6 +3844,10 @@ function EZ:CreateWindow(options)
             table.insert(registry, data)
             btn.LayoutOrder = #registry
             updateSidebarTab(data, not EZ_Window._sidebarOpen)
+            EZ_BindLocaleRefresh(btn, function()
+                data.Title = EZ_TranslateText(tabTitle)
+                updateSidebarTab(data, not EZ_Window._sidebarOpen)
+            end)
 
             btn.MouseEnter:Connect(function()
                 if not data.Active then
@@ -3607,7 +3872,6 @@ function EZ:CreateWindow(options)
                 o = o or {}
                 local holder = Instance.new("Frame")
                 holder:SetAttribute("EZ_Section", true)
-                EZ_SetSearchText(holder, o.Title, "")
                 holder.Size = UDim2.new(1, 0, 0, 28)
                 holder.BackgroundColor3 = EZ_Theme.Card
                 holder.BackgroundTransparency = 0.4
@@ -3626,7 +3890,7 @@ function EZ:CreateWindow(options)
                 t.Size = UDim2.new(1, -40, 1, 0)
                 t.Position = UDim2.new(0, 14, 0, 0)
                 t.BackgroundTransparency = 1
-                t.Text = EZ_Upper(o.Title)
+                t.Text = EZ_Upper(EZ_TranslateText(o.Title))
                 t.Font = EZ_Brand.Font
                 t.TextSize = 12
                 t.TextColor3 = EZ_Theme.Text
@@ -3675,10 +3939,14 @@ function EZ:CreateWindow(options)
                     end
                     body.Visible = not collapsed
                 end)
+                local titleSource = o.Title or ""
+                local titleBinding = EZ_BindText(t, "Text", titleSource, holder, function(translated)
+                    EZ_SetSearchText(holder, translated, "", titleSource, "")
+                end, EZ_Upper)
                 local obj = { _titleLabel = t, _row = holder, _isSection = true }
                 function obj:Set(x)
-                    t.Text = EZ_Upper(x)
-                    EZ_SetSearchText(holder, x, "")
+                    titleSource = x or ""
+                    EZ_SetTextSource(titleBinding, titleSource)
                 end
                 return obj
             end
@@ -3714,7 +3982,6 @@ function EZ:CreateWindow(options)
                 row.BackgroundColor3 = EZ_Theme.Card
                 row.BorderSizePixel = 0
                 EZ_LayoutChild(page, row)
-                EZ_SetSearchText(row, o.Title, o.Content)
                 EZ_AddStroke(row, EZ_Theme.Border)
                 EZ_AddRadius(row, "Theme")
                 EZ_RegTrans(row)
@@ -3724,11 +3991,11 @@ function EZ:CreateWindow(options)
                 local pad = Instance.new("UIPadding")
                 pad.PaddingLeft = UDim.new(0, 14); pad.PaddingRight = UDim.new(0, 14)
                 pad.PaddingTop = UDim.new(0, 12); pad.PaddingBottom = UDim.new(0, 12); pad.Parent = row
-                local cl = nil
+                local pt, cl
                 if o.Title and o.Title ~= "" then
-                    local pt = Instance.new("TextLabel")
+                    pt = Instance.new("TextLabel")
                     pt.Size = UDim2.new(1, 0, 0, 0); pt.AutomaticSize = Enum.AutomaticSize.Y
-                    pt.BackgroundTransparency = 1; pt.Text = o.Title
+                    pt.BackgroundTransparency = 1; pt.Text = EZ_TranslateText(o.Title)
                     pt.Font = EZ_Brand.FontBody; pt.TextSize = 13; pt.TextColor3 = EZ_Theme.Text
                     pt.TextXAlignment = Enum.TextXAlignment.Left; pt.TextWrapped = true; pt.Parent = row
                     EZ_Paint(function() pt.TextColor3 = EZ_Theme.Text end)
@@ -3736,15 +4003,22 @@ function EZ:CreateWindow(options)
                 if o.Content and o.Content ~= "" then
                     cl = Instance.new("TextLabel")
                     cl.Size = UDim2.new(1, 0, 0, 0); cl.AutomaticSize = Enum.AutomaticSize.Y
-                    cl.BackgroundTransparency = 1; cl.Text = o.Content
+                    cl.BackgroundTransparency = 1; cl.Text = EZ_TranslateText(o.Content)
                     cl.Font = EZ_Brand.FontBody; cl.TextSize = 12; cl.TextColor3 = EZ_Theme.TextDim
                     cl.TextXAlignment = Enum.TextXAlignment.Left; cl.TextWrapped = true; cl.Parent = row
                     EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
                 end
+                local titleSource, contentSource = o.Title or "", o.Content or ""
+                local function updateSearch()
+                    EZ_SetSearchText(row, pt and pt.Text or "", cl and cl.Text or "", titleSource, contentSource)
+                end
+                if pt then EZ_BindText(pt, "Text", titleSource, row, updateSearch) end
+                local contentBinding = cl and EZ_BindText(cl, "Text", contentSource, row, updateSearch)
+                if not pt and not cl then updateSearch() end
                 local obj = {}
                 function obj:Set(x)
-                    if cl then cl.Text = x or "" end
-                    EZ_SetSearchText(row, o.Title, x)
+                    contentSource = x or ""
+                    if contentBinding then EZ_SetTextSource(contentBinding, contentSource) else updateSearch() end
                 end
                 obj._row = row
                 return obj
@@ -3759,15 +4033,21 @@ function EZ:CreateWindow(options)
                 EZ_LayoutChild(page, row)
                 local pad = Instance.new("UIPadding")
                 pad.PaddingLeft = UDim.new(0, 12); pad.PaddingRight = UDim.new(0, 12); pad.Parent = row
-                EZ_SetSearchText(row, text, "")
                 local t = Instance.new("TextLabel")
                 t.Size = UDim2.new(1, 0, 0, 0); t.AutomaticSize = Enum.AutomaticSize.Y
-                t.BackgroundTransparency = 1; t.Text = text or ""
+                t.BackgroundTransparency = 1; t.Text = EZ_TranslateText(text or "")
                 t.Font = EZ_Brand.FontBody; t.TextSize = 12; t.TextColor3 = EZ_Theme.TextDim
                 t.TextXAlignment = Enum.TextXAlignment.Left; t.TextWrapped = true; t.Parent = row
                 EZ_Paint(function() t.TextColor3 = EZ_Theme.TextDim end)
+                local source = text or ""
+                local binding = EZ_BindText(t, "Text", source, row, function(translated)
+                    EZ_SetSearchText(row, translated, "", source, "")
+                end)
                 local obj = {}
-                function obj:Set(x) t.Text = x or ""; EZ_SetSearchText(row, x, "") end
+                function obj:Set(x)
+                    source = x or ""
+                    EZ_SetTextSource(binding, source)
+                end
                 obj._row = row
                 return obj
             end
@@ -3847,7 +4127,7 @@ function EZ:CreateWindow(options)
                 act.Position = UDim2.new(1, -110, 0.5, -14)
                 act.BackgroundColor3 = EZ_Theme.Accent
                 act.BorderSizePixel = 0
-                act.Text = o.ButtonText or "Run"
+                act.Text = EZ_TranslateText(o.ButtonText or "Run")
                 obj._buttonLabel = act
                 act.Font = EZ_Brand.FontBody
                 act.TextSize = 12
@@ -3855,6 +4135,7 @@ function EZ:CreateWindow(options)
                 act.AutoButtonColor = false
                 act.ZIndex = 3
                 act.Parent = row
+                local buttonBinding = EZ_BindText(act, "Text", o.ButtonText or "Run", row)
                 EZ_AddRadius(act, "Theme")
                 EZ_Paint(function() act.BackgroundColor3 = EZ_Theme.Accent; act.TextColor3 = EZ_Theme.Background end, obj)
                 act.MouseEnter:Connect(function()
@@ -3885,7 +4166,7 @@ function EZ:CreateWindow(options)
                         EZ_SafeCall(middleCb, obj)
                     end
                 end)
-                function obj:SetTitle(t) act.Text = t or "" end
+                function obj:SetTitle(t) EZ_SetTextSource(buttonBinding, t or "") end
                 obj._row = row
                 return obj
             end
@@ -3906,12 +4187,14 @@ function EZ:CreateWindow(options)
                 tl.Position = UDim2.fromOffset(14, 11)
                 tl.Size = UDim2.new(1, -120, 0, 16)
                 tl.BackgroundTransparency = 1
-                tl.Text = o.Title or "Slider"
+                tl.Text = EZ_TranslateText(o.Title or "Slider")
                 obj._titleLabel = tl
-                EZ_SetSearchText(row, o.Title or "Slider", o.Description)
                 tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left; tl.TextTruncate = Enum.TextTruncate.AtEnd
                 tl.Parent = row
+                EZ_BindText(tl, "Text", o.Title or "Slider", row, function(translated)
+                    EZ_SetSearchText(row, translated, EZ_TranslateText(o.Description), o.Title or "Slider", o.Description)
+                end)
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
@@ -4086,12 +4369,14 @@ function EZ:CreateWindow(options)
                 tl.Position = UDim2.fromOffset(14, 11)
                 tl.Size = UDim2.new(1, -190, 0, 16)
                 tl.BackgroundTransparency = 1
-                tl.Text = o.Title or "Range"
+                tl.Text = EZ_TranslateText(o.Title or "Range")
                 obj._titleLabel = tl
-                EZ_SetSearchText(row, o.Title or "Range", o.Description)
                 tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left; tl.TextTruncate = Enum.TextTruncate.AtEnd
                 tl.Parent = row
+                EZ_BindText(tl, "Text", o.Title or "Range", row, function(translated)
+                    EZ_SetSearchText(row, translated, EZ_TranslateText(o.Description), o.Title or "Range", o.Description)
+                end)
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
@@ -4229,7 +4514,6 @@ function EZ:CreateWindow(options)
                 holder.BorderSizePixel = 0
                 holder.ClipsDescendants = true
                 EZ_LayoutChild(page, holder)
-                EZ_SetSearchText(holder, o.Title, o.SubTitle)
                 EZ_AddRadius(holder, "Theme")
                 EZ_RegTrans(holder)
                 EZ_Paint(function() holder.BackgroundColor3 = EZ_Theme.Card end)
@@ -4248,7 +4532,7 @@ function EZ:CreateWindow(options)
                     titleLbl.Size = UDim2.new(1, -20, 0, 22)
                     titleLbl.Position = UDim2.new(0, 14, 0, 12)
                     titleLbl.BackgroundTransparency = 1
-                    titleLbl.Text = o.Title
+                    titleLbl.Text = EZ_TranslateText(o.Title)
                     titleLbl.Font = EZ_Brand.Font
                     titleLbl.TextSize = 16
                     titleLbl.TextColor3 = o.TextColor or EZ_Theme.Text
@@ -4261,7 +4545,7 @@ function EZ:CreateWindow(options)
                     subLbl.Size = UDim2.new(1, -20, 0, 16)
                     subLbl.Position = UDim2.new(0, 14, 0, 36)
                     subLbl.BackgroundTransparency = 1
-                    subLbl.Text = o.SubTitle
+                    subLbl.Text = EZ_TranslateText(o.SubTitle)
                     subLbl.Font = EZ_Brand.FontBody
                     subLbl.TextSize = 12
                     subLbl.TextColor3 = o.SubColor or EZ_Theme.TextDim
@@ -4269,14 +4553,21 @@ function EZ:CreateWindow(options)
                     subLbl.Parent = holder
                     EZ_Paint(function() subLbl.TextColor3 = o.SubColor or EZ_Theme.TextDim end)
                 end
+                local titleSource, subSource = o.Title or "", o.SubTitle or ""
+                local function updateSearch()
+                    EZ_SetSearchText(holder, titleLbl and titleLbl.Text or "", subLbl and subLbl.Text or "", titleSource, subSource)
+                end
+                local titleBinding = titleLbl and EZ_BindText(titleLbl, "Text", titleSource, holder, updateSearch)
+                local subBinding = subLbl and EZ_BindText(subLbl, "Text", subSource, holder, updateSearch)
+                if not titleLbl and not subLbl then updateSearch() end
                 local obj = {}
                 function obj:SetTitle(x)
-                    if titleLbl then titleLbl.Text = x or "" end
-                    EZ_SetSearchText(holder, x, subLbl and subLbl.Text or "")
+                    titleSource = x or ""
+                    if titleBinding then EZ_SetTextSource(titleBinding, titleSource) else updateSearch() end
                 end
                 function obj:SetSubtitle(x)
-                    if subLbl then subLbl.Text = x or "" end
-                    EZ_SetSearchText(holder, titleLbl and titleLbl.Text or "", x)
+                    subSource = x or ""
+                    if subBinding then EZ_SetTextSource(subBinding, subSource) else updateSearch() end
                 end
                 obj._holder = holder
                 return obj
@@ -4289,6 +4580,10 @@ function EZ:CreateWindow(options)
                 local values = o.Values or o.Options or {}
                 local cb = o.Callback or function() end
                 local multi = o.Multi == true
+                local function displayValue(value)
+                    local text = tostring(value)
+                    return o.TranslateValues == false and text or EZ_TranslateText(text)
+                end
                 local id = o.Flag or o.Id or o.Title or "dropdown_" .. os.clock()
                 local defaultVal
                 if multi then
@@ -4326,17 +4621,22 @@ function EZ:CreateWindow(options)
                 trigText.Size = UDim2.new(1, -34, 1, 0)
                 trigText.Position = UDim2.fromOffset(12, 0)
                 trigText.BackgroundTransparency = 1
-                if multi then
-                    trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
-                else
-                    trigText.Text = obj.Value and tostring(obj.Value) or EZ_Locale.None
-                end
                 trigText.Font = EZ_Brand.FontBody
                 trigText.TextSize = 12
                 trigText.TextColor3 = EZ_Theme.Text
                 trigText.TextXAlignment = Enum.TextXAlignment.Left
                 trigText.TextTruncate = Enum.TextTruncate.AtEnd
                 trigText.Parent = trigger
+                local function updateTrigger()
+                    if multi then
+                        local labels = {}
+                        for _, value in ipairs(obj.Value) do table.insert(labels, displayValue(value)) end
+                        trigText.Text = #labels > 0 and table.concat(labels, ", ") or EZ_Locale.None
+                    else
+                        trigText.Text = obj.Value == nil and EZ_Locale.None or displayValue(obj.Value)
+                    end
+                end
+                EZ_BindLocaleRefresh(row, updateTrigger)
                 local sign = EZ_CreateIcon(trigger, "chevron-down", 14)
                 if sign then
                     sign.AnchorPoint = Vector2.new(1, 0.5)
@@ -4360,6 +4660,7 @@ function EZ:CreateWindow(options)
                     multi = multi,
                     getValues = function() return values end,
                     getValue = function() return obj.Value end,
+                    getDisplay = displayValue,
                     pick = function(v)
                         if multi then
                             local found = false
@@ -4367,7 +4668,7 @@ function EZ:CreateWindow(options)
                                 if item == v then table.remove(obj.Value, i); found = true; break end
                             end
                             if not found then table.insert(obj.Value, v) end
-                            trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
+                            updateTrigger()
                             EZ_SafeCall(cb, EZ_Copy(obj.Value))
                             if obj.Flag and EZ_Window.AutoSave then
                                 EZ_Window.ConfigData[id] = { type = "multi", value = EZ_Copy(obj.Value) }
@@ -4381,11 +4682,10 @@ function EZ:CreateWindow(options)
                 function obj:Set(v, silent)
                     if multi then
                         obj.Value = type(v) == "table" and EZ_Copy(v) or {}
-                        trigText.Text = #obj.Value > 0 and table.concat(obj.Value, ", ") or EZ_Locale.None
                     else
                         obj.Value = v
-                        trigText.Text = v == nil and EZ_Locale.None or tostring(v)
                     end
+                    updateTrigger()
                     if not silent then
                         EZ_SafeCall(cb, multi and EZ_Copy(obj.Value) or obj.Value)
                         if obj.Flag and EZ_Window.AutoSave then
@@ -4423,11 +4723,12 @@ function EZ:CreateWindow(options)
                 box.Font = EZ_Brand.FontMono
                 box.TextSize = 12
                 box.TextColor3 = EZ_Theme.Text
-                box.PlaceholderText = o.Placeholder or "..."
+                box.PlaceholderText = EZ_TranslateText(o.Placeholder or "...")
                 box.PlaceholderColor3 = EZ_Theme.TextDim
                 box.TextXAlignment = Enum.TextXAlignment.Left
                 box.ClearTextOnFocus = false
                 box.Parent = row
+                EZ_BindText(box, "PlaceholderText", o.Placeholder or "...", row)
                 EZ_ResponsiveRow(row, titleLabel, descriptionLabel, box)
                 local bst = EZ_AddStroke(box, EZ_Theme.Border)
                 EZ_AddRadius(box, "Theme")
@@ -4481,12 +4782,14 @@ function EZ:CreateWindow(options)
                 tl.Position = UDim2.fromOffset(14, 11)
                 tl.Size = UDim2.new(1, -24, 0, 16)
                 tl.BackgroundTransparency = 1
-                tl.Text = o.Title or "Text Area"
+                tl.Text = EZ_TranslateText(o.Title or "Text Area")
                 obj._titleLabel = tl
-                EZ_SetSearchText(row, o.Title or "Text Area", o.Description)
                 tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left
                 tl.Parent = row
+                EZ_BindText(tl, "Text", o.Title or "Text Area", row, function(translated)
+                    EZ_SetSearchText(row, translated, EZ_TranslateText(o.Description), o.Title or "Text Area", o.Description)
+                end)
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local box = Instance.new("TextBox")
                 box.Size = UDim2.new(1, -28, 0, 76)
@@ -4495,7 +4798,7 @@ function EZ:CreateWindow(options)
                 box.BorderSizePixel = 0
                 box.Text = obj.Value
                 box.Font = EZ_Brand.FontMono; box.TextSize = 12; box.TextColor3 = EZ_Theme.Text
-                box.PlaceholderText = o.Placeholder or "..."
+                box.PlaceholderText = EZ_TranslateText(o.Placeholder or "...")
                 box.PlaceholderColor3 = EZ_Theme.TextDim
                 box.TextXAlignment = Enum.TextXAlignment.Left
                 box.TextYAlignment = Enum.TextYAlignment.Top
@@ -4503,6 +4806,7 @@ function EZ:CreateWindow(options)
                 box.ClearTextOnFocus = false
                 box.MultiLine = true
                 box.Parent = row
+                EZ_BindText(box, "PlaceholderText", o.Placeholder or "...", row)
                 local bst = EZ_AddStroke(box, EZ_Theme.Border)
                 EZ_AddRadius(box, "Theme")
                 EZ_RegTrans(box)
@@ -4545,12 +4849,14 @@ function EZ:CreateWindow(options)
                 tl.Position = UDim2.fromOffset(14, 11)
                 tl.Size = UDim2.new(1, -90, 0, 16)
                 tl.BackgroundTransparency = 1
-                tl.Text = o.Title or "Progress"
+                tl.Text = EZ_TranslateText(o.Title or "Progress")
                 obj._titleLabel = tl
-                EZ_SetSearchText(row, o.Title or "Progress", o.Description)
                 tl.Font = EZ_Brand.FontBody; tl.TextSize = 13; tl.TextColor3 = EZ_Theme.Text
                 tl.TextXAlignment = Enum.TextXAlignment.Left
                 tl.Parent = row
+                EZ_BindText(tl, "Text", o.Title or "Progress", row, function(translated)
+                    EZ_SetSearchText(row, translated, EZ_TranslateText(o.Description), o.Title or "Progress", o.Description)
+                end)
                 EZ_Paint(function() tl.TextColor3 = EZ_Theme.Text end, obj)
                 local vl = Instance.new("TextLabel")
                 vl.AnchorPoint = Vector2.new(1, 0)
@@ -4617,14 +4923,16 @@ function EZ:CreateWindow(options)
                 lbl.Position = UDim2.fromOffset(14, 0)
                 lbl.Size = UDim2.new(1, -80, 1, 0)
                 lbl.BackgroundTransparency = 1
-                lbl.Text = o.Title or "Color"
+                lbl.Text = EZ_TranslateText(o.Title or "Color")
                 obj._titleLabel = lbl
-                EZ_SetSearchText(row, o.Title or "Color", o.Description)
                 lbl.Font = EZ_Brand.FontBody
                 lbl.TextSize = 13
                 lbl.TextColor3 = EZ_Theme.Text
                 lbl.TextXAlignment = Enum.TextXAlignment.Left
                 lbl.Parent = header
+                EZ_BindText(lbl, "Text", o.Title or "Color", row, function(translated)
+                    EZ_SetSearchText(row, translated, EZ_TranslateText(o.Description), o.Title or "Color", o.Description)
+                end)
                 EZ_Paint(function() lbl.TextColor3 = EZ_Theme.Text end, obj)
 
                 local swatch = Instance.new("Frame")
@@ -5212,8 +5520,9 @@ function EZ:CreateWindow(options)
             local function persistAppearance()
                 if EZ_Window.AutoSave then EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig) end
             end
-            local function report(ok, successText, err)
-                EZ:Notify({ Title = "Config", Content = ok and successText or string.format(EZ_Locale.ConfigFailed, tostring(err or "unknown error")), Style = ok and "Success" or "Error", Duration = 3 })
+            local function report(ok, successKey, err, argument)
+                local args = ok and (argument ~= nil and { argument } or nil) or { tostring(err or "unknown error") }
+                EZ:Notify({ Title = "Config", _ContentKey = ok and successKey or "ConfigFailed", _ContentArgs = args, _TranslateArg = not ok and 1 or nil, Style = ok and "Success" or "Error", Duration = 3 })
             end
             local function selected() return EZ_Window._selectedConfig or EZ_Window.CurrentConfig end
             local function localized(control, titleKey, descriptionKey, buttonKey)
@@ -5221,11 +5530,12 @@ function EZ:CreateWindow(options)
                     if not control or not control._row or not control._row.Parent then return end
                     if control._isSection then
                         control:Set(EZ_Locale[titleKey])
+                        EZ_SetSearchText(control._row, control._titleLabel.Text, "", EZ_DefaultLocale[titleKey], "")
                     else
                         if control._titleLabel then control._titleLabel.Text = EZ_Locale[titleKey] end
                         if control._descriptionLabel and descriptionKey then control._descriptionLabel.Text = EZ_Locale[descriptionKey] end
                         if control._buttonLabel and buttonKey then control._buttonLabel.Text = EZ_Locale[buttonKey] end
-                        EZ_SetSearchText(control._row, EZ_Locale[titleKey], descriptionKey and EZ_Locale[descriptionKey] or "")
+                        EZ_SetSearchText(control._row, EZ_Locale[titleKey], descriptionKey and EZ_Locale[descriptionKey] or "", EZ_DefaultLocale[titleKey], descriptionKey and EZ_DefaultLocale[descriptionKey] or "")
                     end
                 end
                 EZ_OnLocaleChange(update)
@@ -5258,16 +5568,16 @@ function EZ:CreateWindow(options)
                         EZ_SyncConfigDropdown(name)
                         local autoloadOk, autoloadErr = EZ_SetAutoloadName(EZ_ConfigId, name)
                         if not autoloadOk then
-                            EZ:Notify({ Title = "Config", Content = string.format(EZ_Locale.ConfigSavedAutoloadFailed, name, tostring(autoloadErr)), Style = "Warning", Duration = 4 })
+                            EZ:Notify({ Title = "Config", _ContentKey = "ConfigSavedAutoloadFailed", _ContentArgs = { name, tostring(autoloadErr) }, _TranslateArg = 2, Style = "Warning", Duration = 4 })
                             return
                         end
                     end
-                    report(ok, string.format(EZ_Locale.ConfigSaved, name), err)
+                    report(ok, "ConfigSaved", err, name)
                 end,
             }), "SaveConfig", "SaveConfigDesc", "Save")
             savedConfigsDropdown = localized(tab:AddDropdown({
                 Title = EZ_Locale.SavedConfigs, Description = EZ_Locale.SavedConfigsDesc,
-                Values = EZ_Window:ListConfigs(), Default = nil,
+                Values = EZ_Window:ListConfigs(), Default = nil, TranslateValues = false,
                 Callback = function(name) EZ_Window._selectedConfig = name end,
             }), "SavedConfigs", "SavedConfigsDesc")
             EZ_Window._configDropdown = savedConfigsDropdown
@@ -5280,7 +5590,7 @@ function EZ:CreateWindow(options)
                 Callback = function()
                     local name = selected()
                     local ok, err = EZ_Window:LoadConfig(name)
-                    report(ok, string.format(EZ_Locale.ConfigLoaded, name), err)
+                    report(ok, "ConfigLoaded", err, name)
                 end,
             }), "LoadConfig", "LoadConfigDesc", "Load")
             localized(tab:AddButton({
@@ -5290,14 +5600,14 @@ function EZ:CreateWindow(options)
                     local data, loadErr = EZ_LoadConfig(EZ_ConfigId, name)
                     if not data then report(false, "", loadErr); return end
                     local ok, err = EZ_SetAutoloadName(EZ_ConfigId, name)
-                    report(ok, string.format(EZ_Locale.AutoloadSet, name), err)
+                    report(ok, "AutoloadSet", err, name)
                 end,
             }), "SetAutoload", "SetAutoloadDesc", "Set")
             localized(tab:AddButton({
                 Title = EZ_Locale.ClearAutoload, Description = EZ_Locale.ClearAutoloadDesc, ButtonText = EZ_Locale.Clear,
                 Callback = function()
                     local ok, err = EZ_SetAutoloadName(EZ_ConfigId, "default")
-                    report(ok, string.format(EZ_Locale.AutoloadSet, "default"), err)
+                    report(ok, "AutoloadSet", err, "default")
                 end,
             }), "ClearAutoload", "ClearAutoloadDesc", "Clear")
             localized(tab:AddButton({
@@ -5306,9 +5616,14 @@ function EZ:CreateWindow(options)
                     local name = selected()
                     local ok, err = EZ_Window:DeleteConfig(name)
                     if ok and err then
-                        EZ:Notify({ Title = "Config", Content = err, Style = "Warning", Duration = 4 })
+                        local prefix = "Config deleted, but autoload could not be reset: "
+                        if err:sub(1, #prefix) == prefix then
+                            EZ:Notify({ Title = "Config", _ContentKey = "ConfigDeletedAutoloadFailed", _ContentArgs = { err:sub(#prefix + 1) }, _TranslateArg = 1, Style = "Warning", Duration = 4 })
+                        else
+                            EZ:Notify({ Title = "Config", Content = err, Style = "Warning", Duration = 4 })
+                        end
                     else
-                        report(ok, string.format(EZ_Locale.ConfigDeleted, name), err)
+                        report(ok, "ConfigDeleted", err, name)
                     end
                 end,
             }), "DeleteConfig", "DeleteConfigDesc", "Delete")
@@ -5316,7 +5631,7 @@ function EZ:CreateWindow(options)
                 Title = EZ_Locale.ResetDefaults, Description = EZ_Locale.ResetDefaultsDesc, ButtonText = EZ_Locale.Reset,
                 Callback = function()
                     local ok, err = EZ_Window:ResetConfig(EZ_Window.CurrentConfig)
-                    report(ok, EZ_Locale.ConfigReset, err)
+                    report(ok, "ConfigReset", err)
                 end,
             }), "ResetDefaults", "ResetDefaultsDesc", "Reset")
             localized(tab:AddSection({ Title = EZ_Locale.Appearance }), "Appearance")
@@ -5328,7 +5643,7 @@ function EZ:CreateWindow(options)
                         EZ_MinKey = key
                         EZ_MinMods = modifiers or ""
                         persistAppearance()
-                        if not EZ_Window._applying then EZ:Notify({ Title = EZ_Locale.MinimizeKey, Content = string.format(EZ_Locale.KeyChanged, key.Name), Style = "Success", Duration = 2 }) end
+                        if not EZ_Window._applying then EZ:Notify({ _TitleKey = "MinimizeKey", _ContentKey = "KeyChanged", _ContentArgs = { key.Name }, Style = "Success", Duration = 2 }) end
                     end
                 end,
             }), "MinimizeKey", "MinimizeKeyDesc")
@@ -5348,7 +5663,7 @@ function EZ:CreateWindow(options)
                 Callback = function(theme)
                     EZ:SetTheme(theme)
                     persistAppearance()
-                    EZ:Notify({ Title = EZ_Locale.Theme, Content = string.format(EZ_Locale.ThemeChanged, theme), Style = "Success", Duration = 2 })
+                    EZ:Notify({ _TitleKey = "Theme", _ContentKey = "ThemeChanged", _ContentArgs = { theme }, Style = "Success", Duration = 2 })
                 end,
             }), "Theme", "ThemeDesc")
             EZ_OnThemeChange(function(name)
@@ -5474,6 +5789,10 @@ function EZ:Destroy()
     table.clear(EZ_ThemeListeners)
     table.clear(EZ_ThemeListListeners)
     table.clear(EZ_LocaleListeners)
+    for owner in pairs(EZ_TextBindingsByOwner) do EZ_ClearTextBindings(owner) end
+    table.clear(EZ_TextBindings)
+    table.clear(EZ_TextBindingsByOwner)
+    table.clear(EZ_TextOwnerConnections)
     table.clear(EZ_SearchParents)
     table.clear(EZ_SearchRefresh)
     EZ_PreviousInstance = nil
@@ -5491,7 +5810,7 @@ function EZ:Logout()
         local configId = EZ_CurrentWindow.ConfigId or tostring(game.PlaceId)
         EZ_ClearKey(EZ_KeyFilePath(configId))
     end
-    EZ:Notify({ Title = "Eazy UI", Content = "Logged out. Restart to re-enter key.", Style = "Info", Duration = 3 })
+    EZ:Notify({ Title = "Eazy UI", _ContentKey = "LogoutMessage", Style = "Info", Duration = 3 })
 end
 
 if EZ_Environment then
