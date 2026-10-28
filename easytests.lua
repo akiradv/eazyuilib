@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.52-stability-test.2
+    Eazy UI v0.9.53
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.52-stability-test.2"
+EZ.Version = "0.9.53"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -1096,11 +1096,31 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
     return 1
 end
 
+local function EZ_ViewportLimits(frame)
+    local origin, screenSize = EZ_Gui.AbsolutePosition, EZ_Gui.AbsoluteSize
+    if screenSize.X <= 1 or screenSize.Y <= 1 then
+        local ok, area = pcall(function() return GuiService:GetInsetArea(Enum.ScreenInsets.DeviceSafeInsets) end)
+        if ok and area and area.Max.X > area.Min.X and area.Max.Y > area.Min.Y then
+            origin = area.Min
+            screenSize = area.Max - area.Min
+        else
+            local usable, inset, bottom = EZ_ViewportUsable()
+            origin = Vector2.new(-inset.X, -inset.Y)
+            screenSize = Vector2.new(usable.X + inset.X + bottom.X, usable.Y + inset.Y + bottom.Y)
+        end
+    end
+    local padding = math.max(0, tonumber(frame:GetAttribute("EZ_ViewportPadding")) or 0)
+    padding = math.min(padding, screenSize.X / 2, screenSize.Y / 2)
+    local size = frame.AbsoluteSize
+    local minX, minY = origin.X + padding, origin.Y + padding
+    local maxX = math.max(minX, origin.X + screenSize.X - size.X - padding)
+    local maxY = math.max(minY, origin.Y + screenSize.Y - size.Y - padding)
+    return minX, maxX, minY, maxY
+end
+
 local function EZ_ClampToViewport(frame)
-    local usable, inset = EZ_ViewportUsable()
-    local abs, size = frame.AbsolutePosition, frame.AbsoluteSize
-    local minX, minY = inset.X + 4, inset.Y + 4
-    local maxX, maxY = math.max(minX, inset.X + usable.X - size.X - 4), math.max(minY, inset.Y + usable.Y - size.Y - 4)
+    local minX, maxX, minY, maxY = EZ_ViewportLimits(frame)
+    local abs = frame.AbsolutePosition
     local dx = math.clamp(abs.X, minX, maxX) - abs.X
     local dy = math.clamp(abs.Y, minY, maxY) - abs.Y
     if dx ~= 0 or dy ~= 0 then
@@ -1148,18 +1168,18 @@ end
 
 local function EZ_MakeDraggable(frame, handle)
     handle.Active = true
-    local dragging, start, startPos, dragInput = false, nil, nil, nil
+    local dragging, start, startPos, startAbsolute, dragInput = false, nil, nil, nil, nil
     local function stop(i)
         if not dragging then return end
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i == dragInput then
+        if i == dragInput or (dragInput.UserInputType == Enum.UserInputType.MouseButton1 and i.UserInputType == Enum.UserInputType.MouseButton1) then
             dragging, dragInput = false, nil
-            if frame.Parent then EZ_ClampToViewport(frame) end
         end
     end
     handle.InputBegan:Connect(function(i)
+        if dragging then return end
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
             dragging, dragInput = true, i
-            start, startPos = i.Position, frame.Position
+            start, startPos, startAbsolute = i.Position, frame.Position, frame.AbsolutePosition
             frame:SetAttribute("EZ_Moved", true)
             EZ_CloseDropdown()
         end
@@ -1171,7 +1191,10 @@ local function EZ_MakeDraggable(frame, handle)
         if (dragInput.UserInputType == Enum.UserInputType.Touch and i == dragInput) or
            (dragInput.UserInputType == Enum.UserInputType.MouseButton1 and i.UserInputType == Enum.UserInputType.MouseMovement) then
             local d = i.Position - start
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+            local minX, maxX, minY, maxY = EZ_ViewportLimits(frame)
+            local x = math.clamp(startAbsolute.X + d.X, minX, maxX) - startAbsolute.X
+            local y = math.clamp(startAbsolute.Y + d.Y, minY, maxY) - startAbsolute.Y
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + x, startPos.Y.Scale, startPos.Y.Offset + y)
         end
     end)
 end
@@ -2285,6 +2308,7 @@ function EZ:CreateWindow(options)
         frame.BorderSizePixel = 0
         frame.ClipsDescendants = true
         frame.GroupTransparency = 0
+        frame:SetAttribute("EZ_ViewportPadding", math.max(0, tonumber(options.ViewportPadding) or 0))
         frame.Parent = EZ_Gui
         EZ_AddStroke(frame, EZ_Theme.Border)
         EZ_AddRadius(frame, EZ_Theme.RadiusWindow)
@@ -2360,6 +2384,7 @@ function EZ:CreateWindow(options)
 
         local tholder = Instance.new("Frame")
         tholder.BackgroundTransparency = 1
+        tholder.ClipsDescendants = true
         tholder.Size = UDim2.new(1, -120, 1, 0)
         tholder.Position = UDim2.fromOffset(46, 0)
         tholder.Parent = titlebar
@@ -2453,15 +2478,17 @@ function EZ:CreateWindow(options)
 
         local tabsContainer = Instance.new("ScrollingFrame")
         tabsContainer.ScrollBarThickness = 3
+        tabsContainer.VerticalScrollBarInset = Enum.ScrollBarInset.None
         tabsContainer.ScrollBarImageColor3 = EZ_Theme.BorderHover
         tabsContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
         tabsContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
         tabsContainer.ScrollingDirection = Enum.ScrollingDirection.Y
         tabsContainer.BorderSizePixel = 0
-        tabsContainer.Size = UDim2.new(1, -EZ_Theme.RadiusWindow, 1, 0)
+        tabsContainer.Size = UDim2.new(1, 0, 1, 0)
         tabsContainer.Position = UDim2.new(0, 0, 0, 0)
         tabsContainer.BackgroundTransparency = 1
         tabsContainer.ClipsDescendants = true
+        tabsContainer.ZIndex = 11
         tabsContainer.Parent = sidebar
 
         local slay = Instance.new("UIListLayout")
@@ -2511,20 +2538,80 @@ function EZ:CreateWindow(options)
         if type(options.SidebarCollapsed) == "boolean" then EZ_Window._sidebarOpen = not options.SidebarCollapsed end
         local menuBtn = Instance.new("TextButton")
         menuBtn.Name = "EZ_SidebarToggle"
-        menuBtn.Size = UDim2.fromOffset(34, 34)
-        menuBtn.Position = UDim2.new(1, -80, 0.5, -17)
+        menuBtn.Size = UDim2.fromOffset(40, 40)
+        menuBtn.Position = UDim2.new(1, -84, 0.5, -20)
         menuBtn.BackgroundColor3 = EZ_Theme.CardHover
         menuBtn.BackgroundTransparency = 1
-        menuBtn.Text = "☰"
-        menuBtn.TextSize = 19
-        menuBtn.TextColor3 = EZ_Theme.Text
-        menuBtn.Font = EZ_Brand.FontBody
+        menuBtn.Text = ""
         menuBtn.AutoButtonColor = false
         menuBtn.Parent = titlebar
         EZ_AddRadius(menuBtn, 6)
-        EZ_Paint(function() menuBtn.TextColor3 = EZ_Theme.Text; menuBtn.BackgroundColor3 = EZ_Theme.CardHover end)
+
+        local menuGlyph = Instance.new("Frame")
+        menuGlyph.Name = "EZ_SidebarGlyph"
+        menuGlyph.AnchorPoint = Vector2.new(0.5, 0.5)
+        menuGlyph.Position = UDim2.fromScale(0.5, 0.5)
+        menuGlyph.Size = UDim2.fromOffset(16, 14)
+        menuGlyph.BackgroundTransparency = 1
+        menuGlyph.BorderSizePixel = 0
+        menuGlyph.Parent = menuBtn
+        EZ_AddRadius(menuGlyph, 2)
+        local menuOutline = Instance.new("UIStroke")
+        menuOutline.Name = "EZ_SidebarOutline"
+        menuOutline.Thickness = 1.25
+        menuOutline.Color = EZ_Theme.TextDim
+        menuOutline.Parent = menuGlyph
+        local menuDivider = Instance.new("Frame")
+        menuDivider.Name = "EZ_SidebarDivider"
+        menuDivider.Position = UDim2.fromOffset(5, 1)
+        menuDivider.Size = UDim2.new(0, 1, 1, -2)
+        menuDivider.BackgroundColor3 = EZ_Theme.TextDim
+        menuDivider.BorderSizePixel = 0
+        menuDivider.Parent = menuGlyph
+        local menuChevronTop = Instance.new("Frame")
+        menuChevronTop.Name = "EZ_ChevronTop"
+        menuChevronTop.AnchorPoint = Vector2.new(0.5, 0.5)
+        menuChevronTop.Position = UDim2.fromOffset(11, 5)
+        menuChevronTop.Size = UDim2.fromOffset(5, 1)
+        menuChevronTop.BackgroundColor3 = EZ_Theme.TextDim
+        menuChevronTop.BorderSizePixel = 0
+        menuChevronTop.Parent = menuGlyph
+        local menuChevronBottom = Instance.new("Frame")
+        menuChevronBottom.Name = "EZ_ChevronBottom"
+        menuChevronBottom.AnchorPoint = Vector2.new(0.5, 0.5)
+        menuChevronBottom.Position = UDim2.fromOffset(11, 9)
+        menuChevronBottom.Size = UDim2.fromOffset(5, 1)
+        menuChevronBottom.BackgroundColor3 = EZ_Theme.TextDim
+        menuChevronBottom.BorderSizePixel = 0
+        menuChevronBottom.Parent = menuGlyph
+        EZ_Paint(function()
+            menuBtn.BackgroundColor3 = EZ_Theme.CardHover
+            menuOutline.Color = EZ_Theme.TextDim
+            menuDivider.BackgroundColor3 = EZ_Theme.TextDim
+            menuChevronTop.BackgroundColor3 = EZ_Theme.TextDim
+            menuChevronBottom.BackgroundColor3 = EZ_Theme.TextDim
+        end, menuBtn)
+        menuBtn.MouseEnter:Connect(function() TweenService:Create(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 0.45 }):Play() end)
+        menuBtn.MouseLeave:Connect(function() TweenService:Create(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play() end)
         tholder.Size = UDim2.new(1, -150, 1, 0)
 
+        local function updateSidebarTab(d, collapsed)
+            d.Button.Size = UDim2.new(1, 0, 0, EZ_Window._compact and 44 or 36)
+            d.Indicator.Position = UDim2.fromOffset(collapsed and 0 or 6, EZ_Window._compact and 14 or 10)
+            if d.Icon then
+                d.Icon.AnchorPoint = collapsed and Vector2.new(0.5, 0.5) or Vector2.new(0, 0.5)
+                d.Icon.Position = collapsed and UDim2.fromScale(0.5, 0.5) or UDim2.new(0, 20, 0.5, 0)
+                d.Label.Visible = not collapsed
+                d.Label.Text = d.Title
+            else
+                d.Label.Visible = true
+                local first = d.Title ~= "" and utf8.char(utf8.codepoint(d.Title, 1)) or "•"
+                d.Label.Text = collapsed and first or d.Title
+                d.Label.Position = UDim2.fromOffset(collapsed and 0 or 18, 0)
+                d.Label.Size = UDim2.new(1, collapsed and 0 or -24, 1, 0)
+                d.Label.TextXAlignment = collapsed and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
+            end
+        end
         local lastResponsiveCompact
         updateResponsiveLayout = function()
             local collapsed = not EZ_Window._sidebarOpen
@@ -2534,22 +2621,9 @@ function EZ:CreateWindow(options)
             content.Position = UDim2.new(0, width, 0, EZ_TITLEBAR_HEIGHT)
             content.Size = UDim2.new(1, -width, 1, -EZ_TITLEBAR_HEIGHT)
             menuBtn.Visible = true
-            for _, d in ipairs(registry) do
-                d.Button.Size = UDim2.new(1, 0, 0, EZ_Window._compact and 44 or 36)
-                d.Indicator.Position = UDim2.fromOffset(collapsed and 0 or 6, EZ_Window._compact and 14 or 10)
-                if d.Icon then
-                    d.Icon.Position = collapsed and UDim2.new(0.5, -8, 0.5, -8) or UDim2.new(0, 20, 0.5, -8)
-                    d.Label.Visible = not collapsed
-                    d.Label.Text = d.Title
-                else
-                    d.Label.Visible = true
-                    local first = d.Title ~= "" and utf8.char(utf8.codepoint(d.Title, 1)) or "•"
-                    d.Label.Text = collapsed and first or d.Title
-                    d.Label.Position = UDim2.fromOffset(collapsed and 0 or 18, 0)
-                    d.Label.Size = UDim2.new(1, collapsed and 0 or -24, 1, 0)
-                    d.Label.TextXAlignment = collapsed and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
-                end
-            end
+            menuChevronTop.Rotation = collapsed and 45 or -45
+            menuChevronBottom.Rotation = collapsed and -45 or 45
+            for _, d in ipairs(registry) do updateSidebarTab(d, collapsed) end
             if lastResponsiveCompact ~= EZ_Window._compact then
                 lastResponsiveCompact = EZ_Window._compact
                 for _, update in ipairs(EZ_Window._responsiveItems) do update(EZ_Window._compact) end
@@ -2875,7 +2949,7 @@ function EZ:CreateWindow(options)
 
             table.insert(registry, data)
             btn.LayoutOrder = #registry
-            updateResponsiveLayout()
+            updateSidebarTab(data, not EZ_Window._sidebarOpen)
 
             btn.MouseEnter:Connect(function()
                 if not data.Active then
