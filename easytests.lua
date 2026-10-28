@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.52-stability-test.1
+    Eazy UI v0.9.52-stability-test.2
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.52-stability-test.1"
+EZ.Version = "0.9.52-stability-test.2"
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -199,8 +199,10 @@ local EZ_Connections = {}
 local EZ_ThemeListeners = {}
 local EZ_GlobalTransparency = 0
 local EZ_LogoAsset = nil
+local EZ_LogoLoading = false
+local EZ_LogoRequest = 0
+local EZ_LogoWatchers = {}
 local EZ_CurrentWindow = nil
-local EZ_CurrentScale = 1
 local EZ_ScaleConns = {}
 local EZ_MIN_SIZE = Vector2.new(420, 300)
 local EZ_STROKE_BASE = 0.7
@@ -210,12 +212,11 @@ local EZ_Windows = {}
 local EZ_ServiceConnections = {}
 local EZ_TransientGuis = {}
 
--- Service signals outlive ScreenGuis, so every connection must be owned.
 local function EZ_ConnectGlobal(signal, callback)
     local connection = signal:Connect(function(...)
         if not EZ_Destroyed then callback(...) end
     end)
-    table.insert(EZ_ServiceConnections, connection)
+    EZ_ServiceConnections[connection] = true
     return connection
 end
 
@@ -344,16 +345,6 @@ local function EZ_Connect(element, signal, fn)
     return conn
 end
 
-local function EZ_DisconnectAll(element)
-    local list = EZ_Connections[element]
-    if not list then return end
-    for _, conn in ipairs(list) do
-        if conn.Connected then conn:Disconnect() end
-    end
-    EZ_Connections[element] = nil
-    EZ_ClearPaintersFor(element)
-end
-
 local function EZ_RegTrans(inst, factor)
     local f = factor or 0.55
     table.insert(EZ_TransSurf, inst)
@@ -420,35 +411,151 @@ EZ.Compat = {
     hooks = hookmetamethod and true or false,
 }
 
-local EZ_LogoUrl = "https://raw.githubusercontent.com/akiradv/eazyuilib/3bc2a6f72ddd57e9a603dacf0501e7171b29e296/assets/logonobg.png"
+local EZ_DefaultLogoUrl = "https://raw.githubusercontent.com/akiradv/eazyuilib/3bc2a6f72ddd57e9a603dacf0501e7171b29e296/assets/logonobg.png"
+local EZ_DefaultLogoData = "iVBORw0KGgoAAAANSUhEUgAAAQsAAAE6CAYAAAABc3daAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABWpJREFUeAHt3NFRI0cUQNGWi3/IYJWBCWlDWWdiZ+AUnIGdgTORh7XGKyiJvawRmpHOqepqSRR/cKv7IbTZTQbAd/w0AAKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxABKxAJK7waV92Ww2vwxYOCcLIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELIBELILkbwFXZ7XbbaXuY1rx/Ong87182m81v4w3EAlbgSADux/MAzI8fxpmIBVzIFID5l3u7X/fjeRAO94sTC3hnr1wDnjyObyeAs50CzkEsIDhxCtiOD7wGXJpYcLPWdg24NLHg6py4BrwMw1WfAs5BLFiN/UlgO/699x9eAx72r43hFHA2YsFinIjB/NxJ4MLEgg9zcD0QgxUSC97NkRg8HjwXg5UTCzIxuG1iwX9exODw/wnEALG4Jd+JwXbAK8TiiuxjMC8x4F2JxYqciMHhgrMRiwURA5ZMLC7v8xSJz0MMWDixuLztgBXwGZxAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAIhZAcje4tF/3Cz7SX+ONxOLy/t5sNn8MWDjXECARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyARCyC5GwAHdrvddtoepvU4rftpfX0uFnBDphA8RWC7X5/2++Fr21PfKxZwJfYhmE8ET/scg3nNX/8hYgEr8EoIDl/74RAUYgELsJ8TzOt+PD8RPK2zhqAQCzizUwPD8e1EsB0rIBbwPxyE4Gk/djXYjishFnDCuQeGayMW3KQlDAzXRiy4Si8GhsfeTyAEbyQWrM61DAzXRixYlFsaGK6NWPBhXrzV+NjAcDtYLLHgXRgYXj+xIHllYCgEN0IsODUwnJc5AV+JxZXzlwPei1is2JGB4c8jfjYBvJVYLJSBIUuzmX4od4NL+n1afw4hYOHEAkh8ujeQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQiAWQ/APUH6mCV+sc5wAAAABJRU5ErkJggg=="
 
-local function EZ_LoadLogo()
-    if EZ_LogoAsset then return EZ_LogoAsset end
-    pcall(function()
-        if not (writefile and isfile and getcustomasset) then return end
-        local fname = "eazyui_logo_" .. EZ.Version:gsub("%.", "") .. ".png"
-        if isfile(fname) then
-            EZ_LogoAsset = getcustomasset(fname)
-            pcall(function()
-                if listfiles then
-                    local files = listfiles("")
-                    for _, f in ipairs(files or {}) do
-                        local n = f:match("([^/\\]+)$") or f
-                        if n:find("eazyui_logo_", 1, true) == 1 and n ~= fname then
-                            pcall(function() delfile(n) end)
-                        end
-                    end
-                end
-            end)
-            return
+local function EZ_DecodeLogo(value)
+    local alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    local bytes, accumulator, bits = {}, 0, 0
+    for i = 1, #value do
+        local character = value:sub(i, i)
+        if character == "=" then break end
+        local index = alphabet:find(character, 1, true)
+        if not index then return nil end
+        accumulator = accumulator * 64 + index - 1
+        bits = bits + 6
+        if bits >= 8 then
+            bits = bits - 8
+            local divisor = 2 ^ bits
+            table.insert(bytes, string.char(math.floor(accumulator / divisor)))
+            accumulator = accumulator % divisor
         end
-        local data = game:HttpGet(EZ_LogoUrl)
-        if data and #data > 0 then
-            writefile(fname, data)
-            EZ_LogoAsset = getcustomasset(fname)
-        end
+    end
+    return table.concat(bytes)
+end
+
+local function EZ_SetLogoAsset(asset)
+    if type(asset) ~= "string" or asset == "" then return false end
+    EZ_LogoAsset = asset
+    for owner, callback in pairs(EZ_LogoWatchers) do
+        if owner.Parent then EZ_SafeCall(callback, asset) end
+    end
+    table.clear(EZ_LogoWatchers)
+    return true
+end
+
+local function EZ_LoadLogo(options)
+    local supplied = options.LogoAsset
+    if type(supplied) == "number" then supplied = "rbxassetid://" .. tostring(supplied) end
+    if type(supplied) == "string" and supplied ~= "" then
+        EZ_LogoRequest = EZ_LogoRequest + 1
+        EZ_LogoLoading = false
+        EZ_SetLogoAsset(supplied)
+        return
+    end
+    if options.LoadLogo == false or EZ_LogoAsset or EZ_LogoLoading then return end
+    local customAsset = type(getcustomasset) == "function" and getcustomasset or
+        (type(getsynasset) == "function" and getsynasset or nil)
+    if not customAsset or type(isfile) ~= "function" then return end
+    local customUrl = type(options.LogoUrl) == "string" and options.LogoUrl ~= "" and options.LogoUrl or nil
+    local url = customUrl or EZ_DefaultLogoUrl
+    local maxBytes = math.clamp(tonumber(options.LogoMaxBytes) or 4 * 1024 * 1024, 1024, 16 * 1024 * 1024)
+    local hash = 0
+    for i = 1, #url do hash = (hash * 131 + string.byte(url, i)) % 2147483647 end
+    local filename = type(options.LogoCacheFile) == "string" and options.LogoCacheFile ~= "" and options.LogoCacheFile or
+        ("eazyui_logo_" .. tostring(hash) .. ".png")
+    local cached, existing = pcall(function()
+        if isfile(filename) then return customAsset(filename) end
     end)
-    return EZ_LogoAsset
+    if cached and type(existing) == "string" and existing ~= "" then
+        EZ_SetLogoAsset(existing)
+        return
+    end
+    if type(writefile) ~= "function" then return end
+    EZ_LogoRequest = EZ_LogoRequest + 1
+    local requestId = EZ_LogoRequest
+    EZ_LogoLoading = true
+    task.spawn(function()
+        if EZ_Destroyed or requestId ~= EZ_LogoRequest then return end
+        local ok, result = pcall(function()
+            local data
+            if customUrl then data = game:HttpGet(customUrl) else data = EZ_DecodeLogo(EZ_DefaultLogoData) end
+            if type(data) ~= "string" or data:sub(1, 8) ~= string.char(137, 80, 78, 71, 13, 10, 26, 10) then
+                error("The logo response is not a PNG image")
+            end
+            if #data > maxBytes then error("The logo exceeds the configured size limit") end
+            if EZ_Destroyed or requestId ~= EZ_LogoRequest then return nil end
+            writefile(filename, data)
+            return customAsset(filename)
+        end)
+        if EZ_Destroyed or requestId ~= EZ_LogoRequest then return end
+        EZ_LogoLoading = false
+        if ok and EZ_SetLogoAsset(result) then return end
+        table.clear(EZ_LogoWatchers)
+        warn("[Eazy UI] Logo could not be loaded; using the built-in mark: " .. tostring(result))
+    end)
+end
+
+local function EZ_CreateLogo(parent, size, color)
+    local root = Instance.new("Frame")
+    root.Name = "EZ_Logo"
+    root.Size = UDim2.fromOffset(size, size)
+    root.BackgroundTransparency = 1
+    root.Parent = parent
+    local mark = Instance.new("Frame")
+    mark.Name = "EZ_LogoFallback"
+    mark.AnchorPoint = Vector2.new(0.5, 0.5)
+    mark.Position = UDim2.fromScale(0.5, 0.5)
+    mark.Size = UDim2.fromScale(0.85, 1)
+    mark.BackgroundTransparency = 1
+    mark.Parent = root
+    local bars = {}
+    local function bar(x, y, w, h)
+        local part = Instance.new("Frame")
+        part.Position = UDim2.fromScale(x, y)
+        part.Size = UDim2.fromScale(w, h)
+        part.BorderSizePixel = 0
+        part.Parent = mark
+        table.insert(bars, part)
+    end
+    bar(0, 0, 0.36, 1)
+    bar(0, 0, 1, 0.233)
+    bar(0, 0.425, 0.95, 0.22)
+    bar(0, 0.77, 1, 0.23)
+    local image = Instance.new("ImageLabel")
+    image.Name = "EZ_LogoImage"
+    image.Size = UDim2.fromScale(1, 1)
+    image.BackgroundTransparency = 1
+    image.ScaleType = Enum.ScaleType.Fit
+    image.Active = false
+    image.Image = ""
+    image.Parent = root
+    local function repaint()
+        local shade = color()
+        image.ImageColor3 = shade
+        for _, part in ipairs(bars) do part.BackgroundColor3 = shade end
+    end
+    repaint()
+    EZ_Paint(repaint, root)
+    local function sync()
+        if image.Parent then mark.Visible = not image.IsLoaded end
+    end
+    image:GetPropertyChangedSignal("IsLoaded"):Connect(sync)
+    local function setImage(asset)
+        if not image.Parent then return end
+        image.Image = asset
+        sync()
+    end
+    if EZ_LogoAsset then
+        setImage(EZ_LogoAsset)
+    elseif EZ_LogoLoading then
+        EZ_LogoWatchers[root] = setImage
+    end
+    root.Destroying:Connect(function()
+        EZ_LogoWatchers[root] = nil
+        EZ_ClearPaintersFor(root)
+    end)
+    return root
 end
 
 local EZ_IconSets = {
@@ -980,9 +1087,8 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
         scaler.Name = "EZ_WindowScale"
         scaler.Parent = frame
     end
-    -- Resize/reflow the frame instead of shrinking text below readable size.
+
     scaler.Scale = 1
-    EZ_CurrentScale = 1
     frame:SetAttribute("EZ_Scale", 1)
     if not frame:GetAttribute("EZ_Moved") then
         frame.Position = UDim2.new(0.5, (inset.X - bottom.X) / 2, 0.5, (inset.Y - bottom.Y) / 2)
@@ -1007,7 +1113,10 @@ local function EZ_CleanupTransientGui(gui)
     local data = EZ_TransientGuis[gui]
     if not data then return end
     EZ_TransientGuis[gui] = nil
-    if data.connection and data.connection.Connected then data.connection:Disconnect() end
+    if data.connection then
+        if data.connection.Connected then data.connection:Disconnect() end
+        EZ_ServiceConnections[data.connection] = nil
+    end
     EZ_ClearPaintersFor(gui)
     for _, child in ipairs(gui:GetDescendants()) do EZ_ClearPaintersFor(child) end
     for i = #EZ_TransSurf, 1, -1 do
@@ -1258,8 +1367,7 @@ local function EZ_DeleteConfig(placeId, configName)
     local ok, err = pcall(function()
         local path = EZ_ConfigPath(placeId, configName)
         local legacy = EZ_LegacyConfigPath(placeId, configName)
-        -- Flat legacy paths can be ambiguous across ConfigIds (A + B_C vs A_B + C).
-        -- Never delete those automatically; the user can remove the old file manually.
+
         if isfile(legacy) then error("Legacy file must be removed manually: " .. legacy) end
         if not isfile(path) then error("Config not found") end
         delfile(path)
@@ -1284,7 +1392,7 @@ local function EZ_ListConfigs(placeId)
             if name:sub(-5) == ".json" then add(name:sub(1, #name - 5)) end
         end
     end
-    -- The original library stored all ConfigIds in one shared directory.
+
     local legacyOk, legacyFiles = pcall(function()
         return isfolder(EZ_ConfigFolder) and listfiles(EZ_ConfigFolder) or {}
     end)
@@ -1356,8 +1464,6 @@ local function EZ_LoadKey(filename)
     return ok and data or nil
 end
 
-local EZ_KeyDurationGlobal = 86400
-
 local function EZ_ValidateKey(key, validator)
     if not key or key == "" then return false end
     if type(validator) == "function" then
@@ -1395,29 +1501,14 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     lay.VerticalAlignment = Enum.VerticalAlignment.Center
     lay.Padding = UDim.new(0, 10)
     lay.Parent = holder
-    local letter, fadeProp
-    if EZ_LogoAsset then
-        letter = Instance.new("ImageLabel")
-        letter.Size = UDim2.fromOffset(58, 58)
-        letter.BackgroundTransparency = 1
-        letter.Image = EZ_LogoAsset
-        letter.ScaleType = Enum.ScaleType.Fit
-        letter.ImageTransparency = 1
-        letter.Parent = holder
-        fadeProp = "ImageTransparency"
-    else
-        letter = Instance.new("TextLabel")
-        letter.Size = UDim2.fromOffset(58, 58)
-        letter.BackgroundTransparency = 1
-        letter.Text = "E"
-        letter.Font = EZ_Brand.Font
-        letter.TextSize = 44
-        letter.TextColor3 = EZ_Theme.Accent
-        letter.TextTransparency = 1
-        letter.Parent = holder
-        fadeProp = "TextTransparency"
-        EZ_Paint(function() letter.TextColor3 = EZ_Theme.Accent end, gui)
-    end
+    local letter = Instance.new("CanvasGroup")
+    letter.Size = UDim2.fromOffset(58, 58)
+    letter.BackgroundTransparency = 1
+    letter.GroupTransparency = 1
+    letter.Parent = holder
+    local loadingLogo = EZ_CreateLogo(letter, 58, function() return EZ_Theme.Accent end)
+    loadingLogo.Size = UDim2.fromScale(1, 1)
+    local fadeProp = "GroupTransparency"
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.fromOffset(420, 24)
     titleLabel.BackgroundTransparency = 1
@@ -1486,26 +1577,8 @@ local function EZ_ShowDiscordPrompt(invite, callback)
     iconFrame.Parent = frame
     EZ_AddRadius(iconFrame, 12)
     EZ_Paint(function() iconFrame.BackgroundColor3 = EZ_Theme.Accent end, gui)
-    local iconLetter
-    if EZ_LogoAsset then
-        iconLetter = Instance.new("ImageLabel")
-        iconLetter.Size = UDim2.new(1, -10, 1, -10)
-        iconLetter.Position = UDim2.fromOffset(5, 5)
-        iconLetter.BackgroundTransparency = 1
-        iconLetter.Image = EZ_LogoAsset
-        iconLetter.ScaleType = Enum.ScaleType.Fit
-        iconLetter.Parent = iconFrame
-    else
-        iconLetter = Instance.new("TextLabel")
-        iconLetter.Size = UDim2.new(1, 0, 1, 0)
-        iconLetter.BackgroundTransparency = 1
-        iconLetter.Text = "D"
-        iconLetter.Font = EZ_Brand.Font
-        iconLetter.TextSize = 28
-        iconLetter.TextColor3 = EZ_Theme.Background
-        iconLetter.Parent = iconFrame
-        EZ_Paint(function() iconLetter.TextColor3 = EZ_Theme.Background end, gui)
-    end
+    local iconLetter = EZ_CreateLogo(iconFrame, 38, function() return EZ_Theme.Background end)
+    iconLetter.Position = UDim2.fromOffset(5, 5)
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -40, 0, 24)
     title.Position = UDim2.new(0.5, 0, 0, 82)
@@ -1743,7 +1816,7 @@ local function EZ_ShowKeyScreen(options, validator, callback)
                 return
             end
             if result then
-                EZ_SaveKey(key, EZ_KeyDurationGlobal, options.FileName)
+                EZ_SaveKey(key, options.Duration, options.FileName)
                 EZ_CloseTransientGui(gui)
                 callback(true, key)
             else
@@ -2012,18 +2085,19 @@ function EZ:CreateWindow(options)
     local EZ_MinKey = options.MinimizeKey or Enum.KeyCode.RightControl
     local EZ_MinMods = type(options.MinimizeModifiers) == "string" and options.MinimizeModifiers or ""
     local EZ_MinMode = options.MinimizeMode or "fade"
+    local EZ_ExpandedSidebarWidth = math.clamp(tonumber(options.SidebarWidth) or EZ_SIDEBAR_WIDTH, 120, 300)
+    local EZ_CollapsedSidebarWidth = math.clamp(tonumber(options.CollapsedSidebarWidth) or 56, 48, EZ_ExpandedSidebarWidth)
     local EZ_ConfigId = tostring(options.ConfigId or game.PlaceId):gsub("[^%w%-%_ ]", "_")
     if EZ_ConfigId == "" or EZ_ConfigId:match("^%s*$") then EZ_ConfigId = "global" end
     local EZ_KeyFile = EZ_KeyFilePath(EZ_ConfigId)
-    EZ_KeyDurationGlobal = options.KeyDuration or 86400
+    local EZ_KeyDuration = options.KeyDuration or 86400
     EZ_GlobalTransparency = EZ_Clamp(options.Transparency or 0, 0, 0.9)
     local EZ_AutoLoad = options.AutoLoad ~= false
     if options.NotifyPosition then
         EZ_NotifyPosition = options.NotifyPosition
         EZ_UpdateNotifyPosition()
     end
-    -- Cosmetic remote logo loading is opt-in; the text fallback needs no network.
-    if options.LoadLogo == true then EZ_LoadLogo() end
+    EZ_LoadLogo(options)
 
     if options.LoadingTitle then
         EZ_ShowLoadingScreen(options.LoadingTitle, options.LoadingSubtitle or "", options.LoadingDuration or 2)
@@ -2038,7 +2112,7 @@ function EZ:CreateWindow(options)
         if EZ_Destroyed then return nil, "Library was destroyed" end
     end
     if options.KeySystem and options.KeySystem.Enabled then
-        local keyOptions = { Title = options.KeySystem.Title, Subtitle = options.KeySystem.Subtitle, Note = options.KeySystem.Note, FileName = EZ_KeyFile }
+        local keyOptions = { Title = options.KeySystem.Title, Subtitle = options.KeySystem.Subtitle, Note = options.KeySystem.Note, FileName = EZ_KeyFile, Duration = EZ_KeyDuration }
         local savedKey = EZ_LoadKey(EZ_KeyFile)
         if not (savedKey and EZ_ValidateKey(savedKey, options.KeySystem.validator)) then
             local resolved, success = false, false
@@ -2170,6 +2244,9 @@ function EZ:CreateWindow(options)
             if type(meta.transparency) == "number" then EZ_Window:SetTransparency(meta.transparency) end
             if type(meta.autoSave) == "boolean" then EZ_Window.AutoSave = meta.autoSave end
             if meta.minimizeMode == "fade" or meta.minimizeMode == "shrink" then EZ_Window:SetMinimizeMode(meta.minimizeMode) end
+            if type(meta.sidebarCollapsed) == "boolean" and EZ_Window.SetSidebarCollapsed then
+                EZ_Window:SetSidebarCollapsed(EZ_Window._compact or meta.sidebarCollapsed, true)
+            end
             if type(meta.windowSize) == "table" and EZ_Window.Frame then
                 local usable = EZ_ViewportUsable()
                 local scale = EZ_Window.Frame:GetAttribute("EZ_Scale") or 1
@@ -2221,24 +2298,32 @@ function EZ:CreateWindow(options)
             EZ_ApplyResponsiveScale(frame, EZ_BaseSize)
             EZ_UpdateNotifyPosition()
             local usable = EZ_ViewportUsable()
+            local previous = EZ_Window._compact
             EZ_Window._compact = UserInputService.TouchEnabled or usable.X < 700 or frame.Size.X.Offset < 560
-            if updateResponsiveLayout then updateResponsiveLayout() end
+            if updateResponsiveLayout then
+                if previous ~= nil and not previous and EZ_Window._compact then EZ_Window._sidebarOpen = false end
+                updateResponsiveLayout()
+            end
             if frame:GetAttribute("EZ_Moved") then task.defer(function() if frame.Parent then EZ_ClampToViewport(frame) end end) end
         end
         EZ_Window._responsiveItems = {}
         onViewportChanged()
         local cameraConnection
         local function bindCamera()
-            if cameraConnection and cameraConnection.Connected then cameraConnection:Disconnect() end
+            if cameraConnection then
+                if cameraConnection.Connected then cameraConnection:Disconnect() end
+                EZ_ScaleConns[cameraConnection] = nil
+                cameraConnection = nil
+            end
             pcall(function()
                 cameraConnection = workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(onViewportChanged)
-                table.insert(EZ_ScaleConns, cameraConnection)
+                EZ_ScaleConns[cameraConnection] = true
             end)
         end
         bindCamera()
         pcall(function()
             local conn = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() bindCamera(); onViewportChanged() end)
-            table.insert(EZ_ScaleConns, conn)
+            EZ_ScaleConns[conn] = true
         end)
         frame.GroupTransparency = 1
         TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
@@ -2270,28 +2355,8 @@ function EZ:CreateWindow(options)
         EZ_RegTrans(tline, 1)
         EZ_Paint(function() tline.BackgroundColor3 = EZ_Theme.Border end)
 
-        local logoLetter
-        if EZ_LogoAsset then
-            logoLetter = Instance.new("ImageLabel")
-            logoLetter.Size = UDim2.fromOffset(24, 24)
-            logoLetter.Position = UDim2.new(0, 14, 0.5, -12)
-            logoLetter.BackgroundTransparency = 1
-            logoLetter.Image = EZ_LogoAsset
-            logoLetter.ScaleType = Enum.ScaleType.Fit
-            logoLetter.Parent = titlebar
-        else
-            logoLetter = Instance.new("TextLabel")
-            logoLetter.Size = UDim2.fromOffset(24, 24)
-            logoLetter.Position = UDim2.new(0, 14, 0.5, -12)
-            logoLetter.BackgroundTransparency = 1
-            logoLetter.Text = "E"
-            logoLetter.Font = EZ_Brand.Font
-            logoLetter.TextSize = 15
-            logoLetter.TextColor3 = EZ_Theme.Accent
-            logoLetter.TextXAlignment = Enum.TextXAlignment.Center
-            logoLetter.Parent = titlebar
-            EZ_Paint(function() logoLetter.TextColor3 = EZ_Theme.Accent end)
-        end
+        local logoLetter = EZ_CreateLogo(titlebar, 24, function() return EZ_Theme.Text end)
+        logoLetter.Position = UDim2.new(0, 14, 0.5, -12)
 
         local tholder = Instance.new("Frame")
         tholder.BackgroundTransparency = 1
@@ -2354,7 +2419,7 @@ function EZ:CreateWindow(options)
         EZ_AddRadius(minicon, 1)
         EZ_Paint(function() minicon.BackgroundColor3 = EZ_Theme.TextDim end)
 
-        local sidebarWidth = EZ_Window._compact and 56 or EZ_SIDEBAR_WIDTH
+        local sidebarWidth = EZ_Window._compact and EZ_CollapsedSidebarWidth or EZ_ExpandedSidebarWidth
         local sidebar = Instance.new("Frame")
         sidebar.Size = UDim2.new(0, sidebarWidth, 1, -EZ_TITLEBAR_HEIGHT)
         sidebar.Position = UDim2.new(0, 0, 0, EZ_TITLEBAR_HEIGHT)
@@ -2442,7 +2507,8 @@ function EZ:CreateWindow(options)
 
         local registry = {}
         local activeData = nil
-        EZ_Window._sidebarOpen = false
+        EZ_Window._sidebarOpen = not EZ_Window._compact
+        if type(options.SidebarCollapsed) == "boolean" then EZ_Window._sidebarOpen = not options.SidebarCollapsed end
         local menuBtn = Instance.new("TextButton")
         menuBtn.Name = "EZ_SidebarToggle"
         menuBtn.Size = UDim2.fromOffset(34, 34)
@@ -2459,14 +2525,15 @@ function EZ:CreateWindow(options)
         EZ_Paint(function() menuBtn.TextColor3 = EZ_Theme.Text; menuBtn.BackgroundColor3 = EZ_Theme.CardHover end)
         tholder.Size = UDim2.new(1, -150, 1, 0)
 
+        local lastResponsiveCompact
         updateResponsiveLayout = function()
-            local collapsed = EZ_Window._compact and not EZ_Window._sidebarOpen
-            local width = collapsed and 56 or EZ_SIDEBAR_WIDTH
+            local collapsed = not EZ_Window._sidebarOpen
+            local width = collapsed and EZ_CollapsedSidebarWidth or EZ_ExpandedSidebarWidth
             sidebar.Size = UDim2.new(0, width, 1, -EZ_TITLEBAR_HEIGHT)
             sline.Position = UDim2.new(0, width - 1, 0, EZ_TITLEBAR_HEIGHT)
             content.Position = UDim2.new(0, width, 0, EZ_TITLEBAR_HEIGHT)
             content.Size = UDim2.new(1, -width, 1, -EZ_TITLEBAR_HEIGHT)
-            menuBtn.Visible = EZ_Window._compact
+            menuBtn.Visible = true
             for _, d in ipairs(registry) do
                 d.Button.Size = UDim2.new(1, 0, 0, EZ_Window._compact and 44 or 36)
                 d.Indicator.Position = UDim2.fromOffset(collapsed and 0 or 6, EZ_Window._compact and 14 or 10)
@@ -2483,12 +2550,19 @@ function EZ:CreateWindow(options)
                     d.Label.TextXAlignment = collapsed and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left
                 end
             end
-            for _, update in ipairs(EZ_Window._responsiveItems) do update(EZ_Window._compact) end
+            if lastResponsiveCompact ~= EZ_Window._compact then
+                lastResponsiveCompact = EZ_Window._compact
+                for _, update in ipairs(EZ_Window._responsiveItems) do update(EZ_Window._compact) end
+            end
         end
-        menuBtn.Activated:Connect(function()
-            EZ_Window._sidebarOpen = not EZ_Window._sidebarOpen
+        function EZ_Window:SetSidebarCollapsed(collapsed, silent)
+            local open = not (collapsed == true)
+            if self._sidebarOpen == open then return end
+            self._sidebarOpen = open
             updateResponsiveLayout()
-        end)
+            if not silent and self.AutoSave and self._ScheduleSave then self:_ScheduleSave(self.CurrentConfig) end
+        end
+        menuBtn.Activated:Connect(function() EZ_Window:SetSidebarCollapsed(EZ_Window._sidebarOpen) end)
         updateResponsiveLayout()
         frame:GetPropertyChangedSignal("Size"):Connect(function()
             if not frame.Parent then return end
@@ -2496,7 +2570,7 @@ function EZ:CreateWindow(options)
             local compact = UserInputService.TouchEnabled or usable.X < 700 or frame.Size.X.Offset < 560
             if compact ~= EZ_Window._compact then
                 EZ_Window._compact = compact
-                if not compact then EZ_Window._sidebarOpen = false end
+                if compact then EZ_Window._sidebarOpen = false end
                 updateResponsiveLayout()
             end
         end)
@@ -2536,7 +2610,7 @@ function EZ:CreateWindow(options)
             end
         end
 
-        local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+        local isMobile = UserInputService.TouchEnabled
         local setMinimized
         local fab = nil
         if isMobile then
@@ -2557,7 +2631,7 @@ function EZ:CreateWindow(options)
             local fabBtn = Instance.new("TextButton")
             fabBtn.Size = UDim2.new(1, 0, 1, 0)
             fabBtn.BackgroundTransparency = 1
-            fabBtn.Text = "E"
+            fabBtn.Text = ""
             fabBtn.Font = EZ_Brand.Font
             fabBtn.TextSize = 28
             fabBtn.TextColor3 = EZ_Theme.Background
@@ -2565,6 +2639,9 @@ function EZ:CreateWindow(options)
             fabBtn.Active = true
             fabBtn.Parent = fab
             EZ_Paint(function() fabBtn.TextColor3 = EZ_Theme.Background end)
+            local fabLogo = EZ_CreateLogo(fabBtn, 36, function() return EZ_Theme.Background end)
+            fabLogo.AnchorPoint = Vector2.new(0.5, 0.5)
+            fabLogo.Position = UDim2.fromScale(0.5, 0.5)
 
             local fabDidDrag = false
             fabBtn.Activated:Connect(function()
@@ -4234,7 +4311,7 @@ function EZ:CreateWindow(options)
 
         function EZ_Window:_BuildConfigData()
             local data = EZ_Copy(self.ConfigData or {})
-            data._meta = { theme = EZ_CurrentThemeName, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode }
+            data._meta = { theme = EZ_CurrentThemeName, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen }
             if self.Frame then
                 data._meta.windowSize = { math.floor(self.Frame.Size.X.Offset), math.floor(self.Frame.Size.Y.Offset) }
             end
@@ -4295,7 +4372,6 @@ function EZ:CreateWindow(options)
             return true
         end
 
-        -- Explicit saves are synchronous and report actual filesystem errors.
         function EZ_Window:SaveConfig(configName)
             if self._applying or EZ_Destroyed then return false, "Window is applying a config or destroyed" end
             configName = configName or self.CurrentConfig
@@ -4546,7 +4622,7 @@ end
 function EZ:Destroy()
     if EZ_Destroyed or EZ_Destroying then return end
     EZ_Destroying = true
-    -- Commit a focused tracked text field before flushing its latest snapshot.
+
     local focused = UserInputService:GetFocusedTextBox()
     if focused then
         for _, window in ipairs(EZ_Windows) do
@@ -4572,7 +4648,10 @@ function EZ:Destroy()
     EZ_LastCaptureInput = nil
     EZ_Pointer.input, EZ_Pointer.move, EZ_Pointer.finish = nil, nil, nil
     table.clear(EZ_KeybindHandlers)
-    for _, connection in ipairs(EZ_ServiceConnections) do
+    EZ_LogoRequest = EZ_LogoRequest + 1
+    EZ_LogoLoading = false
+    table.clear(EZ_LogoWatchers)
+    for connection in pairs(EZ_ServiceConnections) do
         if connection.Connected then connection:Disconnect() end
     end
     table.clear(EZ_ServiceConnections)
@@ -4598,7 +4677,7 @@ function EZ:Destroy()
         end
     end
     table.clear(EZ_Connections)
-    for _, conn in ipairs(EZ_ScaleConns) do
+    for conn in pairs(EZ_ScaleConns) do
         if conn.Connected then conn:Disconnect() end
     end
     table.clear(EZ_ScaleConns)
