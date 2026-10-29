@@ -14,13 +14,14 @@
             href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
+        <link rel="icon" type="image/png" href="assets/logo.png" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="#about" class="logo">
-                    <span class="logo-mark">E</span>
+                    <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
                     <span class="version">v0.9.55</span>
                 </a>
@@ -87,6 +88,9 @@
             <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
                 <span></span><span></span><span></span>
             </button>
+            <a class="topbar-logo" href="#about" aria-label="Eazy UI home">
+                <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
+            </a>
             <div class="search-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8" />
@@ -2697,6 +2701,40 @@ bind:Set(Enum.KeyCode.F1)</code></pre>
                     the third argument to <code>Set</code> use strings such as <code>"Ctrl+"</code> or
                     <code>"Ctrl+Shift+"</code>. Modifier order is Ctrl, Shift, Alt.
                 </p>
+                <h3>Connect a keybind to a toggle</h3>
+                <p>
+                    A keybind is a separate control. Add it to the tab and section where it should appear, and use
+                    the toggle's <code>Set</code> method to keep its visual state and callback in sync.
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">lua</span>
+                        <button class="copy-btn" data-target="code-keybind-toggle">Copy</button>
+                    </div>
+                    <pre><code id="code-keybind-toggle">local flyToggle = Tab:AddToggle({
+    Title = "Fly",
+    Flag = "Fly",
+    Default = false,
+    Callback = function(enabled)
+        print("Fly enabled:", enabled)
+        -- Start or stop your own fly logic here.
+    end,
+})
+
+Tab:AddKeybind({
+    Title = "Toggle Fly",
+    Default = Enum.KeyCode.G,
+    Flag = "FlyKey",
+    Callback = function()
+        flyToggle:Set(not flyToggle.Value)
+    end,
+})</code></pre>
+                </div>
+                <p>
+                    Pick different keys for the action and the window's <code>MinimizeKey</code>; otherwise both can
+                    run on the same key. Use a unique <code>Flag</code> to include the keybind in saved configs.
+                    With autoload enabled, a saved key can override <code>Default</code>.
+                </p>
             </section>
 
             <section class="page" id="utilities">
@@ -3328,7 +3366,7 @@ EZ:Notify({
                 <div class="footer-grid">
                     <div class="footer-col footer-brand">
                         <div class="footer-logo">
-                            <span class="logo-mark">E</span>
+                            <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                             <span class="logo-name">Eazy UI</span>
                         </div>
                         <p>Open source Roblox GUI library. A single Lua file built to keep scripting easy.</p>
@@ -3381,5 +3419,5 @@ EZ:Notify({
         </main>
 
         <script src="script.js"></script>
-      </body>
+</body>
 </html>
