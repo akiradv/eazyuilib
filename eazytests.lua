@@ -1,11 +1,5 @@
---[[
-    Eazy UI v0.9.56
-    Open-source Roblox GUI library with minimal dependencies.
-    Join our discord!: https://discord.gg/9VE4PXFDSg
-]]
-
 local EZ = {}
-EZ.Version = "0.9.56"
+EZ.Version = "0.9.58"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -568,6 +562,10 @@ local function EZ_RegisterKeybind(callback)
     EZ_ConnectGlobal(UserInputService.InputBegan, function(input, processed)
         for _, handler in ipairs(EZ_KeybindHandlers) do EZ_SafeCall(handler, input, processed) end
     end)
+    EZ_ConnectGlobal(UserInputService.InputEnded, function(input)
+        local capture = EZ_CapturingKeybind
+        if capture and capture._captureEnded then EZ_SafeCall(capture._captureEnded, input) end
+    end)
 end
 local function EZ_CurrentModifiers(excluded)
     local function down(key) return key ~= excluded and UserInputService:IsKeyDown(key) end
@@ -576,6 +574,22 @@ local function EZ_CurrentModifiers(excluded)
     if down(Enum.KeyCode.LeftShift) or down(Enum.KeyCode.RightShift) then result = result .. "Shift+" end
     if down(Enum.KeyCode.LeftAlt) or down(Enum.KeyCode.RightAlt) then result = result .. "Alt+" end
     return result
+end
+local function EZ_ModifierToken(key)
+    if key == Enum.KeyCode.LeftControl or key == Enum.KeyCode.RightControl then return "Ctrl+" end
+    if key == Enum.KeyCode.LeftShift or key == Enum.KeyCode.RightShift then return "Shift+" end
+    if key == Enum.KeyCode.LeftAlt or key == Enum.KeyCode.RightAlt then return "Alt+" end
+    return nil
+end
+local function EZ_UpgradeMinimizeKey(data)
+    local entry, meta = data._minimize_key, data._meta
+    if type(entry) ~= "table" or type(entry.value) ~= "string" or type(entry.mods) ~= "string" then return end
+    if type(meta) == "table" and type(meta.minimizeKeyFormat) == "number" and meta.minimizeKeyFormat >= 2 then return end
+    local key = Enum.KeyCode[entry.value]
+    local token = key and EZ_ModifierToken(key)
+    if not token then return end
+    local first, last = entry.mods:find(token, 1, true)
+    if first then entry.mods = entry.mods:sub(1, first - 1) .. entry.mods:sub(last + 1) end
 end
 local EZ_SliderDispatcherReady = false
 local function EZ_EnsureSliderDispatcher()
@@ -1685,19 +1699,57 @@ local function EZ_TrackTransientGui(gui, card, width, height)
     gui.Destroying:Connect(function() EZ_CleanupTransientGui(gui) end)
 end
 
-local function EZ_MakeDraggable(frame, handle)
-    handle.Active = true
-    local dragging, start, startPos, startAbsolute, dragInput = false, nil, nil, nil, nil
-    local function stop(i)
-        if not dragging then return end
-        if i == dragInput or (dragInput.UserInputType == Enum.UserInputType.MouseButton1 and i.UserInputType == Enum.UserInputType.MouseButton1) then
-            dragging, dragInput = false, nil
+local function EZ_TopResizeDirection(frame, input)
+    if frame:GetAttribute("EZ_ShrinkBusy") then return nil end
+    local rightMouse = input.UserInputType == Enum.UserInputType.MouseButton2
+    local altMouse = input.UserInputType == Enum.UserInputType.MouseButton1 and
+        (UserInputService:IsKeyDown(Enum.KeyCode.LeftAlt) or UserInputService:IsKeyDown(Enum.KeyCode.RightAlt))
+    if not rightMouse and not altMouse then return nil end
+    local x = input.Position.X - frame.AbsolutePosition.X
+    local y = input.Position.Y - frame.AbsolutePosition.Y
+    local width = frame.AbsoluteSize.X
+    if x < 0 or x > width or y < 0 then return nil end
+    if y < 24 and x < 24 then return "NW" end
+    if y < 24 and x >= width - 24 then return "NE" end
+    if y < 10 then return "N" end
+    return nil
+end
+
+local function EZ_SamePointer(started, ended)
+    return started and (started == ended or
+        ((started.UserInputType == Enum.UserInputType.MouseButton1 or started.UserInputType == Enum.UserInputType.MouseButton2) and
+            ended.UserInputType == started.UserInputType))
+end
+
+local function EZ_OverTitleControl(input, controls)
+    if not input.Position then return false end
+    for _, control in ipairs(controls) do
+        if control.Visible then
+            local position, size = control.AbsolutePosition, control.AbsoluteSize
+            if input.Position.X >= position.X and input.Position.X < position.X + size.X and
+               input.Position.Y >= position.Y and input.Position.Y < position.Y + size.Y then return true end
         end
     end
+    return false
+end
+
+local function EZ_MakeDraggable(frame, handle, interaction, controls)
+    handle.Active = true
+    local dragging, start, startPos, startAbsolute, dragInput = false, nil, nil, nil, nil
+    local function finish()
+        if not dragging then return end
+        local finished = dragInput
+        dragging, dragInput = false, nil
+        if interaction.input == finished then interaction.mode, interaction.input, interaction.cancel = nil, nil, nil end
+    end
+    local function stop(i)
+        if dragging and EZ_SamePointer(dragInput, i) then finish() end
+    end
     handle.InputBegan:Connect(function(i)
-        if dragging then return end
+        if dragging or interaction.mode or EZ_OverTitleControl(i, controls) or EZ_TopResizeDirection(frame, i) then return end
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
             dragging, dragInput = true, i
+            interaction.mode, interaction.input, interaction.cancel = "drag", i, finish
             start, startPos, startAbsolute = i.Position, frame.Position, frame.AbsolutePosition
             frame:SetAttribute("EZ_Moved", true)
             EZ_CloseDropdown()
@@ -1719,23 +1771,37 @@ local function EZ_MakeDraggable(frame, handle)
 end
 
 local EZ_RESIZE_DEFS = {
-    { id = "N",  pos = UDim2.new(0, 24, 0, 0),   size = UDim2.new(1, -48, 0, 10) },
     { id = "S",  pos = UDim2.new(0, 24, 1, -10), size = UDim2.new(1, -48, 0, 10) },
-    { id = "W",  pos = UDim2.new(0, 0, 0, 24),   size = UDim2.new(0, 10, 1, -48) },
-    { id = "E",  pos = UDim2.new(1, -10, 0, 24), size = UDim2.new(0, 10, 1, -48) },
-    { id = "NW", pos = UDim2.new(0, 0, 0, 0),    size = UDim2.fromOffset(24, 24) },
-    { id = "NE", pos = UDim2.new(1, -24, 0, 0),  size = UDim2.fromOffset(24, 24) },
+    { id = "W",  pos = UDim2.new(0, 0, 0, EZ_TITLEBAR_HEIGHT), size = UDim2.new(0, 10, 1, -(EZ_TITLEBAR_HEIGHT + 24)) },
+    { id = "E",  pos = UDim2.new(1, -14, 0, EZ_TITLEBAR_HEIGHT), size = UDim2.new(0, 10, 1, -(EZ_TITLEBAR_HEIGHT + 24)) },
     { id = "SW", pos = UDim2.new(0, 0, 1, -24),  size = UDim2.fromOffset(24, 24) },
-    { id = "SE", pos = UDim2.new(1, -24, 1, -24),size = UDim2.fromOffset(24, 24) },
+    { id = "SE", pos = UDim2.new(1, -28, 1, -24),size = UDim2.fromOffset(24, 24) },
 }
 
-local function EZ_MakeResizable(frame)
-    local resizing, direction, startInput, startPoint, startSize, startPos = false, nil, nil, nil, nil, nil
+local function EZ_MakeResizable(frame, titlebar, interaction, controls)
+    local resizing, direction, startInput, startPoint, startSize, startPos, startAnchor = false, nil, nil, nil, nil, nil, nil
+    local function finish()
+        if not resizing then return end
+        local finished = startInput
+        resizing, direction, startInput = false, nil, nil
+        if interaction.input == finished then interaction.mode, interaction.input, interaction.cancel = nil, nil, nil end
+        if frame.Parent then EZ_ClampToViewport(frame) end
+    end
     local function stop(i)
-        if resizing and (i.UserInputType == Enum.UserInputType.MouseButton1 or i == startInput) then
-            resizing, direction, startInput = false, nil, nil
-            if frame.Parent then EZ_ClampToViewport(frame) end
-        end
+        if resizing and EZ_SamePointer(startInput, i) then finish() end
+    end
+    local function begin(i, dir, allowRight)
+        if resizing or interaction.mode or frame:GetAttribute("EZ_ShrinkBusy") then return end
+        if i.UserInputType ~= Enum.UserInputType.MouseButton1 and i.UserInputType ~= Enum.UserInputType.Touch and
+           not (allowRight and i.UserInputType == Enum.UserInputType.MouseButton2) then return end
+        resizing, direction, startInput = true, dir, i
+        interaction.mode, interaction.input, interaction.cancel = "resize", i, finish
+        startPoint = i.Position
+        startSize = Vector2.new(frame.Size.X.Offset, frame.Size.Y.Offset)
+        startPos, startAnchor = frame.Position, frame.AnchorPoint
+        frame:SetAttribute("EZ_UserResized", true)
+        frame:SetAttribute("EZ_Moved", true)
+        EZ_CloseDropdown()
     end
     for _, def in ipairs(EZ_RESIZE_DEFS) do
         local h = Instance.new("Frame")
@@ -1745,35 +1811,31 @@ local function EZ_MakeResizable(frame)
         h.Position, h.Size = def.pos, def.size
         h.ZIndex = 200
         h.Parent = frame
-        h.InputBegan:Connect(function(i)
-            if frame:GetAttribute("EZ_ShrinkBusy") then return end
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                resizing, direction, startInput = true, def.id, i
-                startPoint = i.Position
-                startSize = Vector2.new(frame.Size.X.Offset, frame.Size.Y.Offset)
-                startPos = frame.Position
-                frame:SetAttribute("EZ_UserResized", true)
-                frame:SetAttribute("EZ_Moved", true)
-                EZ_CloseDropdown()
-            end
-        end)
+        h.InputBegan:Connect(function(i) begin(i, def.id) end)
         h.InputEnded:Connect(stop)
     end
+    titlebar.InputBegan:Connect(function(i)
+        if EZ_OverTitleControl(i, controls) then return end
+        local direction = EZ_TopResizeDirection(frame, i)
+        if direction then begin(i, direction, true) end
+    end)
     EZ_ConnectGlobal(UserInputService.InputEnded, stop)
     EZ_ConnectGlobal(UserInputService.InputChanged, function(i)
         if not resizing or not frame.Parent then return end
+        if frame:GetAttribute("EZ_ShrinkBusy") then finish(); return end
         if not ((startInput.UserInputType == Enum.UserInputType.Touch and i == startInput) or
-                (startInput.UserInputType == Enum.UserInputType.MouseButton1 and i.UserInputType == Enum.UserInputType.MouseMovement)) then return end
+                ((startInput.UserInputType == Enum.UserInputType.MouseButton1 or startInput.UserInputType == Enum.UserInputType.MouseButton2) and
+                 i.UserInputType == Enum.UserInputType.MouseMovement)) then return end
         local usable = EZ_ViewportUsable()
         local scale = frame:GetAttribute("EZ_Scale") or 1
         local maxW, maxH = math.max(1, (usable.X - 8) / scale), math.max(1, (usable.Y - 8) / scale)
         local minW, minH = EZ_ResponsiveMinimum(EZ_MIN_SIZE.X, maxW), EZ_ResponsiveMinimum(EZ_MIN_SIZE.Y, maxH)
         local d = i.Position - startPoint
         local w, hgt, dx, dy = startSize.X, startSize.Y, 0, 0
-        if direction:find("E") then w = EZ_Clamp(startSize.X + d.X / scale, minW, maxW); dx = (w - startSize.X) * scale / 2 end
-        if direction:find("W") then w = EZ_Clamp(startSize.X - d.X / scale, minW, maxW); dx = -(w - startSize.X) * scale / 2 end
-        if direction:find("S") then hgt = EZ_Clamp(startSize.Y + d.Y / scale, minH, maxH); dy = (hgt - startSize.Y) * scale / 2 end
-        if direction:find("N") then hgt = EZ_Clamp(startSize.Y - d.Y / scale, minH, maxH); dy = -(hgt - startSize.Y) * scale / 2 end
+        if direction:find("E") then w = EZ_Clamp(startSize.X + d.X / scale, minW, maxW); dx = (w - startSize.X) * scale * startAnchor.X end
+        if direction:find("W") then w = EZ_Clamp(startSize.X - d.X / scale, minW, maxW); dx = -(w - startSize.X) * scale * (1 - startAnchor.X) end
+        if direction:find("S") then hgt = EZ_Clamp(startSize.Y + d.Y / scale, minH, maxH); dy = (hgt - startSize.Y) * scale * startAnchor.Y end
+        if direction:find("N") then hgt = EZ_Clamp(startSize.Y - d.Y / scale, minH, maxH); dy = -(hgt - startSize.Y) * scale * (1 - startAnchor.Y) end
         frame.Size = UDim2.fromOffset(w, hgt)
         frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)
     end)
@@ -2982,6 +3044,7 @@ function EZ:CreateWindow(options)
 
     local function EZ_ApplyConfigData(data, isAutoLoad)
         if type(data) ~= "table" then return false end
+        EZ_UpgradeMinimizeKey(data)
         local ignored = 0
         if not isAutoLoad then
             for key in pairs(data) do
@@ -3004,7 +3067,11 @@ function EZ:CreateWindow(options)
                 local maxW, maxH = math.max(1, (usable.X - 8) / scale), math.max(1, (usable.Y - 8) / scale)
                 local w = EZ_Clamp(tonumber(meta.windowSize[1]) or 660, EZ_ResponsiveMinimum(EZ_MIN_SIZE.X, maxW), maxW)
                 local h = EZ_Clamp(tonumber(meta.windowSize[2]) or 470, EZ_ResponsiveMinimum(EZ_MIN_SIZE.Y, maxH), maxH)
-                EZ_Window.Frame.Size = UDim2.fromOffset(w, h)
+                if EZ_Window._applyWindowSize then
+                    EZ_Window._applyWindowSize(w, h)
+                else
+                    EZ_Window.Frame.Size = UDim2.fromOffset(w, h)
+                end
             end
         end
         if EZ_Window._themeDropdown then EZ_Window._themeDropdown:Set(EZ_CurrentThemeName, true) end
@@ -3078,11 +3145,13 @@ function EZ:CreateWindow(options)
         end, frame)
 
         local EZ_BaseSize = Vector2.new(EZ_Size.X.Offset > 0 and EZ_Size.X.Offset or 660, EZ_Size.Y.Offset > 0 and EZ_Size.Y.Offset or 470)
+        local windowInteraction = {}
         local updateResponsiveLayout
         local fab
         local clampQueued = false
         local function onViewportChanged()
             if not frame.Parent then return end
+            if windowInteraction.cancel then windowInteraction.cancel() end
             if EZ_Window.Minimized and EZ_Window.MinimizeMode == "shrink" and EZ_Window._resizeShrinkForViewport then
                 EZ_Window._resizeShrinkForViewport()
             else
@@ -3414,7 +3483,6 @@ function EZ:CreateWindow(options)
             updateSearchLayout(EZ_Window._compact)
             EZ_AddRadius(searchBar, "Theme")
             local searchFocused, searchStroke = false, nil
-            -- Register before the stroke painter so the focus color wins on a theme repaint.
             EZ_Paint(function()
                 if searchStroke then searchStroke.Color = searchFocused and EZ_Theme.Accent or EZ_Theme.Border end
             end, searchBar)
@@ -3750,6 +3818,7 @@ function EZ:CreateWindow(options)
 
         EZ_Window._finishShrink = function()
             if not shrinkPhase then return end
+            if windowInteraction.cancel then windowInteraction.cancel() end
             minimizeVersion = minimizeVersion + 1
             cancelTween(shrinkTween)
             shrinkTween = nil
@@ -3758,6 +3827,26 @@ function EZ:CreateWindow(options)
             if originalAnchor then setAnchorPreservingTop(originalAnchor) end
             frame:SetAttribute("EZ_ShrinkBusy", false)
             shrinkPhase, savedVisibility, originalAnchor = nil, nil, nil
+        end
+
+        EZ_Window._applyWindowSize = function(width, height)
+            if windowInteraction.cancel then windowInteraction.cancel() end
+            local target = UDim2.fromOffset(width, height)
+            if not shrinkPhase then
+                frame.Size = target
+                return
+            end
+            expandedSize = target
+            if EZ_Window.Minimized and EZ_Window.MinimizeMode == "shrink" then
+                cancelTween(shrinkTween)
+                shrinkTween = nil
+                local usable = EZ_ViewportUsable()
+                frame.Size = UDim2.fromOffset(width, math.min(EZ_TITLEBAR_HEIGHT, math.max(1, usable.Y - 24)))
+                hideShrinkContents()
+                shrinkPhase = "collapsed"
+            else
+                EZ_Window._finishShrink()
+            end
         end
 
         EZ_Window._resizeShrinkForViewport = function()
@@ -3831,6 +3920,7 @@ function EZ:CreateWindow(options)
                 task.delay(0.34, function()
                     if version ~= minimizeVersion or not frame.Parent or EZ_Window.Minimized or EZ_Window.MinimizeMode ~= "shrink" then return end
                     shrinkTween = nil
+                    if windowInteraction.cancel then windowInteraction.cancel() end
                     if originalAnchor then setAnchorPreservingTop(originalAnchor) end
                     frame:SetAttribute("EZ_ShrinkBusy", false)
                     shrinkPhase, savedVisibility, originalAnchor = nil, nil, nil
@@ -3843,6 +3933,7 @@ function EZ:CreateWindow(options)
 
         setMinimized = function(state)
             if not frame.Parent or EZ_Window.Minimized == state then return end
+            if windowInteraction.cancel then windowInteraction.cancel() end
             minimizeVersion = minimizeVersion + 1
             local version = minimizeVersion
             EZ_CloseDropdown()
@@ -3870,12 +3961,19 @@ function EZ:CreateWindow(options)
         minbtn.Activated:Connect(function() setMinimized(not EZ_Window.Minimized) end)
 
         EZ_ConnectGlobal(UserInputService.InputBegan, function(input, processed)
-            if processed or EZ_CapturingKeybind or UserInputService:GetFocusedTextBox() then return end
+            if processed or EZ_CapturingKeybind or EZ_LastCaptureInput == input or UserInputService:GetFocusedTextBox() then return end
             if input.KeyCode == EZ_MinKey and EZ_CurrentModifiers(input.KeyCode) == EZ_MinMods then setMinimized(not EZ_Window.Minimized) end
         end)
 
-        EZ_MakeDraggable(frame, titlebar)
-        EZ_MakeResizable(frame)
+        local titleControls = { minbtn, menuBtn }
+        EZ_MakeDraggable(frame, titlebar, windowInteraction, titleControls)
+        EZ_MakeResizable(frame, titlebar, windowInteraction, titleControls)
+        pcall(function()
+            EZ_ConnectGlobal(UserInputService.WindowFocusReleased, function()
+                if windowInteraction.cancel then windowInteraction.cancel() end
+                if EZ_CapturingKeybind and EZ_CapturingKeybind._cancelCapture then EZ_CapturingKeybind._cancelCapture() end
+            end)
+        end)
 
         local function EZ_ResponsiveRow(row, title, description, control)
             local function update(compact)
@@ -5456,6 +5554,7 @@ function EZ:CreateWindow(options)
                 local defaultMods = type(o.DefaultMods) == "string" and o.DefaultMods or ""
                 local obj = { Value = defaultKey, Id = id, Flag = o.Flag, Type = "keybind", Default = defaultKey, DefaultMods = defaultMods, Mods = defaultMods }
                 local listening = false
+                local pendingKey, pendingMods = nil, nil
                 local row = EZ_NewRow(page, 46, obj)
                 EZ_RowTitle(row, o.Title or "Keybind", o.Description, 130, obj)
                 local kl = Instance.new("TextButton")
@@ -5489,13 +5588,9 @@ function EZ:CreateWindow(options)
                 end
                 table.insert(EZ_Window._responsiveItems, updateLayout)
                 updateLayout(EZ_Window._compact)
-                local function isModifier(key)
-                    return key == Enum.KeyCode.LeftControl or key == Enum.KeyCode.RightControl or
-                        key == Enum.KeyCode.LeftShift or key == Enum.KeyCode.RightShift or
-                        key == Enum.KeyCode.LeftAlt or key == Enum.KeyCode.RightAlt
-                end
                 local function cancelCapture()
                     listening = false
+                    pendingKey, pendingMods = nil, nil
                     if EZ_CapturingKeybind == obj then EZ_CapturingKeybind = nil end
                     kl.Text = obj.Value and (obj.Mods .. obj.Value.Name) or EZ_Locale.None
                     klst.Color = EZ_Theme.Border
@@ -5513,6 +5608,12 @@ function EZ:CreateWindow(options)
                         end
                     end
                 end
+                obj._captureEnded = function(input)
+                    if not listening or input.UserInputType ~= Enum.UserInputType.Keyboard or input.KeyCode ~= pendingKey then return end
+                    local key, mods = pendingKey, pendingMods
+                    cancelCapture()
+                    obj:Set(key, false, mods)
+                end
                 EZ_RegisterKeybind(function(input, processed)
                     if EZ_LastCaptureInput == input then return end
                     if listening then
@@ -5521,7 +5622,9 @@ function EZ:CreateWindow(options)
                             EZ_LastCaptureInput = input
                             task.defer(function() if EZ_LastCaptureInput == input then EZ_LastCaptureInput = nil end end)
                             cancelCapture()
-                        elseif not isModifier(input.KeyCode) and input.KeyCode ~= Enum.KeyCode.Unknown then
+                        elseif EZ_ModifierToken(input.KeyCode) then
+                            pendingKey, pendingMods = input.KeyCode, EZ_CurrentModifiers(input.KeyCode)
+                        elseif input.KeyCode ~= Enum.KeyCode.Unknown then
                             EZ_LastCaptureInput = input
                             task.defer(function() if EZ_LastCaptureInput == input then EZ_LastCaptureInput = nil end end)
                             local mods = EZ_CurrentModifiers(input.KeyCode)
@@ -5583,9 +5686,10 @@ function EZ:CreateWindow(options)
 
         function EZ_Window:_BuildConfigData()
             local data = EZ_Copy(self.ConfigData or {})
-            data._meta = { theme = EZ_CurrentThemeName, language = EZ_CurrentLanguage, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen }
+            data._meta = { theme = EZ_CurrentThemeName, language = EZ_CurrentLanguage, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen, minimizeKeyFormat = 2 }
             if self.Frame then
-                data._meta.windowSize = { math.floor(self.Frame.Size.X.Offset), math.floor(self.Frame.Size.Y.Offset) }
+                local savedSize = (shrinkPhase and expandedSize) or self.Frame.Size
+                data._meta.windowSize = { math.floor(savedSize.X.Offset), math.floor(savedSize.Y.Offset) }
             end
             for _, el in ipairs(self.Elements) do
                 if el.Type == "color" then
@@ -5843,7 +5947,7 @@ function EZ:CreateWindow(options)
             localized(tab:AddSection({ Title = EZ_Locale.Appearance }), "Appearance")
             EZ_Window._minimizeKeyBind = localized(tab:AddKeybind({
                 Title = EZ_Locale.MinimizeKey, Description = EZ_Locale.MinimizeKeyDesc,
-                Flag = "_minimize_key", Default = EZ_MinKey,
+                Flag = "_minimize_key", Default = EZ_MinKey, DefaultMods = EZ_MinMods,
                 OnChanged = function(key, modifiers)
                     if key then
                         EZ_MinKey = key
