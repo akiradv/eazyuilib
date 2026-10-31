@@ -6,7 +6,7 @@
         <title>Eazy UI</title>
         <meta
             name="description"
-            content="Documentation for Eazy UI v0.9.55, the single-file Roblox GUI library by Akira Dev."
+            content="Documentation for Eazy UI v0.9.58, the single-file Roblox GUI library by Akira Dev."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
                 <a href="#about" class="logo">
                     <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
-                    <span class="version">v0.9.55</span>
+                    <span class="version">v0.9.58</span>
                 </a>
                 <span class="logo-sub">docs</span>
             </div>
@@ -152,7 +152,7 @@
                     <h1>Eazy UI</h1>
                     <p class="lead">One file. One loadstring. Zero dependencies.</p>
                     <div class="hero-badges">
-                        <span class="badge badge-green">v0.9.55</span>
+                        <span class="badge badge-green">v0.9.58</span>
                         <span class="badge">Single file</span>
                         <span class="badge">Open source</span>
                         <span class="badge">MIT</span>
@@ -205,7 +205,7 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Features</h1>
-                    <p class="lead">Everything included in v0.9.55.</p>
+                    <p class="lead">Everything included in v0.9.58.</p>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
@@ -920,6 +920,14 @@ Window:SetSearch("")</code></pre>
                     <h1>Appearance &amp; Mobile</h1>
                     <p class="lead">Sidebar, minimize behavior, transparency and the logo.</p>
                 </div>
+                <h3>Moving and resizing</h3>
+                <p>
+                    Drag the title bar to move the window without changing its size, including near the top edge and
+                    corners. Resize near the left, right or bottom edges and the bottom corners. The right resize
+                    zones leave a narrow strip clear for the scrollbar. On desktop, right-drag the top edge or a top
+                    corner to resize from above; <code>Alt</code> plus a left drag also works if Alt is not your
+                    minimize shortcut. On touch devices, use the sides or bottom for resizing.
+                </p>
                 <h3>Minimizing</h3>
                 <p>
                     <code>fade</code> hides the window with a fade; <code>shrink</code> reduces it to its title bar. Use
@@ -2666,8 +2674,9 @@ picker:Set(Color3.fromRGB(255, 0, 0))</code></pre>
                     <span class="eyebrow">Element</span>
                     <h1>Keybind</h1>
                     <p class="lead">
-                        Click, press a key, done. Escape cancels. The bind fires globally, ignored while typing.
-                        Modifier keys (Ctrl, Shift, Alt) are captured together with the main key.
+                        Click and press a key. Escape cancels. The bind fires globally, ignored while typing. Hold a
+                        modifier with another key for a combination, or press and release Ctrl, Shift or Alt alone to
+                        bind that modifier by itself.
                     </p>
                 </div>
                 <div class="code-block">
@@ -3121,6 +3130,82 @@ EZ:Notify({
                     <p class="lead">Release history.</p>
                 </div>
 
+                <h3>v0.9.58</h3>
+                <ul>
+                    <li>
+                        <strong>Standalone modifier keys:</strong> Left or right Ctrl, Shift and Alt can be assigned as
+                        keybinds, including the minimize shortcut. Press and release the modifier to select it, or hold
+                        it while pressing another key for a combination such as <code>Ctrl+K</code>.
+                    </li>
+                    <li>
+                        <strong>Older minimize settings:</strong> Legacy entries that saved the main modifier as its own
+                        modifier are normalized when loaded. Other required modifiers are preserved; an old shortcut
+                        intentionally requiring both left and right keys of the same modifier may need to be rebound.
+                    </li>
+                    <li>
+                        <strong>Safer capture:</strong> A newly captured key does not immediately minimize the window;
+                        an unfinished capture is canceled if the Roblox client loses focus. The settings control now
+                        displays the configured default modifier combination.
+                    </li>
+                    <li>
+                        <strong>Top-edge resize:</strong> Desktop users can right-drag the top edge or corners without
+                        using Alt. Alt plus left-drag remains available when Alt is not the minimize shortcut.
+                    </li>
+                    <li>Removed comments from the <code>eazyui.lua</code> source without changing the visual design.</li>
+                </ul>
+                <h3>v0.9.57</h3>
+                <ul>
+                    <li>
+                        <strong>Moving versus resizing:</strong> A normal title-bar drag moves the window without
+                        activating the previous top resize zones. Side and bottom resize zones remain available;
+                        desktop top-edge resizing uses Alt plus left-drag in this version.
+                    </li>
+                    <li>
+                        <strong>Clearer hit areas:</strong> Title-bar buttons retain priority, the side resize zones no
+                        longer overlap the title bar, and the right-side zones leave a narrow strip for the scrollbar.
+                    </li>
+                    <li>
+                        <strong>Gesture stability:</strong> Moving and resizing share pointer ownership per window, so
+                        another touch cannot take over an active gesture. Gestures are canceled on minimization,
+                        viewport changes or loss of client focus.
+                    </li>
+                    <li>
+                        <strong>Resize anchoring:</strong> The opposite edge is maintained during resizing using the
+                        window's actual anchor point; the window can still be clamped to the viewport on release.
+                    </li>
+                    <li>
+                        <strong>Shrink-mode configs:</strong> Saving or loading while the window is shrunken uses its
+                        expanded dimensions rather than the title-bar height, subject to responsive viewport limits.
+                    </li>
+                </ul>
+                <h3>v0.9.56</h3>
+                <ul>
+                    <li>
+                        <strong>Visual refinement:</strong> Adjusted the dark-green default theme's contrast, outlines,
+                        corner radii and typography, and placed the existing PNG logo in a themed badge.
+                    </li>
+                    <li>
+                        <strong>Window header:</strong> When search is enabled and space permits, the active tab title
+                        appears beside it, follows tab and language changes, and gives way to a full-width search in
+                        compact layouts.
+                    </li>
+                    <li>
+                        <strong>Navigation and sections:</strong> Clearer active-tab icons, indicators and hover states;
+                        accented section headings; improved spacing and truncation for long titles.
+                    </li>
+                    <li>
+                        <strong>Controls and focus:</strong> Refined toggles, slider handles and keybind sizing, reduced
+                        text overlap, and added accent-colored focus feedback to search, input and text-area fields.
+                    </li>
+                    <li>
+                        <strong>Dropdowns and themes:</strong> Added a selected-option indicator and refreshed open
+                        dropdown colors and labels when the theme or language changes.
+                    </li>
+                    <li>
+                        <strong>Notifications and transparency:</strong> Notification accents follow theme changes,
+                        and active-tab backgrounds update with window transparency.
+                    </li>
+                </ul>
                 <h3>v0.9.55</h3>
                 <ul>
                     <li>
@@ -3135,7 +3220,7 @@ EZ:Notify({
                         Updated sidebar icons using the existing WindUI/Lucide asset set and refreshed interaction
                         animations.
                     </li>
-                    <li>The complete current library is published as <code>eazyui.lua</code>.</li>
+                    <li>The complete library was consolidated as <code>eazyui.lua</code>.</li>
                 </ul>
                 <h3>v0.9.54</h3>
                 <ul>
@@ -3232,7 +3317,7 @@ EZ:Notify({
                     </li>
                     <li>Range slider added: dual handle slider for min/max values, persisted as an array.</li>
                     <li>
-                        Input notifications were introduced. In v0.9.55 use <code>Input = true</code>,
+                        Input notifications were introduced. Since v0.9.55 use <code>Input = true</code>,
                         <code>InputPlaceholder</code> and <code>InputCallback</code>.
                     </li>
                     <li><code>SetAccent</code> now works per window, not only globally.</li>
@@ -3370,7 +3455,7 @@ EZ:Notify({
                             <span class="logo-name">Eazy UI</span>
                         </div>
                         <p>Open source Roblox GUI library. A single Lua file built to keep scripting easy.</p>
-                        <span class="badge badge-green">v0.9.55</span>
+                        <span class="badge badge-green">v0.9.58</span>
                     </div>
                     <div class="footer-col">
                         <h5>Docs</h5>
@@ -3412,7 +3497,7 @@ EZ:Notify({
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <span>2026 Akira Dev. Eazy UI v0.9.55.</span>
+                    <span>2026 Akira Dev. Eazy UI v0.9.58.</span>
                     <span>Not affiliated with Roblox Corporation.</span>
                 </div>
             </footer>
