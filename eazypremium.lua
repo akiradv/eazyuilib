@@ -1,5 +1,5 @@
 local EZ = {}
-EZ.Version = "0.9.64"
+EZ.Version = "0.9.65"
 EZ.Edition = "Premium"
 local EZ_Destroyed = false
 
@@ -507,6 +507,7 @@ local EZ_GlobalTransparency = 0
 local EZ_LogoAsset = nil
 local EZ_LogoLoading = false
 local EZ_LogoRequest = 0
+local EZ_LogoTask = nil
 local EZ_LogoWatchers = {}
 local EZ_CurrentWindow = nil
 local EZ_ScaleConns = {}
@@ -813,11 +814,24 @@ local function EZ_SetLogoAsset(asset)
     return true
 end
 
+local function EZ_CancelTask(pending)
+    if not pending then return end
+    if type(pending) == "thread" and (pending == coroutine.running() or coroutine.status(pending) ~= "suspended") then return end
+    pcall(task.cancel, pending)
+end
+
+local function EZ_CancelLogoTask()
+    local pending = EZ_LogoTask
+    EZ_LogoTask = nil
+    EZ_CancelTask(pending)
+end
+
 local function EZ_LoadLogo(options)
     local supplied = options.LogoAsset
     if type(supplied) == "number" then supplied = "rbxassetid://" .. tostring(supplied) end
     if type(supplied) == "string" and supplied ~= "" then
         EZ_LogoRequest = EZ_LogoRequest + 1
+        EZ_CancelLogoTask()
         EZ_LogoLoading = false
         EZ_SetLogoAsset(supplied)
         return
@@ -844,7 +858,7 @@ local function EZ_LoadLogo(options)
     EZ_LogoRequest = EZ_LogoRequest + 1
     local requestId = EZ_LogoRequest
     EZ_LogoLoading = true
-    task.spawn(function()
+    EZ_LogoTask = task.defer(function()
         if EZ_Destroyed or requestId ~= EZ_LogoRequest then return end
         local ok, result = pcall(function()
             local data
@@ -858,6 +872,7 @@ local function EZ_LoadLogo(options)
             return customAsset(filename)
         end)
         if EZ_Destroyed or requestId ~= EZ_LogoRequest then return end
+        EZ_LogoTask = nil
         EZ_LogoLoading = false
         if ok and EZ_SetLogoAsset(result) then return end
         table.clear(EZ_LogoWatchers)
@@ -2477,25 +2492,41 @@ local function EZ_ShowKeyScreen(options, validator, callback)
         err.Text = statusKey and EZ_Locale[statusKey] or ""
     end)
     local submitting = false
+    local validationTask, validationGeneration = nil, 0
+    local function cancelValidation()
+        validationGeneration = validationGeneration + 1
+        local pending = validationTask
+        validationTask = nil
+        EZ_CancelTask(pending)
+    end
+    gui.Destroying:Connect(cancelValidation)
     local function doSubmit()
         if submitting or not gui.Parent then return end
         submitting = true
+        validationGeneration = validationGeneration + 1
+        local generation = validationGeneration
         local key = input.Text
         statusKey = "Validating"
         err.Text = EZ_Locale[statusKey]
         err.TextColor3 = EZ_Theme.TextDim
         task.spawn(function()
+            if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
             local resolved = false
             local result = false
-            task.spawn(function()
-                result = EZ_ValidateKey(key, validator)
+            validationTask = task.defer(function()
+                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
+                local value = EZ_ValidateKey(key, validator)
+                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
+                result = value
                 resolved = true
+                validationTask = nil
             end)
             local start = tick()
-            while not resolved and not EZ_Destroyed and gui.Parent and tick() - start < 5 do task.wait(0.05) end
-            if EZ_Destroyed or not gui.Parent then return end
+            while not resolved and generation == validationGeneration and not EZ_Destroyed and gui.Parent and tick() - start < 5 do task.wait(0.05) end
+            if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
             submitting = false
             if not resolved then
+                cancelValidation()
                 statusKey = "KeyTimeout"
                 err.Text = EZ_Locale[statusKey]
                 err.TextColor3 = EZ_Theme.Error
@@ -2978,12 +3009,16 @@ function EZ:CreateWindow(options)
     if options.KeySystem and options.KeySystem.Enabled then
         local keyOptions = { Title = options.KeySystem.Title, Subtitle = options.KeySystem.Subtitle, Note = options.KeySystem.Note, FileName = EZ_KeyFile, Duration = EZ_KeyDuration }
         local savedKey = EZ_LoadKey(EZ_KeyFile)
-        if not (savedKey and EZ_ValidateKey(savedKey, options.KeySystem.validator)) then
+        if EZ_Destroyed then return nil, "Library was destroyed" end
+        local savedKeyValid = savedKey and EZ_ValidateKey(savedKey, options.KeySystem.validator)
+        if EZ_Destroyed then return nil, "Library was destroyed" end
+        if not savedKeyValid then
             local resolved, success = false, false
             local prompt = EZ_ShowKeyScreen(keyOptions, options.KeySystem.validator, function(s) success = s; resolved = true end)
             local start = tick()
             while not resolved and not EZ_Destroyed and tick() - start < 30 do task.wait(0.1) end
             if prompt and prompt.Parent then EZ_CloseTransientGui(prompt) end
+            if EZ_Destroyed then return nil, "Library was destroyed" end
             if not success then
                 EZ:Notify({ Title = "Eazy UI", _ContentKey = "AccessDenied", Style = "Error", Duration = 3 })
                 return nil
@@ -3360,7 +3395,12 @@ function EZ:CreateWindow(options)
         minicon.AnchorPoint = Vector2.new(0.5, 0.5)
         minicon.Position = UDim2.fromScale(0.5, 0.5)
         minicon.ImageColor3 = EZ_Theme.TextDim
-        EZ_Paint(function() minicon.ImageColor3 = EZ_Theme.TextDim end)
+        local minHovered, minIconTween = false, nil
+        EZ_Paint(function()
+            if minIconTween then pcall(function() minIconTween:Cancel() end); minIconTween = nil end
+            minbtn.BackgroundColor3 = EZ_Theme.CardHover
+            minicon.ImageColor3 = minHovered and EZ_Theme.Text or EZ_Theme.TextDim
+        end, minbtn)
 
         local sidebarWidth = EZ_Window._compact and EZ_CollapsedSidebarWidth or EZ_ExpandedSidebarWidth
         local sidebar = Instance.new("Frame")
@@ -4209,14 +4249,15 @@ function EZ:CreateWindow(options)
             end
         end
 
-        minbtn.MouseEnter:Connect(function()
-            TweenService:Create(minbtn, EZ_Ease.Fast, { BackgroundTransparency = 0 }):Play()
-            TweenService:Create(minicon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Text }):Play()
-        end)
-        minbtn.MouseLeave:Connect(function()
-            TweenService:Create(minbtn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(minicon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play()
-        end)
+        local function setMinHovered(hovered)
+            minHovered = hovered
+            TweenService:Create(minbtn, EZ_Ease.Fast, { BackgroundTransparency = hovered and 0 or 1 }):Play()
+            cancelTween(minIconTween)
+            minIconTween = TweenService:Create(minicon, EZ_Ease.Fast, { ImageColor3 = hovered and EZ_Theme.Text or EZ_Theme.TextDim })
+            minIconTween:Play()
+        end
+        minbtn.MouseEnter:Connect(function() setMinHovered(true) end)
+        minbtn.MouseLeave:Connect(function() setMinHovered(false) end)
         minbtn.Activated:Connect(function() setMinimized(not EZ_Window.Minimized) end)
 
         EZ_ConnectGlobal(UserInputService.InputBegan, function(input, processed)
@@ -6503,6 +6544,7 @@ function EZ:Destroy()
     table.clear(EZ_KeybindHandlers)
     EZ_LogoRequest = EZ_LogoRequest + 1
     EZ_LogoLoading = false
+    EZ_CancelLogoTask()
     table.clear(EZ_LogoWatchers)
     for connection in pairs(EZ_ServiceConnections) do
         if connection.Connected then connection:Disconnect() end
