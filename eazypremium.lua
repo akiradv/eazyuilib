@@ -1,5 +1,5 @@
 local EZ = {}
-EZ.Version = "0.9.63"
+EZ.Version = "0.9.64"
 EZ.Edition = "Premium"
 local EZ_Destroyed = false
 
@@ -898,6 +898,7 @@ local function EZ_CreateLogo(parent, size, color)
     image.ScaleType = Enum.ScaleType.Fit
     image.Active = false
     image.Image = ""
+    image.Visible = false
     image.Parent = root
     local function repaint()
         local shade = color()
@@ -906,14 +907,30 @@ local function EZ_CreateLogo(parent, size, color)
     end
     repaint()
     EZ_Paint(repaint, root)
-    local function sync()
-        if image.Parent then mark.Visible = not image.IsLoaded end
-    end
-    image:GetPropertyChangedSignal("IsLoaded"):Connect(sync)
+    local fetchConnection
     local function setImage(asset)
         if not image.Parent then return end
+        if fetchConnection then fetchConnection:Disconnect(); fetchConnection = nil end
+        mark.Visible = false
         image.Image = asset
-        sync()
+        image.Visible = true
+        if asset:match("^rbxassetid://%d+$") then
+            pcall(function()
+                local provider = game:GetService("ContentProvider")
+                local function updateStatus(status)
+                    if not image.Parent or image.Image ~= asset then return end
+                    if status == Enum.AssetFetchStatus.Failure then
+                        image.Visible = false
+                        mark.Visible = true
+                    else
+                        mark.Visible = false
+                        image.Visible = true
+                    end
+                end
+                fetchConnection = provider:GetAssetFetchStatusChangedSignal(asset):Connect(updateStatus)
+                updateStatus(provider:GetAssetFetchStatus(asset))
+            end)
+        end
     end
     if EZ_LogoAsset then
         setImage(EZ_LogoAsset)
@@ -921,6 +938,7 @@ local function EZ_CreateLogo(parent, size, color)
         EZ_LogoWatchers[root] = setImage
     end
     root.Destroying:Connect(function()
+        if fetchConnection then fetchConnection:Disconnect(); fetchConnection = nil end
         EZ_LogoWatchers[root] = nil
         EZ_ClearPaintersFor(root)
     end)
@@ -1134,6 +1152,15 @@ local EZ_SearchAccents = {
 local function EZ_SearchText(value)
     local text = tostring(value or ""):lower()
     return (text:gsub("[\194-\244][\128-\191]*", function(c) return EZ_SearchAccents[c] or c end))
+end
+local EZ_UpperAccents = {
+    ["á"] = "Á", ["à"] = "À", ["â"] = "Â", ["ã"] = "Ã", ["ä"] = "Ä", ["ç"] = "Ç",
+    ["é"] = "É", ["è"] = "È", ["ê"] = "Ê", ["ë"] = "Ë", ["í"] = "Í", ["ì"] = "Ì", ["î"] = "Î", ["ï"] = "Ï",
+    ["ó"] = "Ó", ["ò"] = "Ò", ["ô"] = "Ô", ["õ"] = "Õ", ["ö"] = "Ö", ["ñ"] = "Ñ",
+    ["ú"] = "Ú", ["ù"] = "Ù", ["û"] = "Û", ["ü"] = "Ü",
+}
+local function EZ_Upper(value)
+    return (tostring(value or ""):upper():gsub("[\194-\244][\128-\191]*", function(c) return EZ_UpperAccents[c] or c end))
 end
 local function EZ_SetSearchText(row, title, description, originalTitle, originalDescription)
     if not row then return end
@@ -1632,10 +1659,10 @@ local function EZ_ApplyResponsiveScale(frame, baseSize)
     if not scaler then
         scaler = Instance.new("UIScale")
         scaler.Name = "EZ_WindowScale"
+        scaler.Scale = 1
         scaler.Parent = frame
     end
 
-    scaler.Scale = 1
     frame:SetAttribute("EZ_Scale", 1)
     if not frame:GetAttribute("EZ_Moved") then
         frame.Position = UDim2.new(0.5, (inset.X - bottom.X) / 2, 0.5, (inset.Y - bottom.Y) / 2)
@@ -2166,7 +2193,14 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     TweenService:Create(letter, fadeInfo, { [fadeProp] = 0 }):Play()
     TweenService:Create(titleLabel, fadeInfo, { TextTransparency = 0 }):Play()
     TweenService:Create(subLabel, fadeInfo, { TextTransparency = 0 }):Play()
-    task.wait(duration or 2)
+    local loadingDuration = tonumber(duration) or 2
+    if loadingDuration ~= loadingDuration then loadingDuration = 2 end
+    local loadingEnd = tick() + math.max(0, loadingDuration)
+    while not EZ_Destroyed and gui.Parent do
+        local remaining = loadingEnd - tick()
+        if remaining <= 0 then break end
+        task.wait(math.min(remaining, 0.1))
+    end
     if EZ_Destroyed or not gui.Parent then return end
     local outInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
     TweenService:Create(letter, outInfo, { [fadeProp] = 1 }):Play()
@@ -2174,8 +2208,10 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     TweenService:Create(subLabel, outInfo, { TextTransparency = 1 }):Play()
     TweenService:Create(card, outInfo, { BackgroundTransparency = 1 }):Play()
     TweenService:Create(cardStroke, outInfo, { Transparency = 1 }):Play()
+    local dialogScale = card:FindFirstChild("EZ_DialogScale")
+    if dialogScale then TweenService:Create(dialogScale, outInfo, { Scale = dialogScale.Scale * 0.92 }):Play() end
     task.wait(0.32)
-    EZ_CloseTransientGui(gui)
+    if not EZ_Destroyed then EZ_CloseTransientGui(gui) end
 end
 
 local function EZ_ShowDiscordPrompt(invite, callback)
@@ -2456,8 +2492,8 @@ local function EZ_ShowKeyScreen(options, validator, callback)
                 resolved = true
             end)
             local start = tick()
-            while not resolved and tick() - start < 5 do task.wait(0.05) end
-            if not gui.Parent then return end
+            while not resolved and not EZ_Destroyed and gui.Parent and tick() - start < 5 do task.wait(0.05) end
+            if EZ_Destroyed or not gui.Parent then return end
             submitting = false
             if not resolved then
                 statusKey = "KeyTimeout"
@@ -2761,7 +2797,7 @@ function EZ:Notify(options)
             end
         end
 
-        local timer
+        local timer, timeoutTask, timerTween
         if d > 0 and not hasInput then
             timer = Instance.new("Frame")
             timer.Size = UDim2.new(1, -18, 0, 2)
@@ -2803,35 +2839,43 @@ function EZ:Notify(options)
         destroyNotify = function(reason)
             if entry.closed then return end
             entry.closed = true
+            if timeoutTask then pcall(task.cancel, timeoutTask); timeoutTask = nil end
+            if timerTween then pcall(function() timerTween:Cancel() end); timerTween = nil end
             EZ_ClearTextBindings(holder)
             for i, e in ipairs(EZ_NotifyVisible) do
                 if e == entry then table.remove(EZ_NotifyVisible, i); break end
             end
             EZ_SafeCall(onClose, reason or "Closed")
             if holder.Parent then
-                TweenService:Create(holder, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = UDim2.fromOffset(0, entry.height) }):Play()
-                task.delay(0.22, function()
-                    EZ_ClearPaintersFor(holder)
-                    for i = #EZ_TransSurf, 1, -1 do
-                        local inst = EZ_TransSurf[i]
-                        if inst == holder or inst:IsDescendantOf(holder) then EZ_TransFactors[inst] = nil; table.remove(EZ_TransSurf, i) end
-                    end
-                    for i = #EZ_StrokeSurf, 1, -1 do
-                        if EZ_StrokeSurf[i]:IsDescendantOf(holder) then table.remove(EZ_StrokeSurf, i) end
-                    end
+                if EZ_Destroyed then
                     holder:Destroy()
-                    if not EZ_Destroyed then EZ_FlushNotifyQueue() end
-                end)
+                else
+                    TweenService:Create(holder, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = UDim2.fromOffset(0, entry.height) }):Play()
+                    task.delay(0.22, function()
+                        EZ_ClearPaintersFor(holder)
+                        for i = #EZ_TransSurf, 1, -1 do
+                            local inst = EZ_TransSurf[i]
+                            if inst == holder or inst:IsDescendantOf(holder) then EZ_TransFactors[inst] = nil; table.remove(EZ_TransSurf, i) end
+                        end
+                        for i = #EZ_StrokeSurf, 1, -1 do
+                            if EZ_StrokeSurf[i]:IsDescendantOf(holder) then table.remove(EZ_StrokeSurf, i) end
+                        end
+                        holder:Destroy()
+                        if not EZ_Destroyed then EZ_FlushNotifyQueue() end
+                    end)
+                end
             end
         end
         entry.destroy = destroyNotify
         holder.Size = UDim2.fromOffset(0, entry.height)
         TweenService:Create(holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, entry.height) }):Play()
         if timer then
-            TweenService:Create(timer, TweenInfo.new(d, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 0, 0, 2) }):Play()
+            timerTween = TweenService:Create(timer, TweenInfo.new(d, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 0, 0, 2) })
+            timerTween:Play()
         end
         if d > 0 and not hasInput then
-            task.delay(d, function()
+            timeoutTask = task.delay(d, function()
+                timeoutTask = nil
                 if holder.Parent then
                     local metrics = measure()
                     if not automaticDuration or metrics.contentHeight <= metrics.visibleHeight then destroyNotify("Timeout") end
@@ -2850,6 +2894,10 @@ function EZ:CreateWindow(options)
     options = options or {}
     local sidebarFont = options.SidebarFont
     if typeof(sidebarFont) ~= "EnumItem" or sidebarFont.EnumType ~= Enum.Font then sidebarFont = EZ_Brand.FontSidebar end
+    local sidebarTextSize = tonumber(options.SidebarTextSize)
+    if not sidebarTextSize or sidebarTextSize ~= sidebarTextSize then sidebarTextSize = 15 end
+    sidebarTextSize = math.clamp(sidebarTextSize, 12, 20)
+    local sectionTextCase = type(options.SectionTextCase) == "string" and options.SectionTextCase:lower() or "original"
     local layoutOptions = type(options.Layout) == "table" and options.Layout or {}
     local EZ_PagePadding = math.clamp(tonumber(layoutOptions.PagePadding) or 16, 8, 32)
     local EZ_HeaderGap = math.max(4, math.floor(EZ_PagePadding / 4))
@@ -3408,7 +3456,7 @@ function EZ:CreateWindow(options)
         displayName.BackgroundTransparency = 1
         displayName.Text = "Player"
         displayName.Font = EZ_Brand.FontMedium
-        displayName.TextSize = 12
+        displayName.TextSize = 14
         displayName.TextColor3 = EZ_Theme.Text
         displayName.TextXAlignment = Enum.TextXAlignment.Left
         displayName.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3421,7 +3469,7 @@ function EZ:CreateWindow(options)
         userName.BackgroundTransparency = 1
         userName.Text = ""
         userName.Font = EZ_Brand.FontBody
-        userName.TextSize = 11
+        userName.TextSize = 12
         userName.TextColor3 = EZ_Theme.TextDim
         userName.TextXAlignment = Enum.TextXAlignment.Left
         userName.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3976,11 +4024,20 @@ function EZ:CreateWindow(options)
         end
 
         local minimizeVersion = 0
-        local fadeTween, shrinkTween
+        local fadeTween, fadeScaleTween, shrinkTween
         local expandedSize, savedVisibility, originalAnchor, shrinkPhase
+        local windowScale = frame:FindFirstChild("EZ_WindowScale")
+        local fadeDuration = 0.3
+        local fadeInfo = TweenInfo.new(fadeDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
 
         local function cancelTween(tween)
             if tween then pcall(function() tween:Cancel() end) end
+        end
+
+        local function cancelFade()
+            cancelTween(fadeTween)
+            cancelTween(fadeScaleTween)
+            fadeTween, fadeScaleTween = nil, nil
         end
 
         local function setAnchorPreservingTop(anchor)
@@ -4066,17 +4123,22 @@ function EZ:CreateWindow(options)
         end
 
         local function applyMinimizeFade(state, version)
-            cancelTween(fadeTween)
+            cancelFade()
             if not state then frame.Visible = true end
-            fadeTween = TweenService:Create(frame, EZ_Ease.Med, { GroupTransparency = state and 1 or 0 })
+            fadeTween = TweenService:Create(frame, fadeInfo, { GroupTransparency = state and 1 or 0 })
+            fadeScaleTween = TweenService:Create(windowScale, fadeInfo, { Scale = state and 0.92 or 1 })
             fadeTween:Play()
-            if state then
-                task.delay(0.24, function()
-                    if version == minimizeVersion and frame.Parent and EZ_Window.Minimized and EZ_Window.MinimizeMode == "fade" then
-                        frame.Visible = false
-                    end
-                end)
-            end
+            fadeScaleTween:Play()
+            task.delay(fadeDuration + 0.02, function()
+                if version ~= minimizeVersion or not frame.Parent then return end
+                fadeTween, fadeScaleTween = nil, nil
+                if EZ_Window.MinimizeMode ~= "fade" then return end
+                if state and EZ_Window.Minimized then
+                    frame.Visible = false
+                elseif not state and not EZ_Window.Minimized and frame:GetAttribute("EZ_Moved") then
+                    EZ_ClampToViewport(frame)
+                end
+            end)
         end
 
         local function applyMinimizeShrink(state, version)
@@ -4137,6 +4199,10 @@ function EZ:CreateWindow(options)
             EZ_Window.Minimized = state
             if isMobile and fab then fab.Visible = state end
             if EZ_Window.MinimizeMode == "shrink" then
+                cancelFade()
+                frame.Visible = true
+                frame.GroupTransparency = 0
+                windowScale.Scale = 1
                 applyMinimizeShrink(state, version)
             else
                 applyMinimizeFade(state, version)
@@ -4221,7 +4287,7 @@ function EZ:CreateWindow(options)
             iconInitial.Size = UDim2.fromOffset(28, 28)
             iconInitial.BackgroundTransparency = 1
             iconInitial.Font = sidebarFont
-            iconInitial.TextSize = 12
+            iconInitial.TextSize = math.max(12, sidebarTextSize - 1)
             iconInitial.TextXAlignment = Enum.TextXAlignment.Center
             iconInitial.TextYAlignment = Enum.TextYAlignment.Center
             iconInitial.TextColor3 = EZ_Theme.TextDim
@@ -4232,9 +4298,9 @@ function EZ:CreateWindow(options)
             local iconLbl = nil
             local iconOffset = 18
             if tabIcon then
-                iconLbl = EZ_CreateIcon(btn, tabIcon, 16)
+                iconLbl = EZ_CreateIcon(btn, tabIcon, 18)
                 if iconLbl then
-                    iconLbl.Position = UDim2.new(0, 20, 0.5, -8)
+                    iconLbl.Position = UDim2.new(0, 20, 0.5, -9)
                     iconLbl.ImageColor3 = EZ_Theme.TextDim
                     iconOffset = 44
                 end
@@ -4246,7 +4312,7 @@ function EZ:CreateWindow(options)
             lbl.BackgroundTransparency = 1
             lbl.Text = EZ_TranslateText(tabTitle)
             lbl.Font = sidebarFont
-            lbl.TextSize = 13
+            lbl.TextSize = sidebarTextSize
             lbl.TextColor3 = EZ_Theme.TextDim
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.TextTruncate = Enum.TextTruncate.AtEnd
@@ -4450,6 +4516,8 @@ function EZ:CreateWindow(options)
 
             function tab:AddSection(o)
                 o = o or {}
+                local caseStyle = type(o.TextCase) == "string" and o.TextCase:lower() or sectionTextCase
+                local caseTransform = (caseStyle == "upper" or caseStyle == "uppercase") and EZ_Upper or nil
                 local sectionBlock = addSectionBlock()
                 local holder = Instance.new("Frame")
                 holder:SetAttribute("EZ_Section", true)
@@ -4553,7 +4621,7 @@ function EZ:CreateWindow(options)
                 local titleSource = o.Title or ""
                 local titleBinding = EZ_BindText(t, "Text", titleSource, holder, function(translated)
                     EZ_SetSearchText(holder, translated, "", titleSource, "")
-                end)
+                end, caseTransform)
                 local obj = { _titleLabel = t, _row = holder, _isSection = true }
                 function obj:Set(x)
                     titleSource = x or ""
