@@ -1,5 +1,5 @@
 local EZ = {}
-EZ.Version = "0.9.62"
+EZ.Version = "0.9.63"
 EZ.Edition = "Premium"
 local EZ_Destroyed = false
 
@@ -2852,6 +2852,7 @@ function EZ:CreateWindow(options)
     if typeof(sidebarFont) ~= "EnumItem" or sidebarFont.EnumType ~= Enum.Font then sidebarFont = EZ_Brand.FontSidebar end
     local layoutOptions = type(options.Layout) == "table" and options.Layout or {}
     local EZ_PagePadding = math.clamp(tonumber(layoutOptions.PagePadding) or 16, 8, 32)
+    local EZ_HeaderGap = math.max(4, math.floor(EZ_PagePadding / 4))
     local EZ_ColumnGap = math.clamp(tonumber(layoutOptions.ColumnGap) or 16, 6, 32)
     local EZ_MinColumnWidth = math.clamp(tonumber(layoutOptions.MinColumnWidth) or 236, 180, 400)
     local EZ_ColumnThreshold = EZ_PagePadding * 2 + EZ_ColumnGap + EZ_MinColumnWidth * 2
@@ -3484,7 +3485,7 @@ function EZ:CreateWindow(options)
             end
         end
         local searchEnabled = options.SearchEnabled ~= false and options.Search ~= false
-        local searchHeight = searchEnabled and 80 or 58
+        local searchHeight = 0
         local searchBox, searchEmpty, searchClear, pageHeading
         local updateSearchLayout
         local searchValue = ""
@@ -3699,6 +3700,23 @@ function EZ:CreateWindow(options)
                     searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
                     searchBar.Size = stacked and UDim2.new(1, -2 * EZ_PagePadding, 0, 34) or UDim2.new(0.42, -EZ_PagePadding / 2, 0, 34)
                 end
+                local bottom = pageHeading.Position.Y.Offset + pageHeading.Size.Y.Offset
+                if searchBar then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
+                local nextHeight = bottom + EZ_HeaderGap
+                if searchHeight ~= nextHeight then
+                    searchHeight = nextHeight
+                    if searchEmpty then
+                        searchEmpty.Position = UDim2.fromOffset(12, searchHeight)
+                        searchEmpty.Size = UDim2.new(1, -24, 1, -searchHeight)
+                    end
+                    for _, data in ipairs(registry) do
+                        if data.Page and data.Page.Parent then
+                            if data.PageTween then pcall(function() data.PageTween:Cancel() end); data.PageTween = nil end
+                            data.Page.Position = UDim2.fromOffset(0, searchHeight)
+                            data.Page.Size = UDim2.new(1, 0, 1, -searchHeight)
+                        end
+                    end
+                end
             end
             updateSearchLayout(EZ_Window._compact)
         end
@@ -3855,10 +3873,12 @@ function EZ:CreateWindow(options)
                 if d.Active then
                     if not wasActive then
                         d.Page.Visible = true
+                        if d.PageTween then pcall(function() d.PageTween:Cancel() end) end
                         d.Page.Position = UDim2.new(0.015, 0, 0, searchHeight)
-                        TweenService:Create(d.Page, EZ_Ease.Med, {
+                        d.PageTween = TweenService:Create(d.Page, EZ_Ease.Med, {
                             Position = UDim2.new(0, 0, 0, searchHeight)
-                        }):Play()
+                        })
+                        d.PageTween:Play()
                     end
                 else
                     d.Page.Visible = false
@@ -4265,7 +4285,7 @@ function EZ:CreateWindow(options)
             local play = Instance.new("UIListLayout")
             play.Padding = UDim.new(0, 8); play.SortOrder = Enum.SortOrder.LayoutOrder; play.Parent = page
             local ppad = Instance.new("UIPadding")
-            ppad.PaddingTop = UDim.new(0, 12); ppad.PaddingBottom = UDim.new(0, 16)
+            ppad.PaddingTop = UDim.new(0, EZ_HeaderGap); ppad.PaddingBottom = UDim.new(0, 16)
             ppad.PaddingLeft = UDim.new(0, EZ_PagePadding); ppad.PaddingRight = UDim.new(0, EZ_PagePadding); ppad.Parent = page
             local function updatePageCanvas()
                 if not page.Parent then return end
