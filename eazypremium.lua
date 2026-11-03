@@ -1,5 +1,5 @@
 local EZ = {}
-EZ.Version = "0.9.61"
+EZ.Version = "0.9.62"
 EZ.Edition = "Premium"
 local EZ_Destroyed = false
 
@@ -17,6 +17,7 @@ local EZ_Brand = {
     Font = Enum.Font.GothamBold,
     FontBody = Enum.Font.Gotham,
     FontMedium = Enum.Font.GothamMedium,
+    FontSidebar = Enum.Font.BuilderSansMedium,
     FontMono = Enum.Font.Code,
 }
 
@@ -2847,6 +2848,8 @@ end
 function EZ:CreateWindow(options)
     if EZ_Destroyed then return nil, "Library was destroyed" end
     options = options or {}
+    local sidebarFont = options.SidebarFont
+    if typeof(sidebarFont) ~= "EnumItem" or sidebarFont.EnumType ~= Enum.Font then sidebarFont = EZ_Brand.FontSidebar end
     local layoutOptions = type(options.Layout) == "table" and options.Layout or {}
     local EZ_PagePadding = math.clamp(tonumber(layoutOptions.PagePadding) or 16, 8, 32)
     local EZ_ColumnGap = math.clamp(tonumber(layoutOptions.ColumnGap) or 16, 6, 32)
@@ -3589,18 +3592,7 @@ function EZ:CreateWindow(options)
             pageHeading.TextTruncate = Enum.TextTruncate.AtEnd
             pageHeading.Parent = content
 
-            local headerRule = Instance.new("Frame")
-            headerRule.Name = "EZ_HeaderRule"
-            headerRule.Position = UDim2.fromOffset(EZ_PagePadding, searchHeight - 8)
-            headerRule.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 1)
-            headerRule.BackgroundColor3 = EZ_Theme.Border
-            headerRule.BorderSizePixel = 0
-            headerRule.Parent = content
-            EZ_RegTrans(headerRule, 1)
-            EZ_Paint(function()
-                pageHeading.TextColor3 = EZ_Theme.Text
-                headerRule.BackgroundColor3 = EZ_Theme.Border
-            end, content)
+            EZ_Paint(function() pageHeading.TextColor3 = EZ_Theme.Text end, content)
 
             local searchBar
             if searchEnabled then
@@ -4208,7 +4200,7 @@ function EZ:CreateWindow(options)
             iconInitial.Name = "EZ_TabIconInitial"
             iconInitial.Size = UDim2.fromOffset(28, 28)
             iconInitial.BackgroundTransparency = 1
-            iconInitial.Font = EZ_Brand.FontMedium
+            iconInitial.Font = sidebarFont
             iconInitial.TextSize = 12
             iconInitial.TextXAlignment = Enum.TextXAlignment.Center
             iconInitial.TextYAlignment = Enum.TextYAlignment.Center
@@ -4233,7 +4225,7 @@ function EZ:CreateWindow(options)
             lbl.Size = UDim2.new(1, -(iconOffset + 6), 1, 0)
             lbl.BackgroundTransparency = 1
             lbl.Text = EZ_TranslateText(tabTitle)
-            lbl.Font = EZ_Brand.FontMedium
+            lbl.Font = sidebarFont
             lbl.TextSize = 13
             lbl.TextColor3 = EZ_Theme.TextDim
             lbl.TextXAlignment = Enum.TextXAlignment.Left
