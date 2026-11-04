@@ -1,5 +1,5 @@
 local EZ = {}
-EZ.Version = "0.9.65"
+EZ.Version = "0.9.66"
 EZ.Edition = "Premium"
 local EZ_Destroyed = false
 
@@ -22,7 +22,8 @@ local EZ_Brand = {
 }
 
 local EZ_Locale = {
-    Search = "Search...", SearchTab = "Search this tab...", SearchEmpty = "No results found.",
+    Search = "Search...", SearchTab = "Search this tab...", SearchAll = "Search all tabs...", SearchEmpty = "No results found.",
+    SearchScopeTab = "Tab", SearchScopeAll = "All",
     Navigation = "NAVIGATION", ControlPanel = "CONTROL PANEL",
     Language = "Language", LanguageDesc = "Change the language of Eazy UI",
     InputPlaceholder = "Type here...", LogoutMessage = "Logged out. Restart to re-enter key.",
@@ -57,6 +58,12 @@ local EZ_Locale = {
     MinimizeMode = "Minimize Mode", MinimizeModeDesc = "How the window hides when minimized",
     Transparency = "Window Transparency", TransparencyDesc = "Adjust UI transparency (0-90%)",
     Theme = "Theme", ThemeDesc = "Change the UI theme",
+    Scale = "Interface Scale", ScaleDesc = "Adjust the size of the interface",
+    AccentColor = "Accent Color", AccentColorDesc = "Choose a custom highlight color",
+    ResetAccent = "Reset Accent Color", ResetAccentDesc = "Restore the current theme's accent color",
+    ReducedMotion = "Reduce Animations", ReducedMotionDesc = "Use shorter, subtler transitions",
+    ConfirmDelete = "Delete config '%s'? This cannot be undone.",
+    ConfirmReset = "Restore the defaults for '%s'?", Confirm = "Confirm",
     Save = "Save", Load = "Load", Set = "Set", Clear = "Clear", Delete = "Delete", Reset = "Reset",
     ConfigSaved = "Config '%s' saved.", ConfigLoaded = "Config '%s' loaded.",
     ConfigDeleted = "Config '%s' deleted.", ConfigReset = "Defaults restored and saved.",
@@ -74,7 +81,8 @@ local EZ_CurrentLanguage = "en"
 local EZ_Languages = {
     en = {},
     ["pt-BR"] = {
-        Search = "Buscar...", SearchTab = "Buscar nesta aba...", SearchEmpty = "Nenhum resultado encontrado.",
+        Search = "Buscar...", SearchTab = "Buscar nesta aba...", SearchAll = "Buscar em todas as abas...", SearchEmpty = "Nenhum resultado encontrado.",
+        SearchScopeTab = "Aba", SearchScopeAll = "Todas",
         Navigation = "NAVEGAÇÃO", ControlPanel = "PAINEL DE CONTROLE",
         Language = "Idioma", LanguageDesc = "Mudar o idioma da Eazy UI", InputPlaceholder = "Digite aqui...",
         LogoutMessage = "Sessão encerrada. Reinicie para inserir a chave novamente.",
@@ -99,6 +107,12 @@ local EZ_Languages = {
         MinimizeMode = "Modo de minimizar", MinimizeModeDesc = "Como a janela fica ao minimizar",
         Transparency = "Transparência da janela", TransparencyDesc = "Ajustar transparência da interface (0-90%)",
         Theme = "Tema", ThemeDesc = "Mudar o tema da interface",
+        Scale = "Escala da interface", ScaleDesc = "Ajustar o tamanho da interface",
+        AccentColor = "Cor de destaque", AccentColorDesc = "Escolher uma cor para os detalhes",
+        ResetAccent = "Restaurar cor de destaque", ResetAccentDesc = "Voltar à cor do tema atual",
+        ReducedMotion = "Reduzir animações", ReducedMotionDesc = "Usar transições mais rápidas e discretas",
+        ConfirmDelete = "Excluir a configuração '%s'? Essa ação não pode ser desfeita.",
+        ConfirmReset = "Restaurar os padrões de '%s'?", Confirm = "Confirmar",
         Save = "Salvar", Load = "Carregar", Set = "Definir", Clear = "Limpar", Delete = "Excluir", Reset = "Restaurar",
         ConfigSaved = "Configuração '%s' salva.", ConfigLoaded = "Configuração '%s' carregada.",
         ConfigDeleted = "Configuração '%s' excluída.", ConfigReset = "Padrões restaurados e salvos.",
@@ -110,7 +124,8 @@ local EZ_Languages = {
         KeyTimeout = "Tempo esgotado ao validar a chave.",
     },
     es = {
-        Search = "Buscar...", SearchTab = "Buscar en esta pestaña...", SearchEmpty = "No se encontraron resultados.",
+        Search = "Buscar...", SearchTab = "Buscar en esta pestaña...", SearchAll = "Buscar en todas las pestañas...", SearchEmpty = "No se encontraron resultados.",
+        SearchScopeTab = "Esta", SearchScopeAll = "Todas",
         Navigation = "NAVEGACIÓN", ControlPanel = "PANEL DE CONTROL",
         Language = "Idioma", LanguageDesc = "Cambiar el idioma de Eazy UI", InputPlaceholder = "Escribe aquí...",
         LogoutMessage = "Sesión cerrada. Reinicia para introducir la clave de nuevo.",
@@ -135,6 +150,12 @@ local EZ_Languages = {
         MinimizeMode = "Modo de minimizar", MinimizeModeDesc = "Cómo se oculta la ventana al minimizar",
         Transparency = "Transparencia de ventana", TransparencyDesc = "Ajustar la transparencia (0-90%)",
         Theme = "Tema", ThemeDesc = "Cambiar el tema de la interfaz",
+        Scale = "Escala de la interfaz", ScaleDesc = "Ajustar el tamaño de la interfaz",
+        AccentColor = "Color de acento", AccentColorDesc = "Elegir un color para los detalles",
+        ResetAccent = "Restaurar color de acento", ResetAccentDesc = "Volver al color del tema actual",
+        ReducedMotion = "Reducir animaciones", ReducedMotionDesc = "Usar transiciones más rápidas y discretas",
+        ConfirmDelete = "¿Eliminar la configuración '%s'? Esta acción no se puede deshacer.",
+        ConfirmReset = "¿Restaurar los valores de '%s'?", Confirm = "Confirmar",
         Save = "Guardar", Load = "Cargar", Set = "Definir", Clear = "Limpiar", Delete = "Eliminar", Reset = "Restaurar",
         ConfigSaved = "Configuración '%s' guardada.", ConfigLoaded = "Configuración '%s' cargada.",
         ConfigDeleted = "Configuración '%s' eliminada.", ConfigReset = "Valores restaurados y guardados.",
@@ -504,6 +525,7 @@ local EZ_StrokeSurf = {}
 local EZ_Connections = {}
 local EZ_ThemeListeners = {}
 local EZ_GlobalTransparency = 0
+local EZ_ReducedMotion = false
 local EZ_LogoAsset = nil
 local EZ_LogoLoading = false
 local EZ_LogoRequest = 0
@@ -518,6 +540,18 @@ local EZ_Windows = {}
 local EZ_ServiceConnections = {}
 local EZ_TransientGuis = {}
 EZ._Windows = EZ_Windows
+
+function EZ:SetReducedMotion(enabled)
+    if EZ_Destroyed then return false, "Library was destroyed" end
+    if type(enabled) ~= "boolean" then return false, "Expected a boolean" end
+    EZ_ReducedMotion = enabled
+    for _, window in ipairs(EZ_Windows) do
+        if window._motionToggle then window._motionToggle:Set(enabled, true) end
+    end
+    return true
+end
+
+function EZ:GetReducedMotion() return EZ_ReducedMotion end
 
 local function EZ_ConnectGlobal(signal, callback)
     local connection = signal:Connect(function(...)
@@ -547,6 +581,14 @@ local EZ_Ease = {
     Slow = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
     Pop = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
 }
+
+local function EZ_Animate(target, info, properties)
+    if EZ_ReducedMotion then
+        local duration = math.min(tonumber(info.Time) or 0.05, 0.05)
+        info = TweenInfo.new(duration, info.EasingStyle or Enum.EasingStyle.Quart, info.EasingDirection or Enum.EasingDirection.Out)
+    end
+    return TweenService:Create(target, info, properties)
+end
 
 local EZ_NotifyPosition = "BottomRight"
 local EZ_NotifyQueue = {}
@@ -701,6 +743,34 @@ end
 
 EZ_OnLocaleChange(function() EZ_Repaint() end)
 
+local function EZ_ColorsEqual(a, b)
+    return typeof(a) == "Color3" and typeof(b) == "Color3" and
+        math.abs(a.R - b.R) < 0.00001 and math.abs(a.G - b.G) < 0.00001 and math.abs(a.B - b.B) < 0.00001
+end
+
+local function EZ_SyncAccentControls()
+    for _, window in ipairs(EZ_Windows) do
+        local picker = window._accentPicker
+        if picker and picker._row and picker._row.Parent and not EZ_ColorsEqual(picker.Value, EZ_Theme.Accent) then
+            picker:Set(EZ_Theme.Accent, true)
+        end
+    end
+end
+
+local function EZ_SetAccentColor(color)
+    if typeof(color) ~= "Color3" then return false, "Expected a Color3" end
+    EZ_Theme.Accent = color
+    local original = EZ_Themes[EZ_CurrentThemeName] or EZ_Themes.Default
+    if EZ_ColorsEqual(color, original.Accent) then
+        EZ_Theme.AccentDim = original.AccentDim
+    else
+        EZ_Theme.AccentDim = EZ_C(math.floor(color.R * 255 * 0.75), math.floor(color.G * 255 * 0.75), math.floor(color.B * 255 * 0.75))
+    end
+    EZ_Repaint()
+    EZ_SyncAccentControls()
+    return true
+end
+
 local function EZ_ApplyThemeAndRepaint(name)
     local clean = tostring(name):lower():gsub("^%s+", ""):gsub("%s+$", "")
     local resolved = EZ_ThemeAliases[clean] or name
@@ -710,6 +780,7 @@ local function EZ_ApplyThemeAndRepaint(name)
     if not EZ_Theme.Radius then EZ_Theme.Radius = 6 end
     if not EZ_Theme.RadiusWindow then EZ_Theme.RadiusWindow = 10 end
     EZ_Repaint()
+    EZ_SyncAccentControls()
     for _, fn in ipairs(EZ_ThemeListeners) do
         pcall(fn, EZ_CurrentThemeName)
     end
@@ -761,14 +832,8 @@ function EZ:RegisterTheme(name, colors, base)
 end
 
 function EZ:SetAccent(color)
-    if EZ_CurrentWindow then
-        EZ_CurrentWindow:SetAccent(color)
-    else
-        EZ_Theme.Accent = color
-        local r, g, b = color.R * 255, color.G * 255, color.B * 255
-        EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
-        EZ_Repaint()
-    end
+    if EZ_Destroyed then return false, "Library was destroyed" end
+    return EZ_SetAccentColor(color)
 end
 
 EZ.Compat = {
@@ -1179,6 +1244,7 @@ local function EZ_Upper(value)
 end
 local function EZ_SetSearchText(row, title, description, originalTitle, originalDescription)
     if not row then return end
+    row:SetAttribute("EZ_SearchTitle", tostring(title or ""))
     local text = tostring(title or "") .. " " .. tostring(description or "") .. " " .. EZ_SearchOriginal(originalTitle) .. " " .. EZ_SearchOriginal(originalDescription)
     if row:GetAttribute("EZ_SearchText") == text then return end
     row:SetAttribute("EZ_SearchText", text)
@@ -1445,10 +1511,10 @@ local function EZ_CloseDropdown()
     local focused = UserInputService:GetFocusedTextBox()
     if focused and focused:IsDescendantOf(EZ_DropdownPopup) then focused:ReleaseFocus() end
     if prev.sign and prev.sign.Parent then
-        TweenService:Create(prev.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
+        EZ_Animate(prev.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
     end
     local w = EZ_DropdownPopup.Size.X.Offset
-    TweenService:Create(EZ_DropdownPopup, TweenInfo.new(0.15, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(w, 0) }):Play()
+    EZ_Animate(EZ_DropdownPopup, TweenInfo.new(0.15, Enum.EasingStyle.Quint), { Size = UDim2.fromOffset(w, 0) }):Play()
     task.delay(0.16, function()
         if version == EZ_DropdownTransition and not EZ_DropdownCurrent then EZ_DropdownPopup.Visible = false end
     end)
@@ -1462,7 +1528,7 @@ local function EZ_OpenDropdown(entry)
     end
     if EZ_DropdownCurrent then
         if EZ_DropdownCurrent.sign and EZ_DropdownCurrent.sign.Parent then
-            TweenService:Create(EZ_DropdownCurrent.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
+            EZ_Animate(EZ_DropdownCurrent.sign, EZ_Ease.Med, { Rotation = 0 }):Play()
         end
         EZ_DropdownCurrent.refreshOptions, EZ_DropdownCurrent.refreshTheme = nil, nil
     end
@@ -1489,18 +1555,20 @@ local function EZ_OpenDropdown(entry)
         end
         filterOptions()
     end
-    local optionHeight = UserInputService.TouchEnabled and 40 or 30
+    local popupScale = math.clamp(tonumber(entry.windowFrame:GetAttribute("EZ_Scale")) or 1, 0.8, 1.2)
+    local function px(value) return math.max(1, math.floor(value * popupScale + 0.5)) end
+    local optionHeight = px(UserInputService.TouchEnabled and 40 or 30)
     if entry.searchable then
         local search = Instance.new("TextBox")
         search.Name = "EZ_DropdownSearch"
-        search.Size = UDim2.new(1, 0, 0, UserInputService.TouchEnabled and 40 or 30)
+        search.Size = UDim2.new(1, 0, 0, optionHeight)
         search.LayoutOrder = 0
         search.BackgroundColor3 = EZ_Theme.Card
         search.BorderSizePixel = 0
         search.Text = ""
         search.PlaceholderText = EZ_Locale.Search
         search.Font = EZ_Brand.FontBody
-        search.TextSize = 13
+        search.TextSize = px(13)
         search.TextColor3 = EZ_Theme.Text
         search.PlaceholderColor3 = EZ_Theme.TextDim
         search.TextXAlignment = Enum.TextXAlignment.Left
@@ -1509,7 +1577,7 @@ local function EZ_OpenDropdown(entry)
         search.Parent = EZ_DropdownList
         searchBox = search
         local sp = Instance.new("UIPadding")
-        sp.PaddingLeft = UDim.new(0, 10)
+        sp.PaddingLeft = UDim.new(0, px(10))
         sp.Parent = search
         search:GetPropertyChangedSignal("Text"):Connect(filterOptions)
     end
@@ -1545,7 +1613,7 @@ local function EZ_OpenDropdown(entry)
         op.Text = entry.getDisplay(v)
         op.TextTransparency = 1
         op.Font = EZ_Brand.FontBody
-        op.TextSize = 13
+        op.TextSize = px(13)
         op.TextColor3 = isSelected(v) and EZ_Theme.Accent or EZ_Theme.Text
         op.TextXAlignment = Enum.TextXAlignment.Left
         op.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1554,8 +1622,8 @@ local function EZ_OpenDropdown(entry)
         op.Parent = EZ_DropdownList
         local optionLabel = Instance.new("TextLabel")
         optionLabel.Name = "EZ_OptionLabel"
-        optionLabel.Position = UDim2.fromOffset(12, 0)
-        optionLabel.Size = UDim2.new(1, -38, 1, 0)
+        optionLabel.Position = UDim2.fromOffset(px(12), 0)
+        optionLabel.Size = UDim2.new(1, -px(38), 1, 0)
         optionLabel.BackgroundTransparency = 1
         optionLabel.Text = op.Text
         optionLabel.Font = op.Font
@@ -1568,26 +1636,26 @@ local function EZ_OpenDropdown(entry)
         local selectedDot = Instance.new("Frame")
         selectedDot.Name = "EZ_SelectedDot"
         selectedDot.AnchorPoint = Vector2.new(0.5, 0.5)
-        selectedDot.Position = UDim2.new(1, -14, 0.5, 0)
-        selectedDot.Size = UDim2.fromOffset(6, 6)
+        selectedDot.Position = UDim2.new(1, -px(14), 0.5, 0)
+        selectedDot.Size = UDim2.fromOffset(px(6), px(6))
         selectedDot.BackgroundColor3 = EZ_Theme.Accent
         selectedDot.BorderSizePixel = 0
         selectedDot.Visible = isSelected(v)
         selectedDot.ZIndex = 62
         selectedDot.Parent = op
-        EZ_AddRadius(selectedDot, 3)
+        EZ_AddRadius(selectedDot, px(3))
         table.insert(optionButtons, { btn = op, label = optionLabel, name = tostring(v), value = v, indicator = selectedDot })
         op.MouseEnter:Connect(function()
-            TweenService:Create(op, TweenInfo.new(0.1), { BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
+            EZ_Animate(op, TweenInfo.new(0.1), { BackgroundTransparency = 0, BackgroundColor3 = EZ_Theme.CardHover }):Play()
             if not isSelected(v) then
-                TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text }):Play()
-                TweenService:Create(optionLabel, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text }):Play()
+                EZ_Animate(op, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text }):Play()
+                EZ_Animate(optionLabel, TweenInfo.new(0.1), { TextColor3 = EZ_Theme.Text }):Play()
             end
         end)
         op.MouseLeave:Connect(function()
             local color = isSelected(v) and EZ_Theme.Accent or EZ_Theme.Text
-            TweenService:Create(op, TweenInfo.new(0.1), { TextColor3 = color, BackgroundTransparency = 1 }):Play()
-            TweenService:Create(optionLabel, TweenInfo.new(0.1), { TextColor3 = color }):Play()
+            EZ_Animate(op, TweenInfo.new(0.1), { TextColor3 = color, BackgroundTransparency = 1 }):Play()
+            EZ_Animate(optionLabel, TweenInfo.new(0.1), { TextColor3 = color }):Play()
         end)
         op.Activated:Connect(function()
             entry.pick(v)
@@ -1603,25 +1671,25 @@ local function EZ_OpenDropdown(entry)
     local guiPos = EZ_Gui.AbsolutePosition
     local winPos = entry.windowFrame.AbsolutePosition
     local winSize = entry.windowFrame.AbsoluteSize
-    local popH = math.min(#values * optionHeight + (entry.searchable and (UserInputService.TouchEnabled and 48 or 38) or 8), 240, math.max(8, winSize.Y - 12))
-    local popW = math.min(math.max(entry.width or 160, trigSize.X), math.max(1, winSize.X - 12))
+    local popH = math.min(#values * optionHeight + px(entry.searchable and (UserInputService.TouchEnabled and 48 or 38) or 8), px(240), math.max(8, winSize.Y - px(12)))
+    local popW = math.min(math.max(px(entry.width or 160), trigSize.X), math.max(1, winSize.X - px(12)))
     local winX = winPos.X - guiPos.X
     local winY = winPos.Y - guiPos.Y
     local x = trigPos.X - guiPos.X + trigSize.X - popW
-    local y = trigPos.Y - guiPos.Y + trigSize.Y + 4
-    if y + popH > winY + winSize.Y - 6 then
-        y = trigPos.Y - guiPos.Y - popH - 4
+    local y = trigPos.Y - guiPos.Y + trigSize.Y + px(4)
+    if y + popH > winY + winSize.Y - px(6) then
+        y = trigPos.Y - guiPos.Y - popH - px(4)
     end
-    x = EZ_Clamp(x, winX + 6, winX + winSize.X - popW - 6)
-    y = EZ_Clamp(y, winY + 6, winY + winSize.Y - popH - 6)
+    x = EZ_Clamp(x, winX + px(6), winX + winSize.X - popW - px(6))
+    y = EZ_Clamp(y, winY + px(6), winY + winSize.Y - popH - px(6))
     EZ_DropdownList.CanvasPosition = Vector2.new(0, 0)
     EZ_DropdownPopup.Position = UDim2.fromOffset(x, y)
     EZ_DropdownPopup.Visible = true
     EZ_DropdownPopup.Size = UDim2.fromOffset(popW, 0)
     if entry.sign then
-        TweenService:Create(entry.sign, EZ_Ease.Med, { Rotation = 180 }):Play()
+        EZ_Animate(entry.sign, EZ_Ease.Med, { Rotation = 180 }):Play()
     end
-    TweenService:Create(EZ_DropdownPopup, EZ_Ease.Med, { Size = UDim2.fromOffset(popW, popH) }):Play()
+    EZ_Animate(EZ_DropdownPopup, EZ_Ease.Med, { Size = UDim2.fromOffset(popW, popH) }):Play()
 end
 
 EZ_ConnectGlobal(UserInputService.InputBegan, function(input, processed)
@@ -1666,23 +1734,30 @@ end
 local function EZ_ApplyResponsiveScale(frame, baseSize)
     local usable, inset, bottom = EZ_ViewportUsable()
     local margin = 24
-    local maxW, maxH = math.max(1, usable.X - margin), math.max(1, usable.Y - margin)
-    local desiredW = frame:GetAttribute("EZ_UserResized") and frame.Size.X.Offset or baseSize.X
-    local desiredH = frame:GetAttribute("EZ_UserResized") and frame.Size.Y.Offset or baseSize.Y
+    local scale = math.clamp(tonumber(frame:GetAttribute("EZ_UserScale")) or 1, 0.8, 1.2)
+    local maxW, maxH = math.max(1, (usable.X - margin) / scale), math.max(1, (usable.Y - margin) / scale)
+    local desiredW = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredWidth") or frame.Size.X.Offset) or baseSize.X
+    local desiredH = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredHeight") or frame.Size.Y.Offset) or baseSize.Y
     frame.Size = UDim2.fromOffset(math.min(math.max(1, desiredW), maxW), math.min(math.max(1, desiredH), maxH))
     local scaler = frame:FindFirstChild("EZ_WindowScale")
     if not scaler then
         scaler = Instance.new("UIScale")
         scaler.Name = "EZ_WindowScale"
-        scaler.Scale = 1
         scaler.Parent = frame
     end
-
-    frame:SetAttribute("EZ_Scale", 1)
+    frame:SetAttribute("EZ_Scale", scale)
+    if not frame:GetAttribute("EZ_ScaleTweening") then
+        scaler.Scale = scale * (tonumber(frame:GetAttribute("EZ_FadeFactor")) or 1)
+    end
     if not frame:GetAttribute("EZ_Moved") then
         frame.Position = UDim2.new(0.5, (inset.X - bottom.X) / 2, 0.5, (inset.Y - bottom.Y) / 2)
     end
-    return 1
+    return scale
+end
+
+local function EZ_FrameVisualScale(frame)
+    local scaler = frame:FindFirstChild("EZ_WindowScale")
+    return math.max(0.01, tonumber(scaler and scaler.Scale) or tonumber(frame:GetAttribute("EZ_Scale")) or 1)
 end
 
 local function EZ_ViewportLimits(frame)
@@ -1893,6 +1968,8 @@ local function EZ_MakeResizable(frame, titlebar, interaction, controls)
         if direction:find("W") then w = EZ_Clamp(startSize.X - d.X / scale, minW, maxW); dx = -(w - startSize.X) * scale * (1 - startAnchor.X) end
         if direction:find("S") then hgt = EZ_Clamp(startSize.Y + d.Y / scale, minH, maxH); dy = (hgt - startSize.Y) * scale * startAnchor.Y end
         if direction:find("N") then hgt = EZ_Clamp(startSize.Y - d.Y / scale, minH, maxH); dy = -(hgt - startSize.Y) * scale * (1 - startAnchor.Y) end
+        frame:SetAttribute("EZ_DesiredWidth", w)
+        frame:SetAttribute("EZ_DesiredHeight", hgt)
         frame.Size = UDim2.fromOffset(w, hgt)
         frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + dx, startPos.Y.Scale, startPos.Y.Offset + dy)
     end)
@@ -1923,18 +2000,27 @@ local function EZ_NewRow(page, height, element, useHitbox)
     end
 
     local hovering = false
+    local hoverTween
+    local function setHover(value)
+        hovering = value and not (element and element.Disabled)
+        if hoverTween then pcall(function() hoverTween:Cancel() end) end
+        hoverTween = EZ_Animate(row, EZ_Ease.Fast, { BackgroundTransparency = hovering and (0.65 + EZ_GlobalTransparency * 0.2) or 1 })
+        hoverTween:Play()
+    end
+    if element then
+        element._clearRowHover = function()
+            hovering = false
+            if hoverTween then pcall(function() hoverTween:Cancel() end); hoverTween = nil end
+            row.BackgroundTransparency = 1
+        end
+    end
     EZ_Paint(function()
+        if hoverTween then pcall(function() hoverTween:Cancel() end); hoverTween = nil end
         row.BackgroundColor3 = EZ_Theme.CardHover
-        row.BackgroundTransparency = hovering and (0.65 + EZ_GlobalTransparency * 0.2) or 1
+        row.BackgroundTransparency = hovering and not (element and element.Disabled) and (0.65 + EZ_GlobalTransparency * 0.2) or 1
     end, element)
-    EZ_Connect(hoverTarget, hoverTarget.MouseEnter, function()
-        hovering = true
-        TweenService:Create(row, EZ_Ease.Fast, { BackgroundTransparency = 0.65 + EZ_GlobalTransparency * 0.2 }):Play()
-    end)
-    EZ_Connect(hoverTarget, hoverTarget.MouseLeave, function()
-        hovering = false
-        TweenService:Create(row, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
-    end)
+    EZ_Connect(hoverTarget, hoverTarget.MouseEnter, function() setHover(true) end)
+    EZ_Connect(hoverTarget, hoverTarget.MouseLeave, function() setHover(false) end)
     return row, hitbox
 end
 
@@ -1977,6 +2063,27 @@ local function EZ_RowTitle(row, text, desc, rightPad, element)
     EZ_BindText(l, "Text", text, row, updateSearch)
     if descriptionLabel then EZ_BindText(descriptionLabel, "Text", desc, row, updateSearch) end
     return l, descriptionLabel
+end
+
+local function EZ_InstallDisabled(element, row, options, render)
+    local initial = options.Disabled == true or options.Enabled == false
+    function element:SetDisabled(disabled)
+        if EZ_Destroyed or not row.Parent then return false, "Control was destroyed" end
+        if type(disabled) ~= "boolean" then return false, "Expected a boolean" end
+        self.Disabled = disabled
+        row:SetAttribute("EZ_Disabled", disabled)
+        if self._titleLabel then self._titleLabel.TextTransparency = disabled and 0.5 or 0 end
+        if self._descriptionLabel then self._descriptionLabel.TextTransparency = disabled and 0.5 or 0 end
+        if self._clearRowHover then self._clearRowHover() end
+        if render then render(disabled) end
+        return true
+    end
+    function element:SetEnabled(enabled)
+        if type(enabled) ~= "boolean" then return false, "Expected a boolean" end
+        return self:SetDisabled(not enabled)
+    end
+    function element:IsDisabled() return self.Disabled == true end
+    element:SetDisabled(initial)
 end
 
 local function EZ_ValidConfigName(name)
@@ -2205,9 +2312,9 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
         subLabel.Text = subtitle and EZ_TranslateText(subtitle) or EZ_Locale.PleaseWait
     end)
     local fadeInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-    TweenService:Create(letter, fadeInfo, { [fadeProp] = 0 }):Play()
-    TweenService:Create(titleLabel, fadeInfo, { TextTransparency = 0 }):Play()
-    TweenService:Create(subLabel, fadeInfo, { TextTransparency = 0 }):Play()
+    EZ_Animate(letter, fadeInfo, { [fadeProp] = 0 }):Play()
+    EZ_Animate(titleLabel, fadeInfo, { TextTransparency = 0 }):Play()
+    EZ_Animate(subLabel, fadeInfo, { TextTransparency = 0 }):Play()
     local loadingDuration = tonumber(duration) or 2
     if loadingDuration ~= loadingDuration then loadingDuration = 2 end
     local loadingEnd = tick() + math.max(0, loadingDuration)
@@ -2218,13 +2325,13 @@ local function EZ_ShowLoadingScreen(title, subtitle, duration)
     end
     if EZ_Destroyed or not gui.Parent then return end
     local outInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
-    TweenService:Create(letter, outInfo, { [fadeProp] = 1 }):Play()
-    TweenService:Create(titleLabel, outInfo, { TextTransparency = 1 }):Play()
-    TweenService:Create(subLabel, outInfo, { TextTransparency = 1 }):Play()
-    TweenService:Create(card, outInfo, { BackgroundTransparency = 1 }):Play()
-    TweenService:Create(cardStroke, outInfo, { Transparency = 1 }):Play()
+    EZ_Animate(letter, outInfo, { [fadeProp] = 1 }):Play()
+    EZ_Animate(titleLabel, outInfo, { TextTransparency = 1 }):Play()
+    EZ_Animate(subLabel, outInfo, { TextTransparency = 1 }):Play()
+    EZ_Animate(card, outInfo, { BackgroundTransparency = 1 }):Play()
+    EZ_Animate(cardStroke, outInfo, { Transparency = 1 }):Play()
     local dialogScale = card:FindFirstChild("EZ_DialogScale")
-    if dialogScale then TweenService:Create(dialogScale, outInfo, { Scale = dialogScale.Scale * 0.92 }):Play() end
+    if dialogScale then EZ_Animate(dialogScale, outInfo, { Scale = dialogScale.Scale * 0.92 }):Play() end
     task.wait(0.32)
     if not EZ_Destroyed then EZ_CloseTransientGui(gui) end
 end
@@ -2339,8 +2446,8 @@ local function EZ_ShowDiscordPrompt(invite, callback)
     local skipSt = EZ_AddStroke(skipBtn, EZ_Theme.Border)
     EZ_AddRadius(skipBtn, "Theme")
     EZ_Paint(function() skipBtn.BackgroundColor3 = EZ_Theme.CardHover; skipBtn.TextColor3 = EZ_Theme.TextDim end, gui)
-    skipBtn.MouseEnter:Connect(function() TweenService:Create(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
-    skipBtn.MouseLeave:Connect(function() TweenService:Create(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
+    skipBtn.MouseEnter:Connect(function() EZ_Animate(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
+    skipBtn.MouseLeave:Connect(function() EZ_Animate(skipSt, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
     copyBtn.Activated:Connect(function()
         local link = "https://discord.gg/" .. invite
         local copied = false
@@ -2469,8 +2576,8 @@ local function EZ_ShowKeyScreen(options, validator, callback)
     local cst = EZ_AddStroke(cancel, EZ_Theme.Border)
     EZ_AddRadius(cancel, "Theme")
     EZ_Paint(function() cancel.BackgroundColor3 = EZ_Theme.CardHover; cancel.TextColor3 = EZ_Theme.TextDim end, gui)
-    cancel.MouseEnter:Connect(function() TweenService:Create(cst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
-    cancel.MouseLeave:Connect(function() TweenService:Create(cst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
+    cancel.MouseEnter:Connect(function() EZ_Animate(cst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
+    cancel.MouseLeave:Connect(function() EZ_Animate(cst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
     local err = Instance.new("TextLabel")
     err.Size = UDim2.new(1, -32, 0, 20)
     err.Position = UDim2.fromOffset(16, 214)
@@ -2815,12 +2922,18 @@ function EZ:Notify(options)
                 btn.TextColor3 = EZ_Theme.Text
                 btn.AutoButtonColor = false
                 btn.Parent = btnRow
-                EZ_BindText(btn, "Text", btnData.Title or "", holder)
+                if btnData._TitleKey then
+                    EZ_BindLocaleRefresh(holder, function()
+                        if btn.Parent then btn.Text = EZ_Locale[btnData._TitleKey] or tostring(btnData.Title or "") end
+                    end)
+                else
+                    EZ_BindText(btn, "Text", btnData.Title or "", holder)
+                end
                 local bst = EZ_AddStroke(btn, EZ_Theme.Border, nil, holder)
                 EZ_AddRadius(btn, 5)
                 EZ_Paint(function() btn.BackgroundColor3 = EZ_Theme.Background; btn.TextColor3 = EZ_Theme.Text end, holder)
-                btn.MouseEnter:Connect(function() TweenService:Create(bst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
-                btn.MouseLeave:Connect(function() TweenService:Create(bst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
+                btn.MouseEnter:Connect(function() EZ_Animate(bst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
+                btn.MouseLeave:Connect(function() EZ_Animate(bst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
                 btn.Activated:Connect(function()
                     EZ_SafeCall(btnData.Callback)
                     destroyNotify("Action")
@@ -2881,7 +2994,7 @@ function EZ:Notify(options)
                 if EZ_Destroyed then
                     holder:Destroy()
                 else
-                    TweenService:Create(holder, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = UDim2.fromOffset(0, entry.height) }):Play()
+                    EZ_Animate(holder, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Size = UDim2.fromOffset(0, entry.height) }):Play()
                     task.delay(0.22, function()
                         EZ_ClearPaintersFor(holder)
                         for i = #EZ_TransSurf, 1, -1 do
@@ -2899,7 +3012,7 @@ function EZ:Notify(options)
         end
         entry.destroy = destroyNotify
         holder.Size = UDim2.fromOffset(0, entry.height)
-        TweenService:Create(holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, entry.height) }):Play()
+        EZ_Animate(holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(EZ_NOTIFY_WIDTH, entry.height) }):Play()
         if timer then
             timerTween = TweenService:Create(timer, TweenInfo.new(d, Enum.EasingStyle.Linear), { Size = UDim2.new(0, 0, 0, 2) })
             timerTween:Play()
@@ -2923,6 +3036,7 @@ end
 function EZ:CreateWindow(options)
     if EZ_Destroyed then return nil, "Library was destroyed" end
     options = options or {}
+    if type(options.ReducedMotion) == "boolean" then EZ:SetReducedMotion(options.ReducedMotion) end
     local sidebarFont = options.SidebarFont
     if typeof(sidebarFont) ~= "EnumItem" or sidebarFont.EnumType ~= Enum.Font then sidebarFont = EZ_Brand.FontSidebar end
     local sidebarTextSize = tonumber(options.SidebarTextSize)
@@ -3033,6 +3147,9 @@ function EZ:CreateWindow(options)
     EZ_Window.CurrentConfig = "default"
     EZ_Window._pendingConfigSync = nil
     EZ_Window.MinimizeMode = EZ_MinMode
+    EZ_Window.UIScale = tonumber(options.UIScale) or 1
+    if EZ_Window.UIScale ~= EZ_Window.UIScale then EZ_Window.UIScale = 1 end
+    EZ_Window.UIScale = math.clamp(EZ_Window.UIScale, 0.8, 1.2)
     EZ_Window.ConfigId = EZ_ConfigId
     EZ_Window.AutoSave = options.AutoSave ~= false
     EZ_Window._pendingSaves = {}
@@ -3043,11 +3160,15 @@ function EZ:CreateWindow(options)
     EZ_CurrentWindow = EZ_Window
 
     function EZ_Window:SetAccent(color)
-        EZ_Theme.Accent = color
-        local r, g, b = color.R * 255, color.G * 255, color.B * 255
-        EZ_Theme.AccentDim = EZ_C(math.floor(r * 0.75), math.floor(g * 0.75), math.floor(b * 0.75))
-        EZ_Repaint()
+        if EZ_Destroyed then return false, "Window was destroyed" end
+        return EZ_SetAccentColor(color)
     end
+
+    function EZ_Window:SetReducedMotion(enabled)
+        return EZ:SetReducedMotion(enabled)
+    end
+
+    function EZ_Window:GetReducedMotion() return EZ_ReducedMotion end
 
     function EZ_Window:SetMinimizeMode(mode)
         if mode ~= "fade" and mode ~= "shrink" then return false end
@@ -3143,9 +3264,18 @@ function EZ:CreateWindow(options)
         if type(data._meta) == "table" then
             local meta = data._meta
             if type(meta.theme) == "string" then EZ_ApplyThemeAndRepaint(meta.theme) end
+            if type(meta.accent) == "table" then
+                local r, g, b = tonumber(meta.accent[1]), tonumber(meta.accent[2]), tonumber(meta.accent[3])
+                if r and g and b and r == r and g == g and b == b then
+                    EZ_Window:SetAccent(Color3.fromRGB(math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255)))
+                end
+            end
             if type(meta.language) == "string" then EZ:SetLanguage(meta.language) end
             if type(meta.transparency) == "number" then EZ_Window:SetTransparency(meta.transparency) end
             if type(meta.autoSave) == "boolean" then EZ_Window.AutoSave = meta.autoSave end
+            if type(meta.uiScale) == "number" then EZ_Window:SetScale(meta.uiScale) end
+            if type(meta.reducedMotion) == "boolean" then EZ_Window:SetReducedMotion(meta.reducedMotion) end
+            if type(meta.searchScope) == "string" and EZ_Window.SetSearchScope then EZ_Window:SetSearchScope(meta.searchScope, true) end
             if meta.minimizeMode == "fade" or meta.minimizeMode == "shrink" then EZ_Window:SetMinimizeMode(meta.minimizeMode) end
             if type(meta.sidebarCollapsed) == "boolean" and EZ_Window.SetSidebarCollapsed then
                 EZ_Window:SetSidebarCollapsed(EZ_Window._compact or meta.sidebarCollapsed, true)
@@ -3193,6 +3323,8 @@ function EZ:CreateWindow(options)
         frame.ClipsDescendants = true
         frame.GroupTransparency = 0
         frame:SetAttribute("EZ_ViewportPadding", math.max(0, tonumber(options.ViewportPadding) or 0))
+        frame:SetAttribute("EZ_UserScale", EZ_Window.UIScale)
+        frame:SetAttribute("EZ_FadeFactor", 1)
         frame.Parent = EZ_Gui
         if EZ_PreviousCount > 0 then
             local offset = math.min(EZ_PreviousCount, 5) * 24
@@ -3242,6 +3374,9 @@ function EZ:CreateWindow(options)
             if not frame.Parent then return end
             if windowInteraction.cancel then windowInteraction.cancel() end
             if EZ_Window.Minimized and EZ_Window.MinimizeMode == "shrink" and EZ_Window._resizeShrinkForViewport then
+                frame:SetAttribute("EZ_Scale", EZ_Window.UIScale)
+                local scaler = frame:FindFirstChild("EZ_WindowScale")
+                if scaler then scaler.Scale = EZ_Window.UIScale end
                 EZ_Window._resizeShrinkForViewport()
             else
                 if not EZ_Window.Minimized and EZ_Window._finishShrink then EZ_Window._finishShrink() end
@@ -3266,6 +3401,20 @@ function EZ:CreateWindow(options)
                 end)
             end
         end
+        function EZ_Window:SetScale(value)
+            if EZ_Destroyed then return false, "Window was destroyed" end
+            local scale = tonumber(value)
+            if not scale or scale ~= scale then return false, "Expected a number" end
+            self.UIScale = math.clamp(scale, 0.8, 1.2)
+            frame:SetAttribute("EZ_UserScale", self.UIScale)
+            if self._cancelScaleTween then self._cancelScaleTween() end
+            onViewportChanged()
+            if self._scaleSlider then self._scaleSlider:Set(self.UIScale * 100, true) end
+            return true
+        end
+
+        function EZ_Window:GetScale() return self.UIScale end
+
         EZ_Window._responsiveItems = {}
         onViewportChanged()
         local cameraConnection
@@ -3294,7 +3443,7 @@ function EZ:CreateWindow(options)
             EZ_ScaleConns[conn] = true
         end)
         frame.GroupTransparency = 1
-        TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
+        EZ_Animate(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
 
         local titlebar = Instance.new("Frame")
         titlebar.Size = UDim2.new(1, 0, 0, EZ_TITLEBAR_HEIGHT)
@@ -3440,7 +3589,7 @@ function EZ:CreateWindow(options)
         local function updateTabsCanvas()
             if not tabsContainer.Parent then return end
             local size = slay.AbsoluteContentSize
-            local height = size and size.Y or 0
+            local height = (size and size.Y or 0) / EZ_FrameVisualScale(frame)
             tabsContainer.CanvasSize = UDim2.fromOffset(0, height + spad.PaddingTop.Offset + spad.PaddingBottom.Offset)
         end
         slay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateTabsCanvas)
@@ -3574,9 +3723,11 @@ function EZ:CreateWindow(options)
         end
         local searchEnabled = options.SearchEnabled ~= false and options.Search ~= false
         local searchHeight = 0
-        local searchBox, searchEmpty, searchClear, pageHeading
-        local updateSearchLayout
+        local searchBox, searchEmpty, searchClear, searchScopeButton, globalResults, pageHeading
+        local updateSearchLayout, selectTab
         local searchValue = ""
+        local searchGlobal = searchEnabled and (options.SearchScope == "global" or options.SearchScope == "all") or false
+        local globalGroupPool, globalResultPool = {}, {}
         local refreshQueued = false
 
         local function syncSectionVisibility(data)
@@ -3651,11 +3802,150 @@ function EZ:CreateWindow(options)
             return count
         end
 
+        local function clearGlobalResults()
+            for _, label in ipairs(globalGroupPool) do label.Visible = false end
+            for _, entry in ipairs(globalResultPool) do
+                entry.button.Visible = false
+                entry.data, entry.row, entry.section = nil, nil, nil
+            end
+        end
+
+        local function updateScopeText()
+            if searchScopeButton then
+                searchScopeButton.Text = searchGlobal and EZ_Locale.SearchScopeAll or EZ_Locale.SearchScopeTab
+                searchScopeButton.TextColor3 = searchGlobal and EZ_Theme.Accent or EZ_Theme.TextDim
+            end
+            if searchBox then searchBox.PlaceholderText = searchGlobal and EZ_Locale.SearchAll or EZ_Locale.SearchTab end
+        end
+
+        local function renderGlobalResults(query)
+            if not globalResults then return 0 end
+            clearGlobalResults()
+            local total, order, groupCount = 0, 0, 0
+            local function addGroup(title)
+                order = order + 1
+                groupCount = groupCount + 1
+                local label = globalGroupPool[groupCount]
+                if not label then
+                    label = Instance.new("TextLabel")
+                    label.Name = "EZ_GlobalGroup"
+                    label:SetAttribute("EZ_GlobalEntry", true)
+                    label.Size = UDim2.new(1, 0, 0, 29)
+                    label.BackgroundTransparency = 1
+                    label.Font = EZ_Brand.FontMedium
+                    label.TextSize = 12
+                    label.TextXAlignment = Enum.TextXAlignment.Left
+                    label.TextTruncate = Enum.TextTruncate.AtEnd
+                    label.Parent = globalResults
+                    globalGroupPool[groupCount] = label
+                end
+                label.LayoutOrder = order
+                label.Text = title
+                label.TextColor3 = EZ_Theme.TextDim
+                label.Visible = true
+            end
+            local function addResult(data, row, section)
+                local title = row:GetAttribute("EZ_SearchTitle") or ""
+                if title == "" then return end
+                total = total + 1
+                order = order + 1
+                local entry = globalResultPool[total]
+                if not entry then
+                    local button = Instance.new("TextButton")
+                    button.Name = "EZ_GlobalResult"
+                    button:SetAttribute("EZ_GlobalEntry", true)
+                    button.BorderSizePixel = 0
+                    button.Font = EZ_Brand.FontBody
+                    button.TextSize = 13
+                    button.TextXAlignment = Enum.TextXAlignment.Left
+                    button.TextTruncate = Enum.TextTruncate.AtEnd
+                    button.AutoButtonColor = false
+                    button.Parent = globalResults
+                    EZ_AddRadius(button, 6)
+                    local pad = Instance.new("UIPadding")
+                    pad.PaddingLeft = UDim.new(0, 10)
+                    pad.PaddingRight = UDim.new(0, 10)
+                    pad.Parent = button
+                    entry = { button = button }
+                    globalResultPool[total] = entry
+                    button.MouseEnter:Connect(function() button.BackgroundTransparency = 0.5 end)
+                    button.MouseLeave:Connect(function() button.BackgroundTransparency = 1 end)
+                    button.Activated:Connect(function()
+                        local target, targetRow, targetSection = entry.data, entry.row, entry.section
+                        if EZ_Destroyed or not target or not targetRow or not target.Page.Parent or not targetRow.Parent then return end
+                        searchValue = ""
+                        if searchBox then searchBox.Text = "" end
+                        if searchClear then searchClear.Visible = false end
+                        if selectTab then selectTab(target) end
+                        if targetSection and targetSection.setCollapsed then targetSection.setCollapsed(false) end
+                        task.delay(0.05, function()
+                            if EZ_Destroyed or activeData ~= target or searchValue ~= "" or not targetRow.Parent or not target.Page.Parent then return end
+                            local scale = EZ_FrameVisualScale(frame)
+                            local delta = (targetRow.AbsolutePosition.Y - target.Page.AbsolutePosition.Y) / scale
+                            local maxY = math.max(0, target.Page.CanvasSize.Y.Offset - target.Page.AbsoluteSize.Y / scale)
+                            local currentY = target.Page.CanvasPosition and target.Page.CanvasPosition.Y or 0
+                            target.Page.CanvasPosition = Vector2.new(0, math.clamp(currentY + delta - EZ_HeaderGap, 0, maxY))
+                        end)
+                    end)
+                end
+                entry.data, entry.row, entry.section = data, row, section
+                local button = entry.button
+                button.LayoutOrder = order
+                button.Size = UDim2.new(1, 0, 0, UserInputService.TouchEnabled and 44 or 36)
+                button.BackgroundColor3 = EZ_Theme.CardHover
+                button.BackgroundTransparency = 1
+                button.TextColor3 = EZ_Theme.Text
+                button.Text = title
+                button.Visible = true
+            end
+            for _, data in ipairs(registry) do
+                local found = {}
+                local sectionsWithItems = {}
+                for _, item in ipairs(data.SearchItems) do
+                    local row, section = item.row, item.section
+                    local sectionVisible = not section or (section.header and section.header.Parent and section.header.Visible)
+                    local sectionMatch = section and (section.header:GetAttribute("EZ_SearchFolded") or ""):find(query, 1, true) ~= nil
+                    local rowMatch = (row:GetAttribute("EZ_SearchFolded") or ""):find(query, 1, true) ~= nil
+                    if row.Parent and row.Visible and sectionVisible and not row:GetAttribute("EZ_SearchSkip") and (sectionMatch or rowMatch) then
+                        if (row:GetAttribute("EZ_SearchTitle") or "") ~= "" then
+                            table.insert(found, { row = row, section = section })
+                            if section then sectionsWithItems[section] = true end
+                        end
+                    end
+                end
+                for _, section in ipairs(data.SearchSections) do
+                    local header = section.header
+                    if header and header.Parent and header.Visible and not sectionsWithItems[section] and
+                       (header:GetAttribute("EZ_SearchFolded") or ""):find(query, 1, true) then
+                        table.insert(found, { row = header, section = section })
+                    end
+                end
+                if #found > 0 then
+                    addGroup(data.Title)
+                    for _, entry in ipairs(found) do addResult(data, entry.row, entry.section) end
+                end
+            end
+            return total
+        end
+
         local function applySearch(resetScroll)
             if EZ_Destroyed or not frame.Parent then return end
-            local count = filterSearch(activeData, searchValue)
-            if searchEmpty then searchEmpty.Visible = activeData ~= nil and EZ_SearchText(searchValue):match("%S") ~= nil and count == 0 end
-            if resetScroll and activeData and activeData.Page then activeData.Page.CanvasPosition = Vector2.new(0, 0) end
+            local query = EZ_SearchText(searchValue):gsub("^%s+", ""):gsub("%s+$", "")
+            local useGlobal = searchGlobal and query ~= "" and globalResults ~= nil
+            local count
+            if useGlobal then
+                restoreSearch(activeData)
+                count = renderGlobalResults(query)
+                if activeData and activeData.Page then activeData.Page.Visible = false end
+                globalResults.Visible = count > 0
+                if resetScroll then globalResults.CanvasPosition = Vector2.new(0, 0) end
+            else
+                if globalResults then globalResults.Visible = false; clearGlobalResults() end
+                if activeData and activeData.Page then activeData.Page.Visible = true end
+                count = filterSearch(activeData, searchValue)
+                if resetScroll and activeData and activeData.Page then activeData.Page.CanvasPosition = Vector2.new(0, 0) end
+            end
+            if searchEmpty then searchEmpty.Visible = activeData ~= nil and query ~= "" and count == 0 end
         end
 
         local function queueSearch()
@@ -3706,7 +3996,7 @@ function EZ:CreateWindow(options)
                 searchBox = Instance.new("TextBox")
                 searchBox.Name = "EZ_SearchInput"
                 searchBox.Position = UDim2.fromOffset(34, 0)
-                searchBox.Size = UDim2.new(1, -68, 1, 0)
+                searchBox.Size = UDim2.new(1, -120, 1, 0)
                 searchBox.BackgroundTransparency = 1
                 searchBox.Text = ""
                 searchBox.PlaceholderText = EZ_Locale.SearchTab
@@ -3719,13 +4009,13 @@ function EZ:CreateWindow(options)
                 searchBox.Parent = searchBar
                 searchBox.Focused:Connect(function()
                     searchFocused = true
-                    TweenService:Create(searchStroke, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play()
-                    TweenService:Create(searchIcon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Accent }):Play()
+                    EZ_Animate(searchStroke, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play()
+                    EZ_Animate(searchIcon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Accent }):Play()
                 end)
                 searchBox.FocusLost:Connect(function()
                     searchFocused = false
-                    TweenService:Create(searchStroke, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play()
-                    TweenService:Create(searchIcon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play()
+                    EZ_Animate(searchStroke, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play()
+                    EZ_Animate(searchIcon, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play()
                 end)
                 local clear = Instance.new("TextButton")
                 clear.Name = "EZ_SearchClear"
@@ -3741,6 +4031,20 @@ function EZ:CreateWindow(options)
                 clear.Visible = false
                 clear.Parent = searchBar
                 searchClear = clear
+                searchScopeButton = Instance.new("TextButton")
+                searchScopeButton.Name = "EZ_SearchScope"
+                searchScopeButton.AnchorPoint = Vector2.new(1, 0.5)
+                searchScopeButton.Position = UDim2.new(1, -34, 0.5, 0)
+                searchScopeButton.Size = UDim2.fromOffset(48, 28)
+                searchScopeButton.BackgroundTransparency = 1
+                searchScopeButton.Text = ""
+                searchScopeButton.Font = EZ_Brand.FontMedium
+                searchScopeButton.TextSize = 11
+                searchScopeButton.TextColor3 = EZ_Theme.TextDim
+                searchScopeButton.TextTruncate = Enum.TextTruncate.AtEnd
+                searchScopeButton.AutoButtonColor = false
+                searchScopeButton.Parent = searchBar
+                updateScopeText()
                 searchEmpty = Instance.new("TextLabel")
                 searchEmpty.Name = "EZ_SearchEmpty"
                 searchEmpty.Position = UDim2.fromOffset(12, searchHeight)
@@ -3753,17 +4057,63 @@ function EZ:CreateWindow(options)
                 searchEmpty.TextWrapped = true
                 searchEmpty.Visible = false
                 searchEmpty.Parent = content
+                globalResults = Instance.new("ScrollingFrame")
+                globalResults.Name = "EZ_GlobalSearchResults"
+                globalResults.Position = UDim2.fromOffset(0, searchHeight)
+                globalResults.Size = UDim2.new(1, 0, 1, -searchHeight)
+                globalResults.BackgroundTransparency = 1
+                globalResults.BorderSizePixel = 0
+                globalResults.ScrollBarThickness = 3
+                globalResults.ScrollBarImageColor3 = EZ_Theme.BorderHover
+                globalResults.AutomaticCanvasSize = Enum.AutomaticSize.None
+                globalResults.CanvasSize = UDim2.fromOffset(0, 0)
+                globalResults.ScrollingDirection = Enum.ScrollingDirection.Y
+                globalResults.Visible = false
+                globalResults.Parent = content
+                local resultsLayout = Instance.new("UIListLayout")
+                resultsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                resultsLayout.Padding = UDim.new(0, 2)
+                resultsLayout.Parent = globalResults
+                local resultsPadding = Instance.new("UIPadding")
+                resultsPadding.PaddingTop = UDim.new(0, EZ_HeaderGap)
+                resultsPadding.PaddingBottom = UDim.new(0, 16)
+                resultsPadding.PaddingLeft = UDim.new(0, EZ_PagePadding)
+                resultsPadding.PaddingRight = UDim.new(0, EZ_PagePadding)
+                resultsPadding.Parent = globalResults
+                local function updateGlobalCanvas()
+                    if not globalResults.Parent then return end
+                    local size = resultsLayout.AbsoluteContentSize
+                    local height = (size and size.Y or 0) / EZ_FrameVisualScale(frame)
+                    globalResults.CanvasSize = UDim2.fromOffset(0, height + resultsPadding.PaddingTop.Offset + resultsPadding.PaddingBottom.Offset)
+                end
+                resultsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateGlobalCanvas)
+                updateGlobalCanvas()
+                EZ_Paint(function()
+                    globalResults.ScrollBarImageColor3 = EZ_Theme.BorderHover
+                    for _, child in ipairs(globalResults:GetChildren()) do
+                        if child:GetAttribute("EZ_GlobalEntry") then
+                            if child:IsA("TextButton") then
+                                child.BackgroundColor3 = EZ_Theme.CardHover
+                                child.TextColor3 = EZ_Theme.Text
+                            elseif child:IsA("TextLabel") then
+                                child.TextColor3 = EZ_Theme.TextDim
+                            end
+                        end
+                    end
+                end, globalResults)
                 EZ_Paint(function()
                     searchBar.BackgroundColor3 = EZ_Theme.Card
                     searchIcon.ImageColor3 = searchFocused and EZ_Theme.Accent or EZ_Theme.TextDim
                     searchBox.TextColor3 = EZ_Theme.Text
                     searchBox.PlaceholderColor3 = EZ_Theme.TextDim
                     clear.TextColor3 = EZ_Theme.TextDim
+                    updateScopeText()
                     searchEmpty.TextColor3 = EZ_Theme.TextDim
                 end, searchBar)
                 EZ_OnLocaleChange(function()
-                    if searchBox.Parent then searchBox.PlaceholderText = EZ_Locale.SearchTab end
+                    if searchBox.Parent then updateScopeText() end
                     if searchEmpty.Parent then searchEmpty.Text = EZ_Locale.SearchEmpty end
+                    queueSearch()
                 end)
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     searchValue = searchBox.Text
@@ -3772,7 +4122,12 @@ function EZ:CreateWindow(options)
                     applySearch(true)
                 end)
                 clear.Activated:Connect(function() searchBox.Text = "" end)
+                searchScopeButton.Activated:Connect(function()
+                    EZ_Window:SetSearchScope(searchGlobal and "tab" or "global")
+                end)
                 EZ_Window.SearchBox = searchBox
+                EZ_Window.SearchScopeButton = searchScopeButton
+                EZ_Window.GlobalSearchResults = globalResults
             end
             updateSearchLayout = function(compact)
                 local sidebarOpen = EZ_Window._sidebarOpen
@@ -3796,6 +4151,10 @@ function EZ:CreateWindow(options)
                     if searchEmpty then
                         searchEmpty.Position = UDim2.fromOffset(12, searchHeight)
                         searchEmpty.Size = UDim2.new(1, -24, 1, -searchHeight)
+                    end
+                    if globalResults then
+                        globalResults.Position = UDim2.fromOffset(0, searchHeight)
+                        globalResults.Size = UDim2.new(1, 0, 1, -searchHeight)
                     end
                     for _, data in ipairs(registry) do
                         if data.Page and data.Page.Parent then
@@ -3821,6 +4180,20 @@ function EZ:CreateWindow(options)
             applySearch(true)
         end
         function EZ_Window:GetSearch() return searchValue end
+        function EZ_Window:SetSearchScope(scope, silent)
+            if EZ_Destroyed then return false, "Window was destroyed" end
+            if scope == "all" then scope = "global" end
+            if scope ~= "tab" and scope ~= "global" then return false, "Expected tab or global" end
+            if scope == "global" and not searchEnabled then return false, "Search UI is disabled" end
+            if searchGlobal == (scope == "global") then return true end
+            restoreSearch(activeData)
+            searchGlobal = scope == "global"
+            updateScopeText()
+            applySearch(true)
+            if not silent and self.AutoSave and self._ScheduleSave then self:_ScheduleSave(self.CurrentConfig) end
+            return true
+        end
+        function EZ_Window:GetSearchScope() return searchGlobal and "global" or "tab" end
         EZ_Window._sidebarOpen = not EZ_Window._compact
         if type(options.SidebarCollapsed) == "boolean" then EZ_Window._sidebarOpen = not options.SidebarCollapsed end
         local menuBtn = Instance.new("TextButton")
@@ -3843,8 +4216,8 @@ function EZ:CreateWindow(options)
             menuBtn.BackgroundColor3 = EZ_Theme.CardHover
             menuGlyph.ImageColor3 = EZ_Theme.TextDim
         end, menuBtn)
-        menuBtn.MouseEnter:Connect(function() TweenService:Create(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 0.45 }):Play() end)
-        menuBtn.MouseLeave:Connect(function() TweenService:Create(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play() end)
+        menuBtn.MouseEnter:Connect(function() EZ_Animate(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 0.45 }):Play() end)
+        menuBtn.MouseLeave:Connect(function() EZ_Animate(menuBtn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play() end)
         updateTitleVersion()
 
         local function updateSidebarTab(d, collapsed)
@@ -3881,7 +4254,7 @@ function EZ:CreateWindow(options)
         local sidebarTweens = {}
         local function layoutTransition(object, properties, animated)
             if animated then
-                local tween = TweenService:Create(object, EZ_Ease.Med, properties)
+                local tween = EZ_Animate(object, EZ_Ease.Med, properties)
                 table.insert(sidebarTweens, tween)
                 tween:Play()
             else
@@ -3949,7 +4322,7 @@ function EZ:CreateWindow(options)
             end
         end)
 
-        local function selectTab(target)
+        selectTab = function(target)
             EZ_CloseDropdown()
             if activeData ~= target then restoreSearch(activeData) end
             activeData = target
@@ -3963,7 +4336,7 @@ function EZ:CreateWindow(options)
                         d.Page.Visible = true
                         if d.PageTween then pcall(function() d.PageTween:Cancel() end) end
                         d.Page.Position = UDim2.new(0.015, 0, 0, searchHeight)
-                        d.PageTween = TweenService:Create(d.Page, EZ_Ease.Med, {
+                        d.PageTween = EZ_Animate(d.Page, EZ_Ease.Med, {
                             Position = UDim2.new(0, 0, 0, searchHeight)
                         })
                         d.PageTween:Play()
@@ -3971,18 +4344,18 @@ function EZ:CreateWindow(options)
                 else
                     d.Page.Visible = false
                 end
-                TweenService:Create(d.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                EZ_Animate(d.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     BackgroundTransparency = d.Active and (EZ_GlobalTransparency * 0.55) or 1
                 }):Play()
-                TweenService:Create(d.Label, EZ_Ease.Fast, {
+                EZ_Animate(d.Label, EZ_Ease.Fast, {
                     TextColor3 = d.Active and EZ_Theme.Text or EZ_Theme.TextDim
                 }):Play()
                 if d.Icon then
-                    TweenService:Create(d.Icon, EZ_Ease.Fast, {
+                    EZ_Animate(d.Icon, EZ_Ease.Fast, {
                         ImageColor3 = d.Active and EZ_Theme.Accent or EZ_Theme.TextDim
                     }):Play()
                 end
-                TweenService:Create(d.IconInitial, EZ_Ease.Fast, {
+                EZ_Animate(d.IconInitial, EZ_Ease.Fast, {
                     TextColor3 = d.Active and EZ_Theme.Accent or EZ_Theme.TextDim
                 }):Play()
             end
@@ -4067,25 +4440,30 @@ function EZ:CreateWindow(options)
         local fadeTween, fadeScaleTween, shrinkTween
         local expandedSize, savedVisibility, originalAnchor, shrinkPhase
         local windowScale = frame:FindFirstChild("EZ_WindowScale")
-        local fadeDuration = 0.3
-        local fadeInfo = TweenInfo.new(fadeDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
 
         local function cancelTween(tween)
             if tween then pcall(function() tween:Cancel() end) end
         end
 
+        EZ_Window._cancelScaleTween = function()
+            cancelTween(fadeScaleTween)
+            fadeScaleTween = nil
+            frame:SetAttribute("EZ_ScaleTweening", false)
+        end
+
         local function cancelFade()
             cancelTween(fadeTween)
-            cancelTween(fadeScaleTween)
-            fadeTween, fadeScaleTween = nil, nil
+            EZ_Window._cancelScaleTween()
+            fadeTween = nil
         end
 
         local function setAnchorPreservingTop(anchor)
             local oldAnchor, size, position = frame.AnchorPoint, frame.Size, frame.Position
             local dx, dy = anchor.X - oldAnchor.X, anchor.Y - oldAnchor.Y
+            local scale = frame:GetAttribute("EZ_Scale") or 1
             frame.Position = UDim2.new(
-                position.X.Scale + size.X.Scale * dx, position.X.Offset + size.X.Offset * dx,
-                position.Y.Scale + size.Y.Scale * dy, position.Y.Offset + size.Y.Offset * dy
+                position.X.Scale + size.X.Scale * dx * scale, position.X.Offset + size.X.Offset * dx * scale,
+                position.Y.Scale + size.Y.Scale * dy * scale, position.Y.Offset + size.Y.Offset * dy * scale
             )
             frame.AnchorPoint = anchor
         end
@@ -4131,7 +4509,8 @@ function EZ:CreateWindow(options)
                 cancelTween(shrinkTween)
                 shrinkTween = nil
                 local usable = EZ_ViewportUsable()
-                frame.Size = UDim2.fromOffset(width, math.min(EZ_TITLEBAR_HEIGHT, math.max(1, usable.Y - 24)))
+                local scale = frame:GetAttribute("EZ_Scale") or 1
+                frame.Size = UDim2.fromOffset(width, math.min(EZ_TITLEBAR_HEIGHT, math.max(1, (usable.Y - 24) / scale)))
                 hideShrinkContents()
                 shrinkPhase = "collapsed"
             else
@@ -4144,18 +4523,19 @@ function EZ:CreateWindow(options)
             cancelTween(shrinkTween)
             shrinkTween = nil
             local usable = EZ_ViewportUsable()
-            local maxW, maxH = math.max(1, usable.X - 24), math.max(1, usable.Y - 24)
+            local scale = frame:GetAttribute("EZ_Scale") or 1
+            local maxW, maxH = math.max(1, (usable.X - 24) / scale), math.max(1, (usable.Y - 24) / scale)
             local previous = expandedSize or frame.Size
-            local wantedW = frame:GetAttribute("EZ_UserResized") and previous.X.Offset or EZ_BaseSize.X
-            local wantedH = frame:GetAttribute("EZ_UserResized") and previous.Y.Offset or EZ_BaseSize.Y
+            local wantedW = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredWidth") or previous.X.Offset) or EZ_BaseSize.X
+            local wantedH = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredHeight") or previous.Y.Offset) or EZ_BaseSize.Y
             expandedSize = UDim2.fromOffset(math.min(math.max(1, wantedW), maxW), math.min(math.max(1, wantedH), maxH))
             local current, position, anchor = frame.Size, frame.Position, frame.AnchorPoint
             local target = UDim2.fromOffset(expandedSize.X.Offset, math.min(EZ_TITLEBAR_HEIGHT, maxH))
             frame.Position = UDim2.new(
-                position.X.Scale + (target.X.Scale - current.X.Scale) * anchor.X,
-                position.X.Offset + (target.X.Offset - current.X.Offset) * anchor.X,
-                position.Y.Scale + (target.Y.Scale - current.Y.Scale) * anchor.Y,
-                position.Y.Offset + (target.Y.Offset - current.Y.Offset) * anchor.Y
+                position.X.Scale + (target.X.Scale - current.X.Scale) * anchor.X * scale,
+                position.X.Offset + (target.X.Offset - current.X.Offset) * anchor.X * scale,
+                position.Y.Scale + (target.Y.Scale - current.Y.Scale) * anchor.Y * scale,
+                position.Y.Offset + (target.Y.Offset - current.Y.Offset) * anchor.Y * scale
             )
             frame.Size = target
             hideShrinkContents()
@@ -4165,13 +4545,19 @@ function EZ:CreateWindow(options)
         local function applyMinimizeFade(state, version)
             cancelFade()
             if not state then frame.Visible = true end
-            fadeTween = TweenService:Create(frame, fadeInfo, { GroupTransparency = state and 1 or 0 })
-            fadeScaleTween = TweenService:Create(windowScale, fadeInfo, { Scale = state and 0.92 or 1 })
+            local fadeDuration = EZ_ReducedMotion and 0.05 or 0.3
+            local fadeInfo = TweenInfo.new(fadeDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
+            local factor = state and 0.92 or 1
+            frame:SetAttribute("EZ_FadeFactor", factor)
+            frame:SetAttribute("EZ_ScaleTweening", true)
+            fadeTween = EZ_Animate(frame, fadeInfo, { GroupTransparency = state and 1 or 0 })
+            fadeScaleTween = EZ_Animate(windowScale, fadeInfo, { Scale = EZ_Window.UIScale * factor })
             fadeTween:Play()
             fadeScaleTween:Play()
             task.delay(fadeDuration + 0.02, function()
                 if version ~= minimizeVersion or not frame.Parent then return end
                 fadeTween, fadeScaleTween = nil, nil
+                frame:SetAttribute("EZ_ScaleTweening", false)
                 if EZ_Window.MinimizeMode ~= "fade" then return end
                 if state and EZ_Window.Minimized then
                     frame.Visible = false
@@ -4195,13 +4581,13 @@ function EZ:CreateWindow(options)
                 shrinkPhase = "shrinking"
                 local current = frame.Size
                 local target = UDim2.new(current.X.Scale, current.X.Offset, 0, EZ_TITLEBAR_HEIGHT)
-                shrinkTween = TweenService:Create(frame, EZ_Ease.Slow, { Size = target })
+                shrinkTween = EZ_Animate(frame, EZ_Ease.Slow, { Size = target })
                 shrinkTween:Play()
-                task.delay(0.12, function()
+                task.delay(EZ_ReducedMotion and 0.02 or 0.12, function()
                     if version ~= minimizeVersion or not frame.Parent or not EZ_Window.Minimized or EZ_Window.MinimizeMode ~= "shrink" then return end
                     hideShrinkContents()
                 end)
-                task.delay(0.34, function()
+                task.delay(EZ_ReducedMotion and 0.07 or 0.34, function()
                     if version == minimizeVersion and frame.Parent and EZ_Window.Minimized and EZ_Window.MinimizeMode == "shrink" then
                         shrinkTween = nil
                         shrinkPhase = "collapsed"
@@ -4210,9 +4596,9 @@ function EZ:CreateWindow(options)
             else
                 restoreShrinkContents()
                 shrinkPhase = "restoring"
-                shrinkTween = TweenService:Create(frame, EZ_Ease.Slow, { Size = expandedSize or UDim2.fromOffset(EZ_BaseSize.X, EZ_BaseSize.Y) })
+                shrinkTween = EZ_Animate(frame, EZ_Ease.Slow, { Size = expandedSize or UDim2.fromOffset(EZ_BaseSize.X, EZ_BaseSize.Y) })
                 shrinkTween:Play()
-                task.delay(0.34, function()
+                task.delay(EZ_ReducedMotion and 0.07 or 0.34, function()
                     if version ~= minimizeVersion or not frame.Parent or EZ_Window.Minimized or EZ_Window.MinimizeMode ~= "shrink" then return end
                     shrinkTween = nil
                     if windowInteraction.cancel then windowInteraction.cancel() end
@@ -4242,7 +4628,8 @@ function EZ:CreateWindow(options)
                 cancelFade()
                 frame.Visible = true
                 frame.GroupTransparency = 0
-                windowScale.Scale = 1
+                frame:SetAttribute("EZ_FadeFactor", 1)
+                windowScale.Scale = EZ_Window.UIScale
                 applyMinimizeShrink(state, version)
             else
                 applyMinimizeFade(state, version)
@@ -4251,9 +4638,9 @@ function EZ:CreateWindow(options)
 
         local function setMinHovered(hovered)
             minHovered = hovered
-            TweenService:Create(minbtn, EZ_Ease.Fast, { BackgroundTransparency = hovered and 0 or 1 }):Play()
+            EZ_Animate(minbtn, EZ_Ease.Fast, { BackgroundTransparency = hovered and 0 or 1 }):Play()
             cancelTween(minIconTween)
-            minIconTween = TweenService:Create(minicon, EZ_Ease.Fast, { ImageColor3 = hovered and EZ_Theme.Text or EZ_Theme.TextDim })
+            minIconTween = EZ_Animate(minicon, EZ_Ease.Fast, { ImageColor3 = hovered and EZ_Theme.Text or EZ_Theme.TextDim })
             minIconTween:Play()
         end
         minbtn.MouseEnter:Connect(function() setMinHovered(true) end)
@@ -4397,7 +4784,7 @@ function EZ:CreateWindow(options)
             local function updatePageCanvas()
                 if not page.Parent then return end
                 local size = play.AbsoluteContentSize
-                local height = size and size.Y or 0
+                local height = (size and size.Y or 0) / EZ_FrameVisualScale(frame)
                 page.CanvasSize = UDim2.fromOffset(0, height + ppad.PaddingTop.Offset + ppad.PaddingBottom.Offset)
             end
             play:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updatePageCanvas)
@@ -4439,25 +4826,26 @@ function EZ:CreateWindow(options)
                 data.Title = EZ_TranslateText(tabTitle)
                 updateSidebarTab(data, not EZ_Window._sidebarOpen)
                 if data.Active then updatePageHeading(data) end
+                queueSearch()
             end)
 
             btn.MouseEnter:Connect(function()
                 if not data.Active then
-                    TweenService:Create(btn, EZ_Ease.Fast, { BackgroundTransparency = 0.7 + EZ_GlobalTransparency * 0.15 }):Play()
-                    TweenService:Create(lbl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Text }):Play()
-                    TweenService:Create(iconInitial, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Text }):Play()
+                    EZ_Animate(btn, EZ_Ease.Fast, { BackgroundTransparency = 0.7 + EZ_GlobalTransparency * 0.15 }):Play()
+                    EZ_Animate(lbl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Text }):Play()
+                    EZ_Animate(iconInitial, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Text }):Play()
                     if iconLbl and iconLbl:IsA("ImageLabel") then
-                        TweenService:Create(iconLbl, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Text }):Play()
+                        EZ_Animate(iconLbl, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Text }):Play()
                     end
                 end
             end)
             btn.MouseLeave:Connect(function()
                 if not data.Active then
-                    TweenService:Create(btn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
-                    TweenService:Create(lbl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
-                    TweenService:Create(iconInitial, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
+                    EZ_Animate(btn, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
+                    EZ_Animate(lbl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
+                    EZ_Animate(iconInitial, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
                     if iconLbl and iconLbl:IsA("ImageLabel") then
-                        TweenService:Create(iconLbl, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play()
+                        EZ_Animate(iconLbl, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play()
                     end
                 end
             end)
@@ -4636,28 +5024,27 @@ function EZ:CreateWindow(options)
                 click.Parent = holder
                 click.MouseEnter:Connect(function()
                     headerHovering = true
-                    TweenService:Create(holder, EZ_Ease.Fast, { BackgroundTransparency = 0.35 + EZ_GlobalTransparency * 0.2 }):Play()
-                    if chev then TweenService:Create(chev, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Accent }):Play() end
+                    EZ_Animate(holder, EZ_Ease.Fast, { BackgroundTransparency = 0.35 + EZ_GlobalTransparency * 0.2 }):Play()
+                    if chev then EZ_Animate(chev, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.Accent }):Play() end
                 end)
                 click.MouseLeave:Connect(function()
                     headerHovering = false
-                    TweenService:Create(holder, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
-                    if chev then TweenService:Create(chev, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play() end
+                    EZ_Animate(holder, EZ_Ease.Fast, { BackgroundTransparency = 1 }):Play()
+                    if chev then EZ_Animate(chev, EZ_Ease.Fast, { ImageColor3 = EZ_Theme.TextDim }):Play() end
                 end)
-                click.Activated:Connect(function()
+                local function setCollapsed(value)
                     if EZ_DropdownCurrent and EZ_DropdownCurrent.trigger and EZ_DropdownCurrent.trigger:IsDescendantOf(body) then EZ_CloseDropdown() end
+                    collapsed = value == true
                     if data.Searching and searchSection then
-                        local visible = not body.Visible
-                        searchSection.searchOverride = visible
-                        searchSection.originalBody = visible
-                        collapsed = not visible
-                    else
-                        collapsed = not collapsed
+                        searchSection.searchOverride = not collapsed
+                        searchSection.originalBody = not collapsed
                     end
-                    if chev then
-                        TweenService:Create(chev, EZ_Ease.Med, { Rotation = collapsed and -90 or 0 }):Play()
-                    end
+                    if chev then EZ_Animate(chev, EZ_Ease.Med, { Rotation = collapsed and -90 or 0 }):Play() end
                     body.Visible = not collapsed
+                end
+                if searchSection then searchSection.setCollapsed = setCollapsed end
+                click.Activated:Connect(function()
+                    if data.Searching and searchSection then setCollapsed(body.Visible) else setCollapsed(not collapsed) end
                 end)
                 local titleSource = o.Title or ""
                 local titleBinding = EZ_BindText(t, "Text", titleSource, holder, function(translated)
@@ -4802,8 +5189,8 @@ function EZ:CreateWindow(options)
                 EZ_AddRadius(knob, 9)
                 local function renderTween()
                     local on = obj.Value
-                    TweenService:Create(track, TweenInfo.new(0.15), { BackgroundColor3 = on and EZ_Theme.Accent or EZ_Theme.BorderHover }):Play()
-                    TweenService:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quint), {
+                    EZ_Animate(track, TweenInfo.new(0.15), { BackgroundColor3 = on and EZ_Theme.Accent or EZ_Theme.BorderHover }):Play()
+                    EZ_Animate(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quint), {
                         Position = UDim2.fromOffset(on and 21 or 3, 3),
                         BackgroundColor3 = on and EZ_Theme.Background or EZ_Theme.TextDim
                     }):Play()
@@ -4813,20 +5200,28 @@ function EZ:CreateWindow(options)
                     obj.Value = state and true or false
                     renderTween()
                     if not silent then
-                        EZ_SafeCall(cb, obj.Value)
+                        if not obj.Disabled then EZ_SafeCall(cb, obj.Value) end
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "toggle", value = obj.Value }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
                         end
                     end
                 end
-                EZ_Connect(hitbox, hitbox.Activated, function() obj:Set(not obj.Value) end)
+                EZ_Connect(hitbox, hitbox.Activated, function()
+                    if not obj.Disabled then obj:Set(not obj.Value) end
+                end)
                 EZ_Connect(hitbox, hitbox.InputBegan, function(i)
+                    if obj.Disabled then return end
                     if i.UserInputType == Enum.UserInputType.MouseButton2 then
                         EZ_SafeCall(rightCb, obj)
                     elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
                         EZ_SafeCall(middleCb, obj)
                     end
+                end)
+                EZ_InstallDisabled(obj, row, o, function(disabled)
+                    hitbox.Active = not disabled
+                    track.BackgroundTransparency = disabled and 0.45 or 0
+                    knob.BackgroundTransparency = disabled and 0.45 or 0
                 end)
                 renderTween()
                 EZ_Window:_RegisterElement(obj)
@@ -4865,9 +5260,11 @@ function EZ:CreateWindow(options)
                 pressScale.Scale = 1
                 pressScale.Parent = act
                 local pressVersion = 0
+                local pressTween
                 EZ_AddRadius(act, "Theme")
                 local buttonStroke
                 local buttonHovered = false
+                local buttonColorTween, buttonStrokeTween
                 local measuredText, measuredWidth
                 updateButtonLayout = function(compact)
                     local height = compact and (description and 92 or 76) or 46
@@ -4875,7 +5272,7 @@ function EZ:CreateWindow(options)
                     act.AnchorPoint = compact and Vector2.new(1, 0) or Vector2.new(1, 0.5)
                     act.Position = compact and UDim2.new(1, -14, 0, description and 49 or 33) or UDim2.new(1, -14, 0.5, 0)
                     title.Position = UDim2.fromOffset(14, compact and (description and 9 or 5) or (description and 9 or 0))
-                    local available = row.AbsoluteSize.X
+                    local available = row.AbsoluteSize.X / EZ_FrameVisualScale(frame)
                     if available > 0 then
                         if act.Text ~= measuredText then
                             measuredText = act.Text
@@ -4901,39 +5298,55 @@ function EZ:CreateWindow(options)
                 act:GetPropertyChangedSignal("Text"):Connect(function() updateButtonLayout(EZ_Window._compact) end)
                 updateButtonLayout(EZ_Window._compact)
                 EZ_Paint(function()
+                    if buttonColorTween then pcall(function() buttonColorTween:Cancel() end); buttonColorTween = nil end
+                    if buttonStrokeTween then pcall(function() buttonStrokeTween:Cancel() end); buttonStrokeTween = nil end
                     act.BackgroundColor3 = buttonHovered and EZ_Theme.TabActive or EZ_Theme.CardHover
                     act.TextColor3 = EZ_Theme.Text
                     buttonStroke.Color = buttonHovered and EZ_Theme.Accent or EZ_Theme.Border
                 end, obj)
                 buttonStroke = EZ_AddStroke(act, EZ_Theme.Border)
-                act.MouseEnter:Connect(function()
-                    buttonHovered = true
-                    TweenService:Create(act, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.TabActive }):Play()
-                    TweenService:Create(buttonStroke, EZ_Ease.Fast, { Color = EZ_Theme.Accent }):Play()
-                end)
-                act.MouseLeave:Connect(function()
-                    buttonHovered = false
-                    TweenService:Create(act, EZ_Ease.Fast, { BackgroundColor3 = EZ_Theme.CardHover }):Play()
-                    TweenService:Create(buttonStroke, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play()
-                end)
+                local function setButtonHover(hovered, immediate)
+                    buttonHovered = hovered and not obj.Disabled
+                    if buttonColorTween then pcall(function() buttonColorTween:Cancel() end); buttonColorTween = nil end
+                    if buttonStrokeTween then pcall(function() buttonStrokeTween:Cancel() end); buttonStrokeTween = nil end
+                    local background = buttonHovered and EZ_Theme.TabActive or EZ_Theme.CardHover
+                    local border = buttonHovered and EZ_Theme.Accent or EZ_Theme.Border
+                    if immediate then
+                        act.BackgroundColor3 = background
+                        buttonStroke.Color = border
+                    else
+                        buttonColorTween = EZ_Animate(act, EZ_Ease.Fast, { BackgroundColor3 = background })
+                        buttonStrokeTween = EZ_Animate(buttonStroke, EZ_Ease.Fast, { Color = border })
+                        buttonColorTween:Play()
+                        buttonStrokeTween:Play()
+                    end
+                end
+                act.MouseEnter:Connect(function() setButtonHover(true) end)
+                act.MouseLeave:Connect(function() setButtonHover(false) end)
                 function obj:Fire()
+                    if obj.Disabled then return false, "Control is disabled" end
                     pressVersion = pressVersion + 1
                     local version = pressVersion
-                    TweenService:Create(pressScale, EZ_Ease.Fast, { Scale = 0.96 }):Play()
+                    if pressTween then pcall(function() pressTween:Cancel() end) end
+                    pressTween = EZ_Animate(pressScale, EZ_Ease.Fast, { Scale = 0.96 })
+                    pressTween:Play()
                     task.delay(0.1, function()
                         if version == pressVersion and act.Parent then
-                            TweenService:Create(pressScale, EZ_Ease.Med, { Scale = 1 }):Play()
+                            if pressTween then pcall(function() pressTween:Cancel() end) end
+                            pressTween = EZ_Animate(pressScale, EZ_Ease.Med, { Scale = 1 })
+                            pressTween:Play()
                         end
                     end)
                     EZ_SafeCall(cb)
                 end
                 act.Activated:Connect(function() obj:Fire() end)
-                act.MouseButton2Click:Connect(function() EZ_SafeCall(rightCb, obj) end)
+                act.MouseButton2Click:Connect(function() if not obj.Disabled then EZ_SafeCall(rightCb, obj) end end)
                 EZ_Connect(act, act.InputBegan, function(i)
-                    if i.UserInputType == Enum.UserInputType.MouseButton3 then EZ_SafeCall(middleCb, obj) end
+                    if not obj.Disabled and i.UserInputType == Enum.UserInputType.MouseButton3 then EZ_SafeCall(middleCb, obj) end
                 end)
                 EZ_Connect(hitbox, hitbox.Activated, function() obj:Fire() end)
                 EZ_Connect(hitbox, hitbox.InputBegan, function(i)
+                    if obj.Disabled then return end
                     if i.UserInputType == Enum.UserInputType.MouseButton2 then
                         EZ_SafeCall(rightCb, obj)
                     elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
@@ -4944,6 +5357,18 @@ function EZ:CreateWindow(options)
                     EZ_SetTextSource(buttonBinding, t or "")
                     updateButtonLayout(EZ_Window._compact)
                 end
+                EZ_InstallDisabled(obj, row, o, function(disabled)
+                    act.Active = not disabled
+                    hitbox.Active = not disabled
+                    act.TextTransparency = disabled and 0.5 or 0
+                    act.BackgroundTransparency = disabled and 0.5 or 0
+                    if disabled then
+                        pressVersion = pressVersion + 1
+                        if pressTween then pcall(function() pressTween:Cancel() end); pressTween = nil end
+                        pressScale.Scale = 1
+                    end
+                    setButtonHover(false, true)
+                end)
                 obj._row = row
                 return obj
             end
@@ -5090,11 +5515,11 @@ function EZ:CreateWindow(options)
                 editBtn.Parent = row
                 editBtn.MouseEnter:Connect(function()
                     valueHovered = true
-                    TweenService:Create(vl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Accent }):Play()
+                    EZ_Animate(vl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.Accent }):Play()
                 end)
                 editBtn.MouseLeave:Connect(function()
                     valueHovered = false
-                    TweenService:Create(vl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
+                    EZ_Animate(vl, EZ_Ease.Fast, { TextColor3 = EZ_Theme.TextDim }):Play()
                 end)
                 editBtn.Activated:Connect(function()
                     local box = Instance.new("TextBox")
@@ -5437,8 +5862,8 @@ function EZ:CreateWindow(options)
                     if (multi and #obj.Value == 0) or (not multi and obj.Value == nil) then trigText.Text = EZ_Locale.None end
                     if sign and sign:IsA("ImageLabel") then sign.ImageColor3 = EZ_Theme.TextDim end
                 end, obj)
-                trigger.MouseEnter:Connect(function() TweenService:Create(tst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
-                trigger.MouseLeave:Connect(function() TweenService:Create(tst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
+                trigger.MouseEnter:Connect(function() EZ_Animate(tst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
+                trigger.MouseLeave:Connect(function() EZ_Animate(tst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
                 local entry = {
                     trigger = trigger,
                     sign = sign,
@@ -5676,7 +6101,7 @@ function EZ:CreateWindow(options)
                 end, obj)
                 function obj:Set(val)
                     obj.Value = EZ_Clamp(val, 0, 100)
-                    TweenService:Create(fill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Size = UDim2.new(obj.Value / 100, 0, 1, 0) }):Play()
+                    EZ_Animate(fill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { Size = UDim2.new(obj.Value / 100, 0, 1, 0) }):Play()
                     vl.Text = tostring(obj.Value) .. "%"
                 end
                 obj._row = row
@@ -5981,24 +6406,24 @@ function EZ:CreateWindow(options)
 
                 local function setOpen(state)
                     if state then
-                        TweenService:Create(row, EZ_Ease.Med, {
+                        EZ_Animate(row, EZ_Ease.Med, {
                             Size = UDim2.new(1, 0, 0, ROW_H + BODY_H)
                         }):Play()
-                        TweenService:Create(panel, EZ_Ease.Med, {
+                        EZ_Animate(panel, EZ_Ease.Med, {
                             Size = UDim2.new(1, -2, 0, BODY_H)
                         }):Play()
                         if chev then
-                            TweenService:Create(chev, EZ_Ease.Med, { Rotation = 180 }):Play()
+                            EZ_Animate(chev, EZ_Ease.Med, { Rotation = 180 }):Play()
                         end
                     else
-                        TweenService:Create(row, EZ_Ease.Med, {
+                        EZ_Animate(row, EZ_Ease.Med, {
                             Size = UDim2.new(1, 0, 0, ROW_H)
                         }):Play()
-                        TweenService:Create(panel, EZ_Ease.Med, {
+                        EZ_Animate(panel, EZ_Ease.Med, {
                             Size = UDim2.new(1, -2, 0, 0)
                         }):Play()
                         if chev then
-                            TweenService:Create(chev, EZ_Ease.Med, { Rotation = 0 }):Play()
+                            EZ_Animate(chev, EZ_Ease.Med, { Rotation = 0 }):Play()
                         end
                     end
                 end
@@ -6165,7 +6590,9 @@ function EZ:CreateWindow(options)
 
         function EZ_Window:_BuildConfigData()
             local data = EZ_Copy(self.ConfigData or {})
-            data._meta = { theme = EZ_CurrentThemeName, language = EZ_CurrentLanguage, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen, minimizeKeyFormat = 2 }
+            data._meta = { theme = EZ_CurrentThemeName, language = EZ_CurrentLanguage, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen, minimizeKeyFormat = 2, uiScale = self.UIScale, reducedMotion = EZ_ReducedMotion }
+            data._meta.accent = { math.floor(EZ_Theme.Accent.R * 255 + 0.5), math.floor(EZ_Theme.Accent.G * 255 + 0.5), math.floor(EZ_Theme.Accent.B * 255 + 0.5) }
+            data._meta.searchScope = self:GetSearchScope()
             if self.Frame then
                 local savedSize = (shrinkPhase and expandedSize) or self.Frame.Size
                 data._meta.windowSize = { math.floor(savedSize.X.Offset), math.floor(savedSize.Y.Offset) }
@@ -6306,6 +6733,24 @@ function EZ:CreateWindow(options)
             if tab._ezConfigBuilt then return end
             tab._ezConfigBuilt = true
             local savedConfigsDropdown, themeDropdown, languageDropdown
+            local confirmationOpen = false
+            local function confirmAction(key, name, callback)
+                if confirmationOpen then return end
+                confirmationOpen = true
+                local finished = false
+                EZ:Notify({
+                    _TitleKey = "Confirm", _ContentKey = key, _ContentArgs = { name }, Style = "Warning", Duration = 0,
+                    Buttons = {
+                        { _TitleKey = "Cancel", Title = EZ_Locale.Cancel },
+                        { _TitleKey = "Confirm", Title = EZ_Locale.Confirm, Callback = function()
+                            if finished or EZ_Destroyed then return end
+                            finished = true
+                            callback()
+                        end },
+                    },
+                    OnClose = function() finished = true; confirmationOpen = false end,
+                })
+            end
             local function persistAppearance()
                 if EZ_Window.AutoSave then EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig) end
             end
@@ -6403,24 +6848,29 @@ function EZ:CreateWindow(options)
                 Title = EZ_Locale.DeleteConfig, Description = EZ_Locale.DeleteConfigDesc, ButtonText = EZ_Locale.Delete,
                 Callback = function()
                     local name = selected()
-                    local ok, err = EZ_Window:DeleteConfig(name)
-                    if ok and err then
-                        local prefix = "Config deleted, but autoload could not be reset: "
-                        if err:sub(1, #prefix) == prefix then
-                            EZ:Notify({ Title = "Config", _ContentKey = "ConfigDeletedAutoloadFailed", _ContentArgs = { err:sub(#prefix + 1) }, _TranslateArg = 1, Style = "Warning", Duration = 4 })
+                    confirmAction("ConfirmDelete", name, function()
+                        local ok, err = EZ_Window:DeleteConfig(name)
+                        if ok and err then
+                            local prefix = "Config deleted, but autoload could not be reset: "
+                            if err:sub(1, #prefix) == prefix then
+                                EZ:Notify({ Title = "Config", _ContentKey = "ConfigDeletedAutoloadFailed", _ContentArgs = { err:sub(#prefix + 1) }, _TranslateArg = 1, Style = "Warning", Duration = 4 })
+                            else
+                                EZ:Notify({ Title = "Config", Content = err, Style = "Warning", Duration = 4 })
+                            end
                         else
-                            EZ:Notify({ Title = "Config", Content = err, Style = "Warning", Duration = 4 })
+                            report(ok, "ConfigDeleted", err, name)
                         end
-                    else
-                        report(ok, "ConfigDeleted", err, name)
-                    end
+                    end)
                 end,
             }), "DeleteConfig", "DeleteConfigDesc", "Delete")
             localized(tab:AddButton({
                 Title = EZ_Locale.ResetDefaults, Description = EZ_Locale.ResetDefaultsDesc, ButtonText = EZ_Locale.Reset,
                 Callback = function()
-                    local ok, err = EZ_Window:ResetConfig(EZ_Window.CurrentConfig)
-                    report(ok, "ConfigReset", err)
+                    local name = EZ_Window.CurrentConfig
+                    confirmAction("ConfirmReset", name, function()
+                        local ok, err = EZ_Window:ResetConfig(name)
+                        report(ok, "ConfigReset", err)
+                    end)
                 end,
             }), "ResetDefaults", "ResetDefaultsDesc", "Reset")
             localized(tab:AddSection({ Title = EZ_Locale.Appearance }), "Appearance")
@@ -6446,6 +6896,15 @@ function EZ:CreateWindow(options)
                 Min = 0, Max = 90, Default = math.floor(EZ_GlobalTransparency * 100), Step = 5,
                 Callback = function(v) EZ_Window:SetTransparency(v / 100); persistAppearance() end,
             }), "Transparency", "TransparencyDesc")
+            EZ_Window._scaleSlider = localized(tab:AddSlider({
+                Title = EZ_Locale.Scale, Description = EZ_Locale.ScaleDesc,
+                Min = 80, Max = 120, Default = EZ_Window.UIScale * 100, Step = 5,
+                Callback = function(v) EZ_Window:SetScale(v / 100); persistAppearance() end,
+            }), "Scale", "ScaleDesc")
+            EZ_Window._motionToggle = localized(tab:AddToggle({
+                Title = EZ_Locale.ReducedMotion, Description = EZ_Locale.ReducedMotionDesc, Default = EZ_ReducedMotion,
+                Callback = function(enabled) EZ_Window:SetReducedMotion(enabled); persistAppearance() end,
+            }), "ReducedMotion", "ReducedMotionDesc")
             themeDropdown = localized(tab:AddDropdown({
                 Title = EZ_Locale.Theme, Description = EZ_Locale.ThemeDesc,
                 Values = EZ:ListThemes(), Default = EZ_CurrentThemeName,
@@ -6462,6 +6921,18 @@ function EZ:CreateWindow(options)
                 if themeDropdown and themeDropdown._row and themeDropdown._row.Parent then themeDropdown:SetValues(names) end
             end)
             EZ_Window._themeDropdown = themeDropdown
+            EZ_Window._accentPicker = localized(tab:AddColorPicker({
+                Title = EZ_Locale.AccentColor, Description = EZ_Locale.AccentColorDesc, Default = EZ_Theme.Accent,
+                Callback = function(color) EZ_Window:SetAccent(color); persistAppearance() end,
+            }), "AccentColor", "AccentColorDesc")
+            localized(tab:AddButton({
+                Title = EZ_Locale.ResetAccent, Description = EZ_Locale.ResetAccentDesc, ButtonText = EZ_Locale.Reset,
+                Callback = function()
+                    local theme = EZ_Themes[EZ_CurrentThemeName] or EZ_Themes.Default
+                    EZ_Window:SetAccent(theme.Accent)
+                    persistAppearance()
+                end,
+            }), "ResetAccent", "ResetAccentDesc", "Reset")
             languageDropdown = localized(tab:AddDropdown({
                 Title = EZ_Locale.Language, Description = EZ_Locale.LanguageDesc,
                 Values = { "English", "Português (Brasil)", "Español" }, Default = EZ_LanguageNames[EZ_CurrentLanguage],
