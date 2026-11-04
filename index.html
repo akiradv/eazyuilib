@@ -6,7 +6,7 @@
         <title>Eazy UI</title>
         <meta
             name="description"
-            content="Documentation for Eazy UI v0.9.58, the single-file Roblox GUI library by Akira Dev."
+            content="Documentation for Eazy UI v0.9.67, the single-file Roblox GUI library by Akira Dev."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
                 <a href="#about" class="logo">
                     <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
-                    <span class="version">v0.9.58</span>
+                    <span class="version">v0.9.67</span>
                 </a>
                 <span class="logo-sub">docs</span>
             </div>
@@ -150,9 +150,9 @@
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Eazy UI</h1>
-                    <p class="lead">One file. One loadstring. Zero dependencies.</p>
+                    <p class="lead">One file. One loadstring. Minimal dependencies.</p>
                     <div class="hero-badges">
-                        <span class="badge badge-green">v0.9.58</span>
+                        <span class="badge badge-green">v0.9.67</span>
                         <span class="badge">Single file</span>
                         <span class="badge">Open source</span>
                         <span class="badge">MIT</span>
@@ -205,7 +205,7 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Features</h1>
-                    <p class="lead">Everything included in v0.9.58.</p>
+                    <p class="lead">Everything included in v0.9.67.</p>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
@@ -216,10 +216,10 @@ Main:AddToggle({
                         </p>
                     </div>
                     <div class="feature-card">
-                        <h3>Search in the active tab</h3>
+                        <h3>Tab &amp; global search</h3>
                         <p>
-                            Filters controls and sections by original and translated titles or descriptions; clearing
-                            the search restores the layout.
+                            Filter the active tab or search across tabs. Global results are grouped by tab and open
+                            the matching control.
                         </p>
                     </div>
                     <div class="feature-card">
@@ -231,7 +231,7 @@ Main:AddToggle({
                     </div>
                     <div class="feature-card">
                         <h3>Built-in &amp; custom themes</h3>
-                        <p>Eleven palettes, live accent colors and user-registered themes with inheritance.</p>
+                        <p>Twelve palettes, a custom accent selector and user-registered themes with inheritance.</p>
                     </div>
                     <div class="feature-card">
                         <h3>Configs &amp; autosave</h3>
@@ -264,15 +264,22 @@ Main:AddToggle({
                     <div class="feature-card">
                         <h3>Notifications</h3>
                         <p>
-                            Four styles and positions, queued messages, action buttons, input prompts and open/close
-                            callbacks.
+                            Toasts appear on a layer above the main Eazy window, with four styles and positions,
+                            action buttons, input prompts and open/close callbacks.
                         </p>
                     </div>
                     <div class="feature-card">
-                        <h3>Minimize &amp; transparency</h3>
+                        <h3>Appearance &amp; accessibility</h3>
                         <p>
-                            Fade or shrink animation, configurable shortcut, transparency strength and a collapsible
-                            sidebar.
+                            Adjustable interface scale, optional reduced animations, Fade or Shrink, transparency and
+                            a collapsible sidebar.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Safer settings &amp; controls</h3>
+                        <p>
+                            Confirm deletion or reset in the settings panel, and visibly disable buttons or toggles
+                            when a feature is unavailable.
                         </p>
                     </div>
                     <div class="feature-card">
@@ -304,6 +311,9 @@ Main:AddToggle({
                         </p>
                     </div>
                 </div>
+                <p>
+                    See the <a href="#changelog">release notes</a> for recent changes and quality-of-life improvements.
+                </p>
             </section>
 
             <section class="page" id="credits">
@@ -327,8 +337,8 @@ Main:AddToggle({
                         asset ids.
                     </li>
                     <li>
-                        <strong>Roblox fonts</strong>. Gotham and the built-in Code font are used in the library
-                        interface.
+                        <strong>Roblox fonts</strong>. Gotham, BuilderSansMedium and the built-in Code font are used
+                        in the library interface.
                     </li>
                     <li><strong>Roblox TweenService</strong>. Engine service used for every animation.</li>
                 </ul>
@@ -423,8 +433,8 @@ EZ:Notify({ Title = "Ready", Content = "The interface has loaded.", Style = "Suc
                 </div>
                 <p>
                     <code>Flag</code> names must be unique in a window. The settings tab provides config, language,
-                    theme, minimize and transparency controls. Depending on the saved config, autoload can override some
-                    initial appearance options.
+                    theme, accent, scale, reduced-motion, minimize and transparency controls. Depending on the saved
+                    config, autoload can override some initial appearance options.
                 </p>
                 <p>
                     Next: <a href="#window">Window options</a> · <a href="#localization">Languages</a> ·
@@ -446,7 +456,10 @@ EZ:Notify({ Title = "Ready", Content = "The interface has loaded.", Style = "Suc
                     <pre><code id="code-window-current">local Window = EZ:CreateWindow({
     Name = "Example Hub",
     SubTitle = "by you",
-    Size = UDim2.fromOffset(660, 470),
+    Size = UDim2.fromOffset(760, 500),
+    UIScale = 1,
+    ReducedMotion = false,
+    SearchScope = "tab",
     ConfigId = "ExampleHub",
     Theme = "Ocean",
     Language = "pt-BR",
@@ -488,8 +501,20 @@ if not Window then return end</code></pre>
                             <tr>
                                 <td><code>Size</code></td>
                                 <td>UDim2</td>
-                                <td><code>660 × 470</code></td>
+                                <td><code>760 × 500</code></td>
                                 <td>Preferred offset size; scales and clamps for smaller viewports.</td>
+                            </tr>
+                            <tr>
+                                <td><code>UIScale</code></td>
+                                <td>number</td>
+                                <td><code>1</code></td>
+                                <td>Initial interface scale; clamped from 0.8 to 1.2.</td>
+                            </tr>
+                            <tr>
+                                <td><code>ReducedMotion</code></td>
+                                <td>boolean</td>
+                                <td><code>false</code></td>
+                                <td>Shorter animations for all windows in this library execution.</td>
                             </tr>
                             <tr>
                                 <td><code>Theme</code></td>
@@ -585,6 +610,30 @@ if not Window then return end</code></pre>
                                 <td>Initial state; compact/mobile layout can override it.</td>
                             </tr>
                             <tr>
+                                <td><code>SidebarFont</code></td>
+                                <td>Enum.Font</td>
+                                <td><code>BuilderSansMedium</code></td>
+                                <td>Font used for sidebar text; falls back to BuilderSansMedium.</td>
+                            </tr>
+                            <tr>
+                                <td><code>SidebarTextSize</code></td>
+                                <td>number</td>
+                                <td><code>15</code></td>
+                                <td>Sidebar text size, clamped to 12–20.</td>
+                            </tr>
+                            <tr>
+                                <td><code>SectionTextCase</code></td>
+                                <td>string</td>
+                                <td><code>&quot;original&quot;</code></td>
+                                <td>Use &quot;upper&quot; to uppercase section titles, or preserve their original case.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Layout</code></td>
+                                <td>table</td>
+                                <td><code>defaults</code></td>
+                                <td>Optional PagePadding, ColumnGap and MinColumnWidth; see Appearance &amp; Mobile.</td>
+                            </tr>
+                            <tr>
                                 <td><code>ViewportPadding</code></td>
                                 <td>number</td>
                                 <td><code>0</code></td>
@@ -594,7 +643,13 @@ if not Window then return end</code></pre>
                                 <td><code>SearchEnabled / Search</code></td>
                                 <td>boolean</td>
                                 <td><code>true</code></td>
-                                <td>Set either one to false to hide the tab search field.</td>
+                                <td>Set either one to false to hide the search field and disable global scope.</td>
+                            </tr>
+                            <tr>
+                                <td><code>SearchScope</code></td>
+                                <td>string</td>
+                                <td><code>&quot;tab&quot;</code></td>
+                                <td>Initial scope: &quot;tab&quot; or &quot;global&quot; (&quot;all&quot; is also accepted).</td>
                             </tr>
                             <tr>
                                 <td><code>NotifyPosition</code></td>
@@ -677,8 +732,9 @@ if not Window then return end</code></pre>
                         <path d="M12 16v-4M12 8h.01" />
                     </svg>
                     <div class="callout-body">
-                        Saved configuration metadata can override the initial theme, language, transparency, minimize
-                        mode, sidebar state and window size when <code>AutoLoad</code> is enabled.
+                        Saved metadata can override the initial theme, accent, language, transparency, scale, reduced
+                        motion, search scope, minimize mode, sidebar state and window size when
+                        <code>AutoLoad</code> is enabled.
                     </div>
                 </div>
                 <h3>Window methods</h3>
@@ -712,8 +768,20 @@ if not Window then return end</code></pre>
                                 <td>Collapse/expand the sidebar; silent suppresses autosave.</td>
                             </tr>
                             <tr>
+                                <td><code>Window:SetScale(number) / GetScale()</code></td>
+                                <td>Set or read interface scale from 0.8 to 1.2.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Window:SetReducedMotion(bool) / GetReducedMotion()</code></td>
+                                <td>Set or read reduced animations for this library execution.</td>
+                            </tr>
+                            <tr>
                                 <td><code>Window:SetSearch(text) / GetSearch()</code></td>
                                 <td>Set or read the active query.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Window:SetSearchScope(scope, silent) / GetSearchScope()</code></td>
+                                <td>Choose or read &quot;tab&quot; / &quot;global&quot;; silent suppresses autosave.</td>
                             </tr>
                             <tr>
                                 <td><code>Window:SetAccent(Color3)</code></td>
@@ -767,6 +835,12 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
                     <div class="param"><code>Title</code><span>string, optional; defaults to "Tab"</span></div>
                     <div class="param"><code>Icon</code><span>string or number, optional</span></div>
                 </div>
+                <p>
+                    Tabs without an icon show the first character of their title, including when the sidebar is
+                    collapsed. Long sidebar names are truncated to fit; labels use BuilderSansMedium at size 15 by
+                    default. See <code>SidebarFont</code> and <code>SidebarTextSize</code> in
+                    <a href="#window">Window options</a> to customize them.
+                </p>
 
                 <h3>Built in icon names</h3>
                 <div class="icon-grid">
@@ -877,27 +951,38 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
             <section class="page" id="search-ui">
                 <div class="page-hero">
                     <span class="eyebrow">UI</span>
-                    <h1>Tab Search</h1>
-                    <p class="lead">Find a control without leaving the active tab.</p>
+                    <h1>Search</h1>
+                    <p class="lead">Find controls in the current tab or across the window.</p>
                 </div>
                 <p>
-                    The search field is enabled by default and filters <strong>the active tab</strong>. It checks
-                    section titles, row titles and descriptions against both source text and the current translation.
-                    Matching is case-insensitive and folds common Portuguese and Spanish accents.
+                    The search field is enabled by default. Its <strong>Tab / All</strong> button switches between
+                    filtering the active tab and searching all tabs. Tab search is the default. Both scopes match
+                    section titles, row titles and descriptions against source and translated text, ignoring case and
+                    common Portuguese and Spanish accents.
                 </p>
                 <p>
-                    A section title match includes its eligible children. Clearing the query restores the earlier
-                    visibility and section layout. Switching tabs applies the same query to the newly active tab.
+                    Tab search filters the current page. A matching section includes its eligible children, and
+                    clearing the query restores the previous visibility, collapsed section state and section layout.
+                    Global results are grouped by tab; selecting a result clears the query, opens the tab, expands its
+                    section if applicable and scrolls to the matching control. Result entries are reused when the query
+                    changes rather than creating a new set on every search.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">lua</span>
                         <button class="copy-btn" data-target="code-search-ui">Copy</button>
                     </div>
-                    <pre><code id="code-search-ui">Window:SetSearch("speed")
-print(Window:GetSearch())
+                    <pre><code id="code-search-ui">Window:SetSearchScope("global")
+Window:SetSearch("speed")
+print(Window:GetSearchScope(), Window:GetSearch())
+Window:SetSearchScope("tab")
 Window:SetSearch("")</code></pre>
                 </div>
+                <p>
+                    Set <code>SearchScope = "global"</code> when creating a window to start in global mode.
+                    <code>"all"</code> is an alias for <code>"global"</code>. A non-silent scope change schedules
+                    autosave when enabled; the query itself is not saved.
+                </p>
                 <h3>Disable the field</h3>
                 <div class="code-block">
                     <div class="code-header">
@@ -908,9 +993,10 @@ Window:SetSearch("")</code></pre>
 -- Search = false is also accepted.</code></pre>
                 </div>
                 <p>
-                    <code>Window:SetSearch</code> can still filter programmatically when the field is hidden. This
-                    search is separate from a dropdown’s <code>Searchable = true</code>, which filters that dropdown’s
-                    options.
+                    <code>Window:SetSearch</code> can still filter the active tab programmatically when the field is
+                    hidden, but global scope is unavailable and <code>SetSearchScope("global")</code> returns
+                    <code>false</code> and an error message. This is separate from a dropdown’s
+                    <code>Searchable = true</code>, which filters its own options.
                 </p>
             </section>
 
@@ -918,7 +1004,7 @@ Window:SetSearch("")</code></pre>
                 <div class="page-hero">
                     <span class="eyebrow">UI</span>
                     <h1>Appearance &amp; Mobile</h1>
-                    <p class="lead">Sidebar, minimize behavior, transparency and the logo.</p>
+                    <p class="lead">Layout, scale, animation, sidebar, transparency and the logo.</p>
                 </div>
                 <h3>Moving and resizing</h3>
                 <p>
@@ -930,9 +1016,11 @@ Window:SetSearch("")</code></pre>
                 </p>
                 <h3>Minimizing</h3>
                 <p>
-                    <code>fade</code> hides the window with a fade; <code>shrink</code> reduces it to its title bar. Use
-                    the title-bar button or keyboard shortcut. On touch devices a draggable floating button restores the
-                    minimized window.
+                    <code>fade</code> fades and slightly scales the window down before hiding it; restoring reverses
+                    both effects. <code>shrink</code> reduces the window to its title bar. Use the title-bar button or
+                    keyboard shortcut. On touch devices a draggable floating button restores the minimized window.
+                    Stale transitions are canceled during rapid toggles, while scale and expanded geometry are preserved
+                    through viewport and minimize-mode changes. The minimize button's hover colors follow the active theme.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
@@ -946,6 +1034,30 @@ Window:SetMinimizeKey(Enum.KeyCode.K, "Ctrl+")
 Window:SetSidebarCollapsed(true)
 Window:SetSidebarCollapsed(false)</code></pre>
                 </div>
+                <h3>Interface scale &amp; reduced animations</h3>
+                <p>
+                    The interface scale defaults to <code>1</code> and is clamped from <code>0.8</code> to
+                    <code>1.2</code>. The built-in settings slider shows 80–120% in five-percent steps; the API also
+                    accepts values between those steps. Viewport limits still apply. Fade remains the default minimize
+                    animation; reduced motion makes transitions shorter without changing notification durations.
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">lua</span>
+                        <button class="copy-btn" data-target="code-scale-motion">Copy</button>
+                    </div>
+                    <pre><code id="code-scale-motion">Window:SetScale(1.1)
+print(Window:GetScale())
+Window:SetReducedMotion(true)
+print(Window:GetReducedMotion())
+EZ:SetReducedMotion(false)</code></pre>
+                </div>
+                <p>
+                    <code>UIScale</code> and <code>ReducedMotion</code> can also be passed to
+                    <code>CreateWindow</code>. Reduced motion is shared by all windows in the same library execution.
+                    The built-in settings can persist these choices; after programmatic changes, call
+                    <code>Window:SaveConfig()</code> if you want to save immediately.
+                </p>
                 <h3>Transparency</h3>
                 <p>
                     <code>Transparency</code> is 0–0.9; <code>TransparencyStrength</code> scales the transparency of the
@@ -977,17 +1089,42 @@ Window:SetTransparency(0.25)</code></pre>
                 </div>
                 <h3>Sidebar and mobile</h3>
                 <p>
-                    The sidebar can expand or collapse; its widths and initial state are configurable. Compact layout
-                    can automatically collapse it, and selecting a tab on a compact screen closes the expanded sidebar.
-                    The window, dropdown and floating button adapt to viewport changes; exact rendering depends on the
-                    Roblox client and device.
+                    The sidebar can expand or collapse and shows the local player’s display name, username and avatar
+                    when available, with a fallback when they are unavailable. Its widths, font and initial state are
+                    configurable. Compact layout can collapse it automatically, and selecting a tab closes the expanded
+                    sidebar on compact screens. Sections can flow into two independently stacked columns when there is
+                    enough room and switch to one column on touch or narrower screens. Resizing the window, changing
+                    the sidebar width and filtering results reflow the layout. When search is cleared, the previous
+                    collapsed section state is restored. Exact rendering depends on the Roblox client and device.
                 </p>
+                <h3>Layout options</h3>
+                <p>
+                    The optional <code>Layout</code> table controls page padding, column gap and minimum column width.
+                    Values are clamped respectively to 8–32, 6–32 and 180–400 pixels. Section titles preserve their
+                    supplied or translated capitalization by default; <code>SectionTextCase = "upper"</code> opts into
+                    uppercase titles for the window.
+                </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">lua</span>
+                        <button class="copy-btn" data-target="code-layout-options">Copy</button>
+                    </div>
+                    <pre><code id="code-layout-options">local Window = EZ:CreateWindow({
+    Name = "My Hub",
+    SidebarFont = Enum.Font.BuilderSansMedium,
+    SidebarTextSize = 15,
+    SectionTextCase = "original",
+    Layout = { PagePadding = 16, ColumnGap = 16, MinColumnWidth = 236 },
+})</code></pre>
+                </div>
                 <h3>Logo</h3>
                 <p>
                     The default logo PNG is embedded in the library. When supported, it is converted into a local custom
-                    asset; otherwise a fallback mark is shown. <code>LogoAsset</code> accepts a Roblox asset string or
-                    numeric ID directly. A custom <code>LogoUrl</code> must point to a PNG and needs HTTP, file and
-                    custom-asset support. <code>LoadLogo = false</code> skips automatic loading.
+                    asset; otherwise a fallback mark is shown. The fallback and image are managed so they do not appear
+                    as two overlapping marks; a detected failure for an explicit Roblox asset can show the fallback.
+                    Asset loading and failure reporting still depend on the client. <code>LogoAsset</code> accepts a
+                    Roblox asset string or numeric ID directly. A custom <code>LogoUrl</code> must point to a PNG and
+                    needs HTTP, file and custom-asset support. <code>LoadLogo = false</code> skips automatic loading.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
@@ -1006,7 +1143,7 @@ Window:SetTransparency(0.25)</code></pre>
                 <div class="page-hero">
                     <span class="eyebrow">UI</span>
                     <h1>Themes</h1>
-                    <p class="lead">Eleven themes, applied live to everything on screen.</p>
+                    <p class="lead">Twelve built-in themes, applied live to everything on screen.</p>
                 </div>
 
                 <div class="code-block">
@@ -1036,8 +1173,13 @@ EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
                         <tbody>
                             <tr>
                                 <td><code>Default</code></td>
-                                <td>Dark with emerald accent</td>
+                                <td>Near black with orange accent</td>
                                 <td><code>default</code>, <code>padrao</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>Purple</code></td>
+                                <td>Near black with violet accent</td>
+                                <td><code>purple</code></td>
                             </tr>
                             <tr>
                                 <td><code>Pitch</code></td>
@@ -1094,8 +1236,10 @@ EZ:SetAccent(Color3.fromRGB(244, 114, 140))</code></pre>
                 </div>
 
                 <p>
-                    SetAccent recomputes the dimmed accent variant and repaints every registered surface. The active
-                    theme name is stored in config metadata; custom themes must be registered again on each execution.
+                    <code>SetAccent</code> updates the active accent and its dimmed variant. The built-in settings
+                    include an accent color picker and a reset button. Changing themes restores the chosen theme’s
+                    accent. Saved configs include the current accent color and theme name; custom theme definitions
+                    must still be registered again on each execution.
                 </p>
 
                 <h3>Register a custom theme</h3>
@@ -1135,9 +1279,10 @@ for _, name in ipairs(EZ:ListThemes()) do print(name) end</code></pre>
                         <path d="M12 16v-4M12 8h.01" />
                     </svg>
                     <div class="callout-body">
-                        Built-in theme names and aliases cannot be overwritten. <code>SetAccent</code> changes the
-                        active palette in memory; a config stores the theme name, not custom theme definitions or
-                        arbitrary accent colors.
+                        Built-in theme names and aliases cannot be overwritten. Accent changes made in the settings
+                        can autosave when enabled. After changing the accent directly in code, use
+                        <code>Window:SaveConfig()</code> to save immediately. Custom theme definitions themselves are
+                        not stored in configs.
                     </div>
                 </div>
             </section>
@@ -1323,7 +1468,8 @@ local Window2 = EZ2:CreateWindow({
                     Flagged controls can be saved to <code>EazyUI_Configs/{ConfigId}/{name}.json</code>. The autoload
                     selection is stored separately in the same directory. Config IDs are sanitized for paths. Legacy
                     flat files can be read and listed; legacy files must be removed manually rather than deleted through
-                    the API.
+                    the API. Existing Eazy UI saves can be loaded when the config ID and flags match. Saves from builds
+                    using a different folder are not imported automatically; back up existing files before moving them.
                 </p>
                 <h3>Unique flags</h3>
                 <p>
@@ -1348,15 +1494,22 @@ Window:BuildConfigSection(Settings)</code></pre>
                 </div>
                 <p>
                     The ready-made settings section includes save/load/delete/reset, autoload selection, autosave,
-                    minimize shortcut and mode, transparency, theme and language controls. Calling it again on the same
-                    tab does nothing.
+                    minimize shortcut and mode, transparency, scale, reduced animations, theme, accent and language.
+                    Calling it again on the same tab does nothing.
+                </p>
+                <h3>Confirming destructive actions</h3>
+                <p>
+                    The settings panel asks for confirmation before deleting the selected config or resetting the
+                    current config to defaults. The direct <code>Window:DeleteConfig</code> and
+                    <code>Window:ResetConfig</code> methods do not show a confirmation, so scripts calling them directly
+                    should ask first when appropriate.
                 </p>
                 <h3>Saving and loading</h3>
                 <p>
                     Autosave is enabled by default and batches writes with a one-second delay. Autoload is enabled by
                     default; when saved values are available before controls are registered, flagged controls receive
-                    their values as they are added. Applying saved values invokes their callbacks. Use
-                    <code>AutoLoad = false</code> for manual loading.
+                    their values as they are added. Applying saved values invokes their callbacks, except for disabled
+                    toggles. Use <code>AutoLoad = false</code> for manual loading.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
@@ -1377,14 +1530,15 @@ ok, err = Window:FlushSaves()</code></pre>
                 <p>
                     Manual save, load, reset, delete and flush return success or an error.
                     <code>ListConfigs</code> returns an array. <code>ResetConfig</code> restores defaults for registered
-                    flagged controls and writes the result. Loading flushes pending saves first.
+                    flagged controls and writes the result; it does not reset the current theme, accent or other
+                    appearance metadata. Loading flushes pending saves first.
                 </p>
                 <p>
                     Config names must be nonempty, at most 80 characters, and cannot be <code>_autoload</code>, contain
                     <code>..</code>, path separators, control characters or <code>: * ? " &lt; &gt; |</code>. Saved
-                    metadata includes the theme name, language, transparency, autosave preference, minimize mode,
-                    sidebar state and window size. Custom themes and translation tables must be registered again when
-                    the script starts.
+                    metadata includes the theme name, accent color, language, transparency, autosave preference,
+                    minimize mode, sidebar state, window size, interface scale, reduced motion and search scope.
+                    Custom theme definitions and translation tables must be registered again when the script starts.
                 </p>
                 <div class="callout callout-warn">
                     <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1436,10 +1590,11 @@ end</code></pre>
                 </div>
                 <p>
                     A successful key is cached in <code>eazyui_key_{ConfigId}.json</code> (with a sanitized ID) when
-                    filesystem support exists, then revalidated on later launches. The interactive validator waits up to
-                    five seconds per attempt; the prompt itself closes after approximately 30 seconds. Cancelling or
-                    failing to finish returns <code>nil</code> from <code>CreateWindow</code>; your script must check it
-                    and return explicitly.
+                    filesystem support exists, then revalidated on later launches. Keys cached by builds using a
+                    different filename are not imported automatically. The interactive validator waits up to five
+                    seconds per attempt; the prompt itself closes after approximately 30 seconds. Cancelling or failing
+                    to finish returns <code>nil</code> from <code>CreateWindow</code>; your script must check it and
+                    return explicitly.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
@@ -1528,6 +1683,14 @@ end</code></pre>
                     <code>Success</code>, <code>Warning</code> and <code>Error</code> styles; choose the screen corner
                     with <code>CreateWindow.NotifyPosition</code>.
                 </p>
+                <h3>Visibility and layering</h3>
+                <p>
+                    Eazy notifications use a separate <code>ScreenGui</code> with <code>DisplayOrder = 100</code>,
+                    above the default display order of the main Eazy window. This keeps notifications in front of the
+                    library's main interface rather than behind it. Eazy's loading, Discord and key screens use higher
+                    display orders, and other scripts can create GUIs above this layer, so it is not a guarantee of
+                    being above every GUI in the game.
+                </p>
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">lua</span>
@@ -1580,7 +1743,7 @@ EZ:Notify({
                             <tr>
                                 <td><code>Duration</code></td>
                                 <td><code>automatic</code></td>
-                                <td>Seconds; 0 leaves the toast open until an action or close.</td>
+                                <td>Seconds; 0 disables the automatic timeout.</td>
                             </tr>
                             <tr>
                                 <td><code>Buttons</code></td>
@@ -1638,8 +1801,17 @@ EZ:Notify({
                 <p>
                     Input notifications do not auto-dismiss on a timer and do not display <code>Buttons</code>. With
                     automatic duration, short messages use an estimated 3–20 seconds; long scrollable messages stay
-                    open. Close reasons include <code>Close</code>, <code>Input</code>, <code>Action</code>,
-                    <code>Timeout</code>, <code>Overflow</code> and <code>Destroy</code>.
+                    open. <code>Duration = 0</code> also disables the timeout, but a notification can still be closed by
+                    an action, the close button, overflow or library destruction.
+                </p>
+                <h3>Stacking and cleanup</h3>
+                <p>
+                    Up to six notifications are kept in the visible stack. If a new notification would exceed the limit
+                    or available height, the oldest is closed with <code>Overflow</code>; viewport changes also reflow
+                    the stack. Closing a notification cancels its pending timeout and progress animation. Reduced motion
+                    shortens interface transitions, not the notification's timeout. Close reasons include
+                    <code>Close</code>, <code>Input</code>, <code>Action</code>, <code>Timeout</code>,
+                    <code>Overflow</code> and <code>Destroy</code>.
                 </p>
             </section>
 
@@ -1699,13 +1871,13 @@ EZ:Notify({
                             <tr>
                                 <td><code>Tab:AddToggle(...)</code></td>
                                 <td><a href="#el-toggle">Toggle</a></td>
-                                <td><code>Set(bool, silent)</code></td>
+                                <td><code>Set(bool, silent), SetDisabled(bool), SetEnabled(bool), IsDisabled()</code></td>
                                 <td>Boolean value, callback and optional right/middle click.</td>
                             </tr>
                             <tr>
                                 <td><code>Tab:AddButton(...)</code></td>
                                 <td><a href="#el-button">Button</a></td>
-                                <td><code>Fire(), SetTitle(text)</code></td>
+                                <td><code>Fire(), SetTitle(text), SetDisabled(bool), SetEnabled(bool), IsDisabled()</code></td>
                                 <td>Action button; SetTitle changes the button label.</td>
                             </tr>
                             <tr>
@@ -1783,6 +1955,11 @@ EZ:Notify({
                         contributes to search but is not shown as a second line in those controls.
                     </li>
                     <li>
+                        Buttons and toggles additionally support <code>Disabled = true</code> or
+                        <code>Enabled = false</code> and the methods <code>SetDisabled</code>, <code>SetEnabled</code>
+                        and <code>IsDisabled</code>. Other control types do not provide these methods.
+                    </li>
+                    <li>
                         <code>CreateX</code> aliases the corresponding <code>AddX</code> method, for example
                         <code>Tab:CreateToggle(...)</code>.
                     </li>
@@ -1816,8 +1993,7 @@ EZ:Notify({
                     <span class="eyebrow">Element</span>
                     <h1>Section</h1>
                     <p class="lead">
-                        Uppercase header with a chevron. Clickable to collapse everything below it until the next
-                        section.
+                        Collapsible header with a chevron. Title capitalization is preserved by default.
                     </p>
                 </div>
                 <div class="code-block">
@@ -1831,11 +2007,14 @@ sec:Set("visuals")</code></pre>
                 <h4>Parameters used</h4>
                 <div class="params-grid">
                     <div class="param"><code>Title</code><span>string, optional; empty by default</span></div>
+                    <div class="param"><code>TextCase</code><span>"original" or "upper"; overrides the window setting</span></div>
                     <div class="param"><code>Set(text)</code><span>rename later</span></div>
                 </div>
                 <p>
                     The chevron rotates 90 degrees when collapsed. Everything between this section and the next one
-                    toggles visibility together. Sections do not nest.
+                    toggles visibility together. Sections do not nest. Set <code>TextCase = "upper"</code> on a
+                    section or <code>SectionTextCase = "upper"</code> on the window to opt into uppercase text. Titles
+                    can still be translated through the active language and dictionaries.
                 </p>
             </section>
 
@@ -1992,9 +2171,14 @@ status:Set("Status: connected")</code></pre>
                                 <td>Enables config saving and acts as the element id.</td>
                             </tr>
                             <tr>
+                                <td><code>Disabled / Enabled</code></td>
+                                <td>boolean</td>
+                                <td>Use Disabled = true or Enabled = false to block interaction.</td>
+                            </tr>
+                            <tr>
                                 <td><code>Callback</code></td>
                                 <td>function(on)</td>
-                                <td>Fires on left click.</td>
+                                <td>Fires on interaction, non-silent Set or config load while enabled.</td>
                             </tr>
                             <tr>
                                 <td><code>RightCallback</code></td>
@@ -2032,6 +2216,9 @@ toggle:Set(true, true)</code></pre>
                     <div class="param"><code>Flag</code><span>"ESP"</span></div>
                     <div class="param"><code>Callback</code><span>fires on left click</span></div>
                     <div class="param"><code>RightCallback</code><span>fires on right click</span></div>
+                    <div class="param"><code>SetDisabled(bool)</code><span>disable or re-enable interaction</span></div>
+                    <div class="param"><code>SetEnabled(bool)</code><span>inverse of SetDisabled</span></div>
+                    <div class="param"><code>IsDisabled()</code><span>returns the disabled state</span></div>
                     <div class="param">
                         <code>Set(bool, silent)</code><span>second arg silences callback and save</span>
                     </div>
@@ -2040,6 +2227,29 @@ toggle:Set(true, true)</code></pre>
                     <code>RightClick</code> and <code>MiddleClick</code> are aliases for <code>RightCallback</code> and
                     <code>MiddleCallback</code>. These mouse callbacks receive the toggle object, not its boolean value.
                 </p>
+                <h3>Disabled state</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">lua</span>
+                        <button class="copy-btn" data-target="code-toggle-disabled">Copy</button>
+                    </div>
+                    <pre><code id="code-toggle-disabled">local feature = Tab:AddToggle({
+    Title = "Feature",
+    Disabled = true,
+    Callback = function(enabled) print(enabled) end,
+})
+
+feature:Set(true)
+print(feature.Value, feature:IsDisabled())
+feature:SetEnabled(true)</code></pre>
+                </div>
+                <p>
+                    A disabled toggle blocks primary, right and middle clicks. <code>Set</code> still changes its value,
+                    but the callback is suppressed while disabled, including during config loads. A non-silent
+                    <code>Set</code> can still schedule a save when the toggle has a <code>Flag</code> and autosave is
+                    enabled. Re-enabling does not invoke the callback automatically; the disabled state itself is
+                    controlled by the script and is not saved in the config.
+                </p>
             </section>
 
             <section class="page" id="el-button">
@@ -2047,7 +2257,7 @@ toggle:Set(true, true)</code></pre>
                     <span class="eyebrow">Element</span>
                     <h1>Button</h1>
                     <p class="lead">
-                        Accent action button with press animation. Right-click and middle-click fire optional callbacks.
+                        Action button with press animation. Right-click and middle-click fire optional callbacks.
                     </p>
                 </div>
                 <div class="table-scroll">
@@ -2074,6 +2284,11 @@ toggle:Set(true, true)</code></pre>
                                 <td><code>ButtonText</code></td>
                                 <td>string</td>
                                 <td>Label of the action button.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Disabled / Enabled</code></td>
+                                <td>boolean</td>
+                                <td>Use Disabled = true or Enabled = false to block interaction.</td>
                             </tr>
                             <tr>
                                 <td><code>Callback</code></td>
@@ -2115,11 +2330,30 @@ btn:SetTitle("Done")</code></pre>
                     <div class="param"><code>ButtonText</code><span>"Go" (defaults to "Run")</span></div>
                     <div class="param"><code>Callback</code><span>fires on click or Fire()</span></div>
                     <div class="param"><code>SetTitle(text)</code><span>change the action button label</span></div>
+                    <div class="param"><code>SetDisabled(bool)</code><span>disable or re-enable interaction</span></div>
+                    <div class="param"><code>SetEnabled(bool)</code><span>inverse of SetDisabled</span></div>
+                    <div class="param"><code>IsDisabled()</code><span>returns the disabled state</span></div>
                 </div>
                 <p>
                     <code>RightClick</code> and <code>MiddleClick</code> are aliases for the corresponding callbacks.
-                    <code>SetTitle</code> changes the action button text, not the row title.
+                    <code>SetTitle</code> changes the action button text, not the row title. Disabled buttons block
+                    primary, right and middle clicks; <code>Fire()</code> returns <code>false</code> and an error while
+                    disabled. The disabled state is controlled by the script and is not persisted.
                 </p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">lua</span>
+                        <button class="copy-btn" data-target="code-button-disabled">Copy</button>
+                    </div>
+                    <pre><code id="code-button-disabled">local button = Tab:AddButton({
+    Title = "Connect",
+    Disabled = true,
+    Callback = function() print("Connected") end,
+})
+button:SetDisabled(false)
+button:Fire()</code></pre>
+                </div>
+
             </section>
 
             <section class="page" id="el-slider">
@@ -2786,6 +3020,10 @@ Tab:AddKeybind({
                                 <td>Override the current accent.</td>
                             </tr>
                             <tr>
+                                <td><code>EZ:SetReducedMotion(bool) / GetReducedMotion()</code></td>
+                                <td>Set or read reduced motion for this library execution.</td>
+                            </tr>
+                            <tr>
                                 <td><code>EZ:SetLanguage(code) / GetLanguage() / ListLanguages()</code></td>
                                 <td>Change, read or list supported languages.</td>
                             </tr>
@@ -2827,8 +3065,21 @@ Tab:AddKeybind({
                     </table>
                 </div>
                 <p>
-                    Theme and language state belongs to a library execution. For independent hubs, load separate
+                    Theme, language and reduced-motion state belong to a library execution. For independent hubs, load separate
                     executions and see <a href="#instances">Multiple Instances</a>.
+                </p>
+                <h3>Cleanup and re-execution</h3>
+                <p>
+                    <code>EZ:Destroy()</code> attempts to flush pending saves, then closes the library's windows,
+                    notifications and transient screens, disconnects tracked connections, and cancels managed pending
+                    work where possible. Closing a notification also cancels its own timer and progress tween. Stale
+                    key-validation results are guarded so they cannot reopen a destroyed library. External loops,
+                    connections or tasks created by your script are your responsibility to stop.
+                </p>
+                <p>
+                    When the shared instance environment is available, creating the first window normally destroys
+                    previous Eazy executions. <code>AllowMultiple = true</code> opts out of that replacement; see
+                    <a href="#instances">Multiple Instances</a> for separate config IDs and the environment limits.
                 </p>
             </section>
 
@@ -3130,6 +3381,73 @@ EZ:Notify({
                     <p class="lead">Release history.</p>
                 </div>
 
+                <h3>v0.9.67</h3>
+                <p>Includes recent changes and fixes carried over from earlier builds.</p>
+                <ul>
+                    <li>
+                        <a href="#notify">Notifications</a> stay in front of the main Eazy window instead of behind it.
+                        Another GUI with a higher display order can still cover them.
+                    </li>
+                    <li>
+                        Fixed notification timers and progress bars continuing after a notification was closed or
+                        pushed out of the stack.
+                    </li>
+                    <li>
+                        Fixed the fallback logo overlapping the real logo when Roblox reports the image as not loaded.
+                    </li>
+                    <li>
+                        Fixed the minimize button keeping the wrong hover color after switching themes, including when
+                        the cursor was already over the button.
+                    </li>
+                    <li>
+                        Improved the closing animation when minimizing the window with Fade. Fixed it jumping back to
+                        full scale if the viewport changed during the animation.
+                    </li>
+                    <li>
+                        Fixed an old saved-key check reopening a window after Eazy was closed or replaced. Key prompt
+                        checks are canceled on close or timeout when possible, and late results are ignored.
+                    </li>
+                    <li>
+                        Pending logo downloads are canceled when possible if Eazy is closed, replaced or a new logo is
+                        selected.
+                    </li>
+                    <li>
+                        Fixed long button text overlapping the row title in narrow windows. Buttons adjust their width
+                        and truncate long text; on mobile they stack below the title.
+                    </li>
+                    <li>
+                        Section titles no longer have to be uppercase. They keep the capitalization written in the
+                        script or translation; uppercase is still an option.
+                    </li>
+                    <li>
+                        Added Interface Scale (80–120%) and Reduce Animations to Settings. Reducing animations does not
+                        shorten notification timers.
+                    </li>
+                    <li>
+                        Added an accent color picker and a reset button. The Default theme is orange, and Purple is
+                        still available in the theme list.
+                    </li>
+                    <li>
+                        Added a Tab / All switch to search. Selecting an All result opens its tab, expands its section
+                        when needed and scrolls to the control.
+                    </li>
+                    <li>
+                        Buttons and toggles can now be disabled. The settings panel asks for confirmation before
+                        deleting or resetting a config.
+                    </li>
+                    <li>
+                        Removed the line under the tab title and reduced the gap above sections. Sections use two
+                        independently stacked columns on wide screens and one column on mobile.
+                    </li>
+                    <li>
+                        The sidebar uses BuilderSansMedium and shows the local player's display name, username and
+                        avatar. Tabs without an icon show their initial.
+                    </li>
+                    <li>
+                        Existing Eazy configs and cached keys keep their usual paths. Files saved in other folders are
+                        not imported automatically.
+                    </li>
+                </ul>
                 <h3>v0.9.58</h3>
                 <ul>
                     <li>
@@ -3455,7 +3773,7 @@ EZ:Notify({
                             <span class="logo-name">Eazy UI</span>
                         </div>
                         <p>Open source Roblox GUI library. A single Lua file built to keep scripting easy.</p>
-                        <span class="badge badge-green">v0.9.58</span>
+                        <span class="badge badge-green">v0.9.67</span>
                     </div>
                     <div class="footer-col">
                         <h5>Docs</h5>
@@ -3497,7 +3815,7 @@ EZ:Notify({
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <span>2026 Akira Dev. Eazy UI v0.9.58.</span>
+                    <span>2026 Akira Dev. Eazy UI v0.9.67.</span>
                     <span>Not affiliated with Roblox Corporation.</span>
                 </div>
             </footer>
