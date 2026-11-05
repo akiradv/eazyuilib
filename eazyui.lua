@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.67
+    Eazy UI v0.9.68
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.67"
+EZ.Version = "0.9.68"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -3728,8 +3728,8 @@ function EZ:CreateWindow(options)
         end
         local searchEnabled = options.SearchEnabled ~= false and options.Search ~= false
         local searchHeight = 0
-        local searchBox, searchEmpty, searchClear, searchScopeButton, globalResults, pageHeading
-        local updateSearchLayout, selectTab
+        local searchBox, searchEmpty, searchScopeButton, globalResults, pageHeading
+        local updateSearchLayout, updateSearchControls, selectTab
         local searchValue = ""
         local searchGlobal = searchEnabled and (options.SearchScope == "global" or options.SearchScope == "all") or false
         local globalGroupPool, globalResultPool = {}, {}
@@ -3816,11 +3816,17 @@ function EZ:CreateWindow(options)
         end
 
         local function updateScopeText()
+            local oldScope = searchScopeButton and searchScopeButton.Text
+            local oldHint = searchBox and searchBox.PlaceholderText
             if searchScopeButton then
                 searchScopeButton.Text = searchGlobal and EZ_Locale.SearchScopeAll or EZ_Locale.SearchScopeTab
                 searchScopeButton.TextColor3 = searchGlobal and EZ_Theme.Accent or EZ_Theme.TextDim
             end
             if searchBox then searchBox.PlaceholderText = searchGlobal and EZ_Locale.SearchAll or EZ_Locale.SearchTab end
+            if updateSearchLayout and searchBox and searchBox.Parent and
+               (oldScope ~= searchScopeButton.Text or oldHint ~= searchBox.PlaceholderText) then
+                updateSearchLayout(EZ_Window._compact)
+            end
         end
 
         local function renderGlobalResults(query)
@@ -3880,7 +3886,7 @@ function EZ:CreateWindow(options)
                         if EZ_Destroyed or not target or not targetRow or not target.Page.Parent or not targetRow.Parent then return end
                         searchValue = ""
                         if searchBox then searchBox.Text = "" end
-                        if searchClear then searchClear.Visible = false end
+                        if updateSearchControls then updateSearchControls() end
                         if selectTab then selectTab(target) end
                         if targetSection and targetSection.setCollapsed then targetSection.setCollapsed(false) end
                         task.delay(0.05, function()
@@ -3979,6 +3985,19 @@ function EZ:CreateWindow(options)
             EZ_Paint(function() pageHeading.TextColor3 = EZ_Theme.Text end, content)
 
             local searchBar
+            local searchBarWidth, scopeButtonWidth = 0, 42
+            local stackedSearchControls, showSearchIcon = false, true
+            local appliedSearchControls
+            local cachedHint, cachedHintFont, cachedHintSize, cachedHintWidth
+            local cachedScope, cachedScopeFont, cachedScopeSize, cachedScopeWidth
+            local function measureSearchText(text, size, font)
+                text = tostring(text or "")
+                local ok, bounds = pcall(function()
+                    return TextService:GetTextSize(text, size, font, Vector2.new(100000, 1000))
+                end)
+                if ok and bounds and type(bounds.X) == "number" and (bounds.X > 0 or text == "") then return math.ceil(bounds.X) end
+                return math.ceil(#text * size * 0.6)
+            end
             if searchEnabled then
                 searchBar = Instance.new("Frame")
                 searchBar.Name = "EZ_SearchBar"
@@ -3996,13 +4015,14 @@ function EZ:CreateWindow(options)
                 EZ_RegTrans(searchBar)
                 local searchIcon = EZ_CreateIcon(searchBar, "search", 14)
                 searchIcon.Name = "EZ_SearchIcon"
-                searchIcon.Position = UDim2.fromOffset(12, 10)
+                searchIcon.Position = UDim2.fromOffset(10, 10)
                 searchIcon.ImageColor3 = EZ_Theme.TextDim
                 searchBox = Instance.new("TextBox")
                 searchBox.Name = "EZ_SearchInput"
-                searchBox.Position = UDim2.fromOffset(34, 0)
-                searchBox.Size = UDim2.new(1, -120, 1, 0)
+                searchBox.Position = UDim2.fromOffset(30, 0)
+                searchBox.Size = UDim2.new(1, -76, 1, 0)
                 searchBox.BackgroundTransparency = 1
+                searchBox.ClipsDescendants = true
                 searchBox.Text = ""
                 searchBox.PlaceholderText = EZ_Locale.SearchTab
                 searchBox.ClearTextOnFocus = false
@@ -4035,12 +4055,11 @@ function EZ:CreateWindow(options)
                 clear.AutoButtonColor = false
                 clear.Visible = false
                 clear.Parent = searchBar
-                searchClear = clear
                 searchScopeButton = Instance.new("TextButton")
                 searchScopeButton.Name = "EZ_SearchScope"
                 searchScopeButton.AnchorPoint = Vector2.new(1, 0.5)
-                searchScopeButton.Position = UDim2.new(1, -34, 0.5, 0)
-                searchScopeButton.Size = UDim2.fromOffset(48, 28)
+                searchScopeButton.Position = UDim2.new(1, 0, 0.5, 0)
+                searchScopeButton.Size = UDim2.fromOffset(42, 28)
                 searchScopeButton.BackgroundTransparency = 1
                 searchScopeButton.Text = ""
                 searchScopeButton.Font = EZ_Brand.FontMedium
@@ -4049,6 +4068,44 @@ function EZ:CreateWindow(options)
                 searchScopeButton.TextTruncate = Enum.TextTruncate.AtEnd
                 searchScopeButton.AutoButtonColor = false
                 searchScopeButton.Parent = searchBar
+                updateSearchControls = function()
+                    local hasText = searchValue ~= ""
+                    local rowWidth = stackedSearchControls and searchBarWidth or nil
+                    if appliedSearchControls and appliedSearchControls.hasText == hasText and
+                       appliedSearchControls.stacked == stackedSearchControls and appliedSearchControls.showIcon == showSearchIcon and
+                       appliedSearchControls.scopeWidth == scopeButtonWidth and appliedSearchControls.rowWidth == rowWidth then return end
+                    appliedSearchControls = { hasText = hasText, stacked = stackedSearchControls, showIcon = showSearchIcon,
+                        scopeWidth = scopeButtonWidth, rowWidth = rowWidth }
+                    clear.Visible = hasText
+                    if stackedSearchControls then
+                        -- On very narrow layouts, give the editable text its own row.
+                        local inputLeft = showSearchIcon and 30 or 6
+                        searchIcon.Visible = showSearchIcon
+                        searchIcon.Position = UDim2.fromOffset(10, 8)
+                        searchBox.Position = UDim2.fromOffset(inputLeft, 0)
+                        searchBox.Size = UDim2.new(1, -(inputLeft + 6), 0, 30)
+                        local buttonLimit = math.max(1, (searchBarWidth - 12) / (hasText and 2 or 1))
+                        searchScopeButton.AnchorPoint = Vector2.new(0, 0)
+                        searchScopeButton.Position = UDim2.fromOffset(4, 32)
+                        searchScopeButton.Size = UDim2.fromOffset(math.min(scopeButtonWidth, buttonLimit), 28)
+                        clear.AnchorPoint = Vector2.new(1, 0)
+                        clear.Position = UDim2.new(1, -4, 0, 32)
+                        clear.Size = UDim2.fromOffset(math.min(34, buttonLimit), 28)
+                    else
+                        searchIcon.Visible = true
+                        searchIcon.Position = UDim2.fromOffset(10, 10)
+                        searchBox.Position = UDim2.fromOffset(30, 0)
+                        -- Do not reserve the clear button's space when it is hidden.
+                        local clearWidth = hasText and 34 or 0
+                        searchBox.Size = UDim2.new(1, -(30 + scopeButtonWidth + 4 + clearWidth), 1, 0)
+                        searchScopeButton.AnchorPoint = Vector2.new(1, 0.5)
+                        searchScopeButton.Position = UDim2.new(1, -clearWidth, 0.5, 0)
+                        searchScopeButton.Size = UDim2.fromOffset(scopeButtonWidth, 28)
+                        clear.AnchorPoint = Vector2.new(1, 0)
+                        clear.Position = UDim2.new(1, 0, 0, 0)
+                        clear.Size = UDim2.fromOffset(34, 34)
+                    end
+                end
                 updateScopeText()
                 searchEmpty = Instance.new("TextLabel")
                 searchEmpty.Name = "EZ_SearchEmpty"
@@ -4122,7 +4179,7 @@ function EZ:CreateWindow(options)
                 end)
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     searchValue = searchBox.Text
-                    clear.Visible = searchValue ~= ""
+                    updateSearchControls()
                     EZ_CloseDropdown()
                     applySearch(true)
                 end)
@@ -4138,15 +4195,49 @@ function EZ:CreateWindow(options)
                 local sidebarOpen = EZ_Window._sidebarOpen
                 if sidebarOpen == nil then sidebarOpen = not compact end
                 local sidebarWidth = sidebarOpen and EZ_ExpandedSidebarWidth or EZ_CollapsedSidebarWidth
-                local contentWidth = frame.Size.X.Offset - sidebarWidth
+                local contentWidth = math.max(0, frame.Size.X.Offset - sidebarWidth)
+                local availableWidth = math.max(0, contentWidth - EZ_PagePadding * 2)
                 local stacked = compact or contentWidth < EZ_PagePadding * 2 + EZ_MinColumnWidth * 1.5
+                local hintWidth, neededSearchWidth = 0, 0
+                if searchBar then
+                    local hint, hintFont, hintSize = searchBox.PlaceholderText, searchBox.Font, searchBox.TextSize
+                    if hint ~= cachedHint or hintFont ~= cachedHintFont or hintSize ~= cachedHintSize then
+                        cachedHint, cachedHintFont, cachedHintSize = hint, hintFont, hintSize
+                        cachedHintWidth = measureSearchText(hint, hintSize, hintFont)
+                    end
+                    local scope, scopeFont, scopeSize = searchScopeButton.Text, searchScopeButton.Font, searchScopeButton.TextSize
+                    if scope ~= cachedScope or scopeFont ~= cachedScopeFont or scopeSize ~= cachedScopeSize then
+                        cachedScope, cachedScopeFont, cachedScopeSize = scope, scopeFont, scopeSize
+                        cachedScopeWidth = measureSearchText(scope, scopeSize, scopeFont)
+                    end
+                    hintWidth = cachedHintWidth or 0
+                    scopeButtonWidth = math.clamp((cachedScopeWidth or 0) + 14, 42, 84)
+                    neededSearchWidth = 30 + hintWidth + 8 + scopeButtonWidth
+                    -- Keep room for the tab title; stack the header before the search becomes cramped.
+                    if availableWidth < neededSearchWidth + 120 + 8 then stacked = true end
+                end
                 pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
-                pageHeading.Size = (stacked or not searchBar) and UDim2.new(1, -2 * EZ_PagePadding, 0, 24) or UDim2.new(0.58, -(EZ_PagePadding * 1.5 + 8), 0, 24)
                 pageHeading.TextSize = stacked and 16 or 18
                 if searchBar then
                     searchBar.AnchorPoint = stacked and Vector2.new(0, 0) or Vector2.new(1, 0)
                     searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
-                    searchBar.Size = stacked and UDim2.new(1, -2 * EZ_PagePadding, 0, 34) or UDim2.new(0.42, -EZ_PagePadding / 2, 0, 34)
+                    local widthOffset
+                    if stacked then
+                        searchBarWidth = availableWidth
+                        pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
+                    else
+                        local preferred = contentWidth * 0.48 - EZ_PagePadding / 2
+                        searchBarWidth = math.min(math.max(preferred, neededSearchWidth), availableWidth - 128)
+                        widthOffset = searchBarWidth - contentWidth * 0.48
+                        pageHeading.Size = UDim2.new(0.52, -(2 * EZ_PagePadding + 8 + widthOffset), 0, 24)
+                    end
+                    stackedSearchControls = searchBarWidth < math.max(145, neededSearchWidth)
+                    showSearchIcon = searchBarWidth >= 100 and (not stackedSearchControls or hintWidth <= searchBarWidth - 36)
+                    local barHeight = stackedSearchControls and 62 or 34
+                    searchBar.Size = stacked and UDim2.new(1, -2 * EZ_PagePadding, 0, barHeight) or UDim2.new(0.48, widthOffset, 0, barHeight)
+                    updateSearchControls()
+                else
+                    pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
                 end
                 local bottom = pageHeading.Position.Y.Offset + pageHeading.Size.Y.Offset
                 if searchBar then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
@@ -4180,7 +4271,7 @@ function EZ:CreateWindow(options)
             if EZ_Destroyed then return false, "Window was destroyed" end
             searchValue = tostring(value or "")
             if searchBox then searchBox.Text = searchValue end
-            if searchClear then searchClear.Visible = searchValue ~= "" end
+            if updateSearchControls then updateSearchControls() end
             EZ_CloseDropdown()
             applySearch(true)
         end
@@ -4549,27 +4640,68 @@ function EZ:CreateWindow(options)
 
         local function applyMinimizeFade(state, version)
             cancelFade()
-            if not state then frame.Visible = true end
             local fadeDuration = EZ_ReducedMotion and 0.05 or 0.3
             local fadeInfo = TweenInfo.new(fadeDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut)
-            local factor = state and 0.92 or 1
-            frame:SetAttribute("EZ_FadeFactor", factor)
-            frame:SetAttribute("EZ_ScaleTweening", true)
-            fadeTween = EZ_Animate(frame, fadeInfo, { GroupTransparency = state and 1 or 0 })
-            fadeScaleTween = EZ_Animate(windowScale, fadeInfo, { Scale = EZ_Window.UIScale * factor })
-            fadeTween:Play()
-            fadeScaleTween:Play()
-            task.delay(fadeDuration + 0.02, function()
-                if version ~= minimizeVersion or not frame.Parent then return end
-                fadeTween, fadeScaleTween = nil, nil
-                frame:SetAttribute("EZ_ScaleTweening", false)
-                if EZ_Window.MinimizeMode ~= "fade" then return end
-                if state and EZ_Window.Minimized then
+
+            local function finishFade(exiting)
+                task.delay(fadeDuration + 0.02, function()
+                    if version ~= minimizeVersion or not frame.Parent then return end
+                    fadeTween, fadeScaleTween = nil, nil
+                    frame:SetAttribute("EZ_ScaleTweening", false)
+                    if EZ_Window.MinimizeMode ~= "fade" then return end
+                    if exiting and EZ_Window.Minimized then
+                        frame.Visible = false
+                    elseif not exiting and not EZ_Window.Minimized and frame:GetAttribute("EZ_Moved") then
+                        EZ_ClampToViewport(frame)
+                    end
+                end)
+            end
+
+            if state then
+                -- Keep the existing fade and slight shrink when minimizing.
+                frame.Visible = true
+                frame:SetAttribute("EZ_FadeFactor", 0.92)
+                frame:SetAttribute("EZ_ScaleTweening", true)
+                fadeTween = EZ_Animate(frame, fadeInfo, { GroupTransparency = 1 })
+                fadeScaleTween = EZ_Animate(windowScale, fadeInfo, { Scale = EZ_Window.UIScale * 0.92 })
+                fadeTween:Play()
+                fadeScaleTween:Play()
+                finishFade(true)
+                return
+            end
+
+            local function restoreAtFullScale(normalize)
+                if version ~= minimizeVersion or not frame.Parent or EZ_Window.Minimized then return end
+                if normalize then
+                    -- The scale is reset while hidden, so the text never grows during fade-in.
                     frame.Visible = false
-                elseif not state and not EZ_Window.Minimized and frame:GetAttribute("EZ_Moved") then
-                    EZ_ClampToViewport(frame)
+                    frame.GroupTransparency = 1
+                    windowScale.Scale = EZ_Window.UIScale
                 end
-            end)
+                frame:SetAttribute("EZ_FadeFactor", 1)
+                frame:SetAttribute("EZ_ScaleTweening", false)
+                frame.Visible = true
+                fadeTween = EZ_Animate(frame, fadeInfo, { GroupTransparency = 0 })
+                fadeTween:Play()
+                finishFade(false)
+            end
+
+            local scaleDiff = math.abs(windowScale.Scale - EZ_Window.UIScale)
+            if frame.Visible and frame.GroupTransparency < 0.9999 and scaleDiff > 0.000001 then
+                -- A fast reversal can interrupt the shrink while visible. Fade out at the
+                -- current size first, then reset the scale while transparent.
+                local prepareDuration = EZ_ReducedMotion and 0.02 or 0.06
+                frame:SetAttribute("EZ_FadeFactor", windowScale.Scale / EZ_Window.UIScale)
+                frame:SetAttribute("EZ_ScaleTweening", true)
+                fadeTween = EZ_Animate(frame, TweenInfo.new(prepareDuration, Enum.EasingStyle.Quart, Enum.EasingDirection.InOut), { GroupTransparency = 1 })
+                fadeTween:Play()
+                task.delay(prepareDuration, function() restoreAtFullScale(true) end)
+            elseif frame.Visible and scaleDiff <= 0.000001 then
+                -- If no shrink has happened yet, reverse opacity without a flash.
+                restoreAtFullScale(false)
+            else
+                restoreAtFullScale(true)
+            end
         end
 
         local function applyMinimizeShrink(state, version)
