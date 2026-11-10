@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.68
+    Eazy UI v0.9.69
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.68"
+EZ.Version = "0.9.69"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -1030,144 +1030,100 @@ local function EZ_CreateLogo(parent, size, color)
     return root
 end
 
-local EZ_IconSets = {
-    lucide = {
-        house = "rbxassetid://98755624629571",
-        home = "rbxassetid://98755624629571",
-        star = "rbxassetid://136141469398409",
-        users = "rbxassetid://115398113982385",
-        user = "rbxassetid://81589895647169",
-        shield = "rbxassetid://110987169760162",
-        target = "rbxassetid://87563802520297",
-        eye = "rbxassetid://100033680381365",
-        ["eye-off"] = "rbxassetid://135928786788378",
-        zap = "rbxassetid://130551565616516",
-        settings = "rbxassetid://80758916183665",
-        cog = "rbxassetid://116544501716299",
-        key = "rbxassetid://96510194465420",
-        globe = "rbxassetid://114238209622913",
-        crosshair = "rbxassetid://134242818164054",
-        ["chevron-down"] = "rbxassetid://134243273101015",
-        ["chevron-up"] = "rbxassetid://122444883127455",
-        ["chevron-right"] = "rbxassetid://92473583511724",
-        ["chevron-left"] = "rbxassetid://73780377692148",
-        ["panel-left-close"] = "rbxassetid://126579818823552",
-        ["panel-left-open"] = "rbxassetid://111075816195767",
-        plus = "rbxassetid://111774323017047",
-        minus = "rbxassetid://118026365011536",
-        x = "rbxassetid://110786993356448",
-        check = "rbxassetid://93898873302694",
-        heart = "rbxassetid://116559368303288",
-        skull = "rbxassetid://137726256442333",
-        ["biceps-flexed"] = "rbxassetid://82004462003936",
-        mountain = "rbxassetid://73269957566415",
-        ["tree-palm"] = "rbxassetid://103846705893963",
-        ["circle-plus"] = "rbxassetid://113157136350384",
-        command = "rbxassetid://93648221906330",
-        palette = "rbxassetid://86350350950064",
-        search = "rbxassetid://121018724060431",
-        download = "rbxassetid://134814648082393",
-        save = "rbxassetid://126116963775616",
-        trash = "rbxassetid://106723740584310",
-        edit = "rbxassetid://137986121120732",
-        refresh = "rbxassetid://138133190015277",
-        sliders = "rbxassetid://85538382643347",
-        info = "rbxassetid://124560466474914",
-        warning = "rbxassetid://125920361880643",
-        error = "rbxassetid://114497774613488",
-        success = "rbxassetid://103617236554419",
-        power = "rbxassetid://96479131758775",
-        menu = "rbxassetid://77021539815611",
-        lock = "rbxassetid://134724289526879",
-        unlock = "rbxassetid://93597915325122",
-        bell = "rbxassetid://97392696311902",
-        code = "rbxassetid://107380207681249",
-        terminal = "rbxassetid://106783148545356",
-        folder = "rbxassetid://80846616596607",
-        bookmark = "rbxassetid://121093149326239",
-        crown = "rbxassetid://127843403295538",
-        trophy = "rbxassetid://131545003268773",
-        gamepad = "rbxassetid://121607283959010",
-        activity = "rbxassetid://94212016861936",
-        box = "rbxassetid://101768155599700",
-        circle = "rbxassetid://130359823580534",
-        hash = "rbxassetid://82890331678520",
-        layers = "rbxassetid://81973586053257",
-        list = "rbxassetid://113179976918783",
-        map = "rbxassetid://95107167260947",
-        ["message-square"] = "rbxassetid://83881670383280",
-        music = "rbxassetid://113343203848535",
-        navigation = "rbxassetid://79308213542922",
-        package = "rbxassetid://97261141732706",
-        phone = "rbxassetid://128804946640049",
-        ["chart-pie"] = "rbxassetid://113412261630136",
-        printer = "rbxassetid://76080649734247",
-        radio = "rbxassetid://85611589536956",
-        rss = "rbxassetid://131789058984793",
-        server = "rbxassetid://92188766517878",
-        share = "rbxassetid://87340985053299",
-        ["shopping-cart"] = "rbxassetid://128420521375441",
-        signal = "rbxassetid://78424889355261",
-        speaker = "rbxassetid://96227183003618",
-        tablet = "rbxassetid://128403991264386",
-        tag = "rbxassetid://129104970103940",
-        thermometer = "rbxassetid://106546011492311",
-        ["trending-up"] = "rbxassetid://81819858538839",
-        truck = "rbxassetid://86662707764771",
-        tv = "rbxassetid://135687724791776",
-        umbrella = "rbxassetid://127502210274589",
-        video = "rbxassetid://107587444636945",
-        wifi = "rbxassetid://104669375183960",
-        wind = "rbxassetid://114551690399915",
-        wrench = "rbxassetid://112148279212860",
-        ["arrow-up"] = "rbxassetid://89282378235317",
-        ["arrow-down"] = "rbxassetid://98764963621439",
-        ["arrow-left"] = "rbxassetid://102531941843733",
-        ["arrow-right"] = "rbxassetid://113692007244654",
-        ["circle-check"] = "rbxassetid://85262178816537",
-        ["circle-x"] = "rbxassetid://76821953846248",
-        ["circle-alert"] = "rbxassetid://83898160590116",
-    },
-    phosphor = {},
+local EZ_IconSource = "https://raw.githubusercontent.com/akiradv/eazyuilib/main/icons.lua"
+local EZ_IconSets = { lucide = {}, phosphor = {} }
+local EZ_IconAliases = {
+    home = "house", edit = "pencil", refresh = "refresh-cw", sliders = "sliders-horizontal",
+    warning = "triangle-alert", unlock = "lock-open", error = "circle-x", success = "circle-check",
 }
+local EZ_IconState, EZ_IconTask = "idle", nil
+local EZ_IconWatchers = setmetatable({}, { __mode = "k" })
 
 local function EZ_ResolveIcon(icon)
     if type(icon) == "string" then
         if icon:match("^rbxassetid://%d+$") then return icon end
         local set, name = icon:match("^(%w+):(.+)$")
-        if set and name then
-            local iconSet = EZ_IconSets[set:lower()]
-            if iconSet and iconSet[name:lower()] then return iconSet[name:lower()] end
-            return nil
+        set, name = (set or "lucide"):lower(), (name or icon):lower():gsub(" ", "-")
+        local iconSet = EZ_IconSets[set]
+        if not iconSet then return nil end
+        local asset = iconSet[name]
+        if not asset and set == "lucide" then
+            local alias = EZ_IconAliases[name]
+            asset = alias and iconSet[alias] or nil
         end
-        local lucide = EZ_IconSets.lucide
-        local lower = icon:lower()
-        if lucide[lower] then return lucide[lower] end
-        local withHyphens = lower:gsub(" ", "-")
-        if lucide[withHyphens] then return lucide[withHyphens] end
-        return nil
+        return asset
     elseif type(icon) == "number" then
         return "rbxassetid://" .. tostring(icon)
     end
     return nil
 end
 
-local function EZ_CreateIcon(parent, icon, size)
+local function EZ_SetIconImage(image, icon)
     local asset = EZ_ResolveIcon(icon)
+    image.Image = asset or ""
+    local placeholder = image:FindFirstChild("EZ_IconPlaceholder")
+    if asset then
+        image.BackgroundTransparency = 1
+        if placeholder then placeholder:Destroy() end
+    else
+        image.BackgroundColor3 = EZ_Theme.TextDim
+        image.BackgroundTransparency = 0.7
+        if not placeholder then
+            placeholder = Instance.new("UICorner")
+            placeholder.Name = "EZ_IconPlaceholder"
+            placeholder.CornerRadius = UDim.new(0, 3)
+            placeholder.Parent = image
+        end
+    end
+    if EZ_IconState == "loading" and type(icon) == "string" and not icon:match("^rbxassetid://%d+$") then
+        EZ_IconWatchers[image] = icon
+    else
+        EZ_IconWatchers[image] = nil
+    end
+end
+
+local function EZ_LoadIconList()
+    if EZ_IconState ~= "idle" then return end
+    EZ_IconState = "loading"
+    EZ_IconTask = task.defer(function()
+        local ok, source = pcall(function() return game:HttpGet(EZ_IconSource) end)
+        if EZ_Destroyed then return end
+        local icons, count = {}, 0
+        if ok and type(source) == "string" and #source <= 2 * 1024 * 1024 then
+            -- icons.lua is a generated data table. Read its literal asset IDs instead
+            -- of executing remote code, so a bad response cannot run as a script.
+            for name, asset in source:gmatch('%[%s*"([%w_%-]+)"%s*%]%s*=%s*"(rbxassetid://%d+)"') do
+                icons[name:lower()] = asset
+                count = count + 1
+            end
+        end
+        if count > 0 then
+            EZ_IconSets.lucide = icons
+            EZ_IconState = "ready"
+        else
+            EZ_IconState = "failed"
+            warn("[Eazy UI] Could not load icons.lua; named icons will use placeholders.")
+        end
+        EZ_IconTask = nil
+        local pending = EZ_IconWatchers
+        EZ_IconWatchers = setmetatable({}, { __mode = "k" })
+        for image, icon in pairs(pending) do
+            if image.Parent then EZ_SetIconImage(image, icon) end
+        end
+        table.clear(pending)
+    end)
+end
+
+local function EZ_CreateIcon(parent, icon, size)
     local img = Instance.new("ImageLabel")
     img.BackgroundTransparency = 1
     img.Size = UDim2.fromOffset(size or 16, size or 16)
     img.ScaleType = Enum.ScaleType.Fit
     img.Parent = parent
-    if asset then
-        img.Image = asset
-    else
-        img.Image = ""
-        img.BackgroundColor3 = EZ_Theme.TextDim
-        img.BackgroundTransparency = 0.7
-        local pc = Instance.new("UICorner")
-        pc.CornerRadius = UDim.new(0, 3)
-        pc.Parent = img
+    if type(icon) == "string" and not icon:match("^rbxassetid://%d+$") then EZ_LoadIconList() end
+    EZ_SetIconImage(img, icon)
+    if EZ_IconWatchers[img] then
+        img.Destroying:Connect(function() EZ_IconWatchers[img] = nil end)
     end
     return img
 end
@@ -4380,7 +4336,7 @@ function EZ:CreateWindow(options)
             userAvatar.Position = collapsed and UDim2.new(0.5, -avatarSize / 2, 0.5, -avatarSize / 2) or UDim2.new(0, 9, 0.5, -17)
             displayName.Visible = not collapsed
             userName.Visible = not collapsed and userName.Text ~= ""
-            menuGlyph.Image = EZ_ResolveIcon(collapsed and "panel-left-open" or "panel-left-close")
+            EZ_SetIconImage(menuGlyph, collapsed and "panel-left-open" or "panel-left-close")
             if updateSearchLayout then updateSearchLayout(EZ_Window._compact) end
             for _, d in ipairs(registry) do updateSidebarTab(d, collapsed) end
             local twoColumns = not EZ_Window._compact and frame.Size.X.Offset - width >= EZ_ColumnThreshold
@@ -4959,6 +4915,11 @@ function EZ:CreateWindow(options)
             table.insert(registry, data)
             btn.LayoutOrder = #registry
             updateSidebarTab(data, not EZ_Window._sidebarOpen)
+            if iconLbl then
+                iconLbl:GetPropertyChangedSignal("Image"):Connect(function()
+                    if not EZ_Destroyed and iconLbl.Parent then updateSidebarTab(data, not EZ_Window._sidebarOpen) end
+                end)
+            end
             EZ_BindLocaleRefresh(btn, function()
                 data.Title = EZ_TranslateText(tabTitle)
                 updateSidebarTab(data, not EZ_Window._sidebarOpen)
@@ -7154,6 +7115,8 @@ function EZ:Destroy()
     EZ_LogoLoading = false
     EZ_CancelLogoTask()
     table.clear(EZ_LogoWatchers)
+    if EZ_IconTask then pcall(function() task.cancel(EZ_IconTask) end); EZ_IconTask = nil end
+    table.clear(EZ_IconWatchers)
     for connection in pairs(EZ_ServiceConnections) do
         if connection.Connected then connection:Disconnect() end
     end

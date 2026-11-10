@@ -1,6 +1,6 @@
 # Eazy UI
 
-Open-source Roblox GUI library. One file, zero dependencies.
+Open-source Roblox GUI library. One loadstring with a separate Lucide icon list.
 
 Built and maintained by [Akira Dev](https://github.com/akiradv).
 
@@ -8,6 +8,8 @@ Built and maintained by [Akira Dev](https://github.com/akiradv).
 ```lua
 local EZ = loadstring(game:HttpGet("https://raw.githubusercontent.com/akiradv/eazyuilib/main/eazyui.lua"))()
 ```
+
+Named Lucide icons load automatically in the background from this repository's `icons.lua`. The current list contains 1,715 Lucide names and two legacy Eazy UI entries. If it cannot be fetched, the interface opens with placeholders (tabs show their title initial); rerun the script to retry. Direct Roblox asset IDs do not need the list. The Roblox assets themselves must still be accessible.
 
 ## Quick Start
 ```lua
@@ -76,12 +78,12 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/akiradv/eazyuilib/mai
 ## Credits
 
 - [Akira Dev](https://github.com/akiradv) - author and maintainer
-- [Lucide Icons](https://lucide.dev) via [WindUI](https://github.com/Footagesus/treehub-web) - icon set
+- [Lucide Icons](https://lucide.dev) - icon designs; Roblox asset IDs from [Footagesus/Icons](https://github.com/Footagesus/Icons) by the creator of [WindUI](https://github.com/Footagesus/WindUI). The copied list and original MIT notice are in [icons.lua](icons.lua); see also the [Lucide license and Feather notices](https://github.com/lucide-icons/lucide/blob/main/LICENSE).
 - Roblox TweenService - animations
 
 ## License
 
-MIT. Do whatever you want with it, just keep the credit.
+Eazy UI is available under the [MIT License](LICENSE). The copied icon ID list includes its original MIT notice in [icons.lua](icons.lua); the [Lucide license](https://github.com/lucide-icons/lucide/blob/main/LICENSE) includes notices for the icon designs.
 
 ## Support
 

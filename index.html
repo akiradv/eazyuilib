@@ -6,7 +6,7 @@
         <title>Eazy UI</title>
         <meta
             name="description"
-            content="Documentation for Eazy UI v0.9.67, the single-file Roblox GUI library by Akira Dev."
+            content="Documentation for Eazy UI v0.9.69, a Roblox GUI library by Akira Dev."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
                 <a href="#about" class="logo">
                     <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
-                    <span class="version">v0.9.67</span>
+                    <span class="version">v0.9.69</span>
                 </a>
                 <span class="logo-sub">docs</span>
             </div>
@@ -150,18 +150,18 @@
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Eazy UI</h1>
-                    <p class="lead">One file. One loadstring. Minimal dependencies.</p>
+                    <p class="lead">One loadstring. A separate Lucide icon list.</p>
                     <div class="hero-badges">
-                        <span class="badge badge-green">v0.9.67</span>
-                        <span class="badge">Single file</span>
+                        <span class="badge badge-green">v0.9.69</span>
+                        <span class="badge">One loadstring</span>
                         <span class="badge">Open source</span>
                         <span class="badge">MIT</span>
                     </div>
                 </div>
                 <p>
-                    Eazy UI is a single-file Roblox interface library with responsive windows, tabs and sections,
-                    controls, search, localization, themes, notifications and optional persistence. The library source
-                    is <code>eazyui.lua</code>.
+                    Eazy UI is a Roblox interface library with responsive windows, tabs and sections, controls, search,
+                    localization, themes, notifications and optional persistence. The library source is
+                    <code>eazyui.lua</code>; named Lucide icons load from a separate <code>icons.lua</code> file.
                 </p>
                 <p>
                     Create a window, add tabs, then add elements. See <a href="#features">Features</a>,
@@ -205,7 +205,7 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Features</h1>
-                    <p class="lead">Everything included in v0.9.67.</p>
+                    <p class="lead">Everything included in v0.9.69.</p>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
@@ -290,10 +290,10 @@ Main:AddToggle({
                         </p>
                     </div>
                     <div class="feature-card">
-                        <h3>WindUI icons &amp; logo</h3>
+                        <h3>Lucide icons &amp; logo</h3>
                         <p>
-                            Named Lucide/WindUI Roblox assets, custom asset IDs, and a configurable PNG or Roblox logo
-                            asset.
+                            Named Lucide Roblox assets from the separate icon list, custom asset IDs, and a configurable
+                            PNG or Roblox logo asset.
                         </p>
                     </div>
                     <div class="feature-card">
@@ -324,17 +324,21 @@ Main:AddToggle({
                 </div>
 
                 <p>
-                    Eazy UI was built solo by
-                    <a href="https://github.com/akiradv" target="_blank" rel="noopener">Akira Dev</a>. There is no team
-                    and no company behind it. One person writing and testing every line.
+                    Eazy UI was built by
+                    <a href="https://github.com/akiradv" target="_blank" rel="noopener">Akira Dev</a>, with the
+                    third-party resources credited below.
                 </p>
 
                 <p>Third party assets used by the library:</p>
 
                 <ul class="credit-list">
                     <li>
-                        <strong>Lucide Icons</strong> by WindUI. Icon set used for tabs and buttons, loaded as Roblox
-                        asset ids.
+                        <strong>Lucide Icons</strong> by the <a href="https://lucide.dev/" target="_blank" rel="noopener">Lucide contributors</a>.
+                        Roblox asset IDs are from <a href="https://github.com/Footagesus/Icons" target="_blank" rel="noopener">Footagesus/Icons</a>,
+                        maintained by Footagesus, the creator of <a href="https://github.com/Footagesus/WindUI" target="_blank" rel="noopener">WindUI</a>.
+                        The copied Lucide list and its original MIT notice are included in
+                        <a href="https://github.com/akiradv/eazyuilib/blob/main/icons.lua" target="_blank" rel="noopener">icons.lua</a>.
+                        See also the <a href="https://github.com/lucide-icons/lucide/blob/main/LICENSE" target="_blank" rel="noopener">Lucide license and Feather notices</a> for the icon designs.
                     </li>
                     <li>
                         <strong>Roblox fonts</strong>. Gotham, BuilderSansMedium and the built-in Code font are used
@@ -354,7 +358,7 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Setup</span>
                     <h1>Installation</h1>
-                    <p class="lead">Load the current library from one file.</p>
+                    <p class="lead">Load the library with one loadstring.</p>
                 </div>
                 <p>
                     The public loadstring points to <code>eazyui.lua</code>. Use it only in an environment that supports
@@ -372,9 +376,12 @@ Main:AddToggle({
 print(EZ.Version)</code></pre>
                 </div>
                 <p>
-                    Alternatively, copy the complete <code>eazyui.lua</code> source into your project and adapt the
-                    loading mechanism to your environment. It uses Roblox services; file and custom-asset features
-                    require additional APIs.
+                    The library fetches <code>icons.lua</code> from the Eazy UI repository in the background; no
+                    second loadstring is needed. If the list cannot be loaded, the window still opens and named icons
+                    use placeholders (tabs show their title initial). Run the script again to retry. Direct Roblox asset
+                    IDs do not need the list.
+                    Alternatively, copy <code>eazyui.lua</code> into your project and adapt the loading mechanism to
+                    your environment. It uses Roblox services; file and custom-asset features require additional APIs.
                 </p>
                 <div class="callout callout-tip">
                     <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -842,7 +849,7 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
                     <a href="#window">Window options</a> to customize them.
                 </p>
 
-                <h3>Built in icon names</h3>
+                <h3>Popular icon names</h3>
                 <div class="icon-grid">
                     <span class="ic">house</span>
                     <span class="ic">home</span>
@@ -942,9 +949,14 @@ local Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })</code>
                 </div>
 
                 <p>
-                    You can also pass any asset directly: <code>Icon = "rbxassetid://123456"</code> or
-                    <code>Icon = 123456</code>. The built-in names above use the Lucide set exposed by WindUI;
-                    <code>Icon = "lucide:house"</code> is also supported. Unknown names display a placeholder.
+                    These are examples; see the full Lucide snapshot in
+                    <a href="https://github.com/akiradv/eazyuilib/blob/main/icons.lua" target="_blank" rel="noopener">icons.lua</a>.
+                    The file contains the Lucide set, not the other icon sets in Footagesus/Icons.
+                    <code>Icon = "lucide:house"</code> is also supported, and previous names such as
+                    <code>home</code> still work. You can pass an asset directly with
+                    <code>Icon = "rbxassetid://123456"</code> or <code>Icon = 123456</code>.
+                    Unknown names or an unavailable icon list display a placeholder; tabs show their title initial.
+                    The Roblox assets themselves must still be accessible for their images to appear.
                 </p>
             </section>
 
@@ -1016,8 +1028,8 @@ Window:SetSearch("")</code></pre>
                 </p>
                 <h3>Minimizing</h3>
                 <p>
-                    <code>fade</code> fades and slightly scales the window down before hiding it; restoring reverses
-                    both effects. <code>shrink</code> reduces the window to its title bar. Use the title-bar button or
+                    <code>fade</code> fades and slightly scales the window down before hiding it. When restored, the
+                    window fades in at its normal scale. <code>shrink</code> reduces the window to its title bar. Use the title-bar button or
                     keyboard shortcut. On touch devices a draggable floating button restores the minimized window.
                     Stale transitions are canceled during rapid toggles, while scale and expanded geometry are preserved
                     through viewport and minimize-mode changes. The minimize button's hover colors follow the active theme.
@@ -3381,6 +3393,19 @@ EZ:Notify({
                     <p class="lead">Release history.</p>
                 </div>
 
+                <h3>v0.9.69</h3>
+                <ul>
+                    <li>Moved the Lucide asset IDs into <code>icons.lua</code> in the Eazy UI repository.</li>
+                    <li>Load the full copied Lucide list automatically; existing icon names and direct asset IDs still work.</li>
+                    <li>Added links and the original license notice for the icon list from Footagesus/Icons.</li>
+                </ul>
+
+                <h3>v0.9.68</h3>
+                <ul>
+                    <li>Gave the search field more room and kept its text away from the scope and clear buttons.</li>
+                    <li>Fixed text growing when restoring a window minimized with Fade; the closing animation still shrinks.</li>
+                </ul>
+
                 <h3>v0.9.67</h3>
                 <p>Includes recent changes and fixes carried over from earlier builds.</p>
                 <ul>
@@ -3772,8 +3797,8 @@ EZ:Notify({
                             <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                             <span class="logo-name">Eazy UI</span>
                         </div>
-                        <p>Open source Roblox GUI library. A single Lua file built to keep scripting easy.</p>
-                        <span class="badge badge-green">v0.9.67</span>
+                        <p>Open source Roblox GUI library. One loadstring with a separately loaded icon list.</p>
+                        <span class="badge badge-green">v0.9.69</span>
                     </div>
                     <div class="footer-col">
                         <h5>Docs</h5>
@@ -3811,11 +3836,12 @@ EZ:Notify({
                             <a href="https://github.com/akiradv" target="_blank" rel="noopener">Akira Dev</a>. No team,
                             no company.
                         </p>
-                        <p class="footer-small">Icons by Lucide via WindUI. MIT License.</p>
+                        <p class="footer-small">Icons by Lucide; Roblox asset IDs from
+                            <a href="https://github.com/Footagesus/Icons" target="_blank" rel="noopener">Footagesus/Icons</a>.</p>
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <span>2026 Akira Dev. Eazy UI v0.9.67.</span>
+                    <span>2026 Akira Dev. Eazy UI v0.9.69.</span>
                     <span>Not affiliated with Roblox Corporation.</span>
                 </div>
             </footer>
