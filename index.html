@@ -6,7 +6,7 @@
         <title>Eazy UI</title>
         <meta
             name="description"
-            content="Documentation for Eazy UI v0.9.69, a Roblox GUI library by Akira Dev."
+            content="Documentation for Eazy UI v0.9.70, a Roblox GUI library by Akira Dev."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
                 <a href="#about" class="logo">
                     <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
-                    <span class="version">v0.9.69</span>
+                    <span class="version">v0.9.70</span>
                 </a>
                 <span class="logo-sub">docs</span>
             </div>
@@ -152,7 +152,7 @@
                     <h1>Eazy UI</h1>
                     <p class="lead">One loadstring. A separate Lucide icon list.</p>
                     <div class="hero-badges">
-                        <span class="badge badge-green">v0.9.69</span>
+                        <span class="badge badge-green">v0.9.70</span>
                         <span class="badge">One loadstring</span>
                         <span class="badge">Open source</span>
                         <span class="badge">MIT</span>
@@ -205,7 +205,7 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Features</h1>
-                    <p class="lead">Everything included in v0.9.69.</p>
+                    <p class="lead">Everything included in v0.9.70.</p>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
@@ -2091,7 +2091,7 @@ div:Set(false)</code></pre>
                 <div class="page-hero">
                     <span class="eyebrow">Element</span>
                     <h1>Paragraph</h1>
-                    <p class="lead">Card with optional title and wrapped content.</p>
+                    <p class="lead">Wrapped content with an optional title.</p>
                 </div>
                 <div class="code-block">
                     <div class="code-header">
@@ -2099,10 +2099,12 @@ div:Set(false)</code></pre>
                         <button class="copy-btn" data-target="code-el-para">Copy</button>
                     </div>
                     <pre><code id="code-el-para">local info = Tab:AddParagraph({
-    Title = "Welcome",
-    Content = "This hub is free and open source.",
+    Title = "Status",
+    -- Content can be set later.
 })
-info:Set("Updated text")</code></pre>
+info:Set("Loading...")
+task.wait(1)
+info:Set("Ready!")</code></pre>
                 </div>
                 <h4>Parameters used</h4>
                 <div class="params-grid">
@@ -2112,8 +2114,9 @@ info:Set("Updated text")</code></pre>
                 </div>
 
                 <p>
-                    <code>Set(text)</code> updates the existing content label. Supply a nonempty
-                    <code>Content</code> when constructing the paragraph if you intend to update it later.
+                    <code>Set(text)</code> replaces the paragraph's content without changing its title. It works even
+                    if <code>Content</code> was omitted or empty at creation. Use <code>Set("")</code> to clear the
+                    content; search and translations continue to update.
                 </p>
             </section>
 
@@ -3393,6 +3396,12 @@ EZ:Notify({
                     <p class="lead">Release history.</p>
                 </div>
 
+                <h3>v0.9.70</h3>
+                <ul>
+                    <li>Fixed <code>Paragraph:Set(text)</code> when <code>Content</code> starts empty or is omitted.</li>
+                    <li>Kept paragraph content updates compatible with search, translations and themes.</li>
+                </ul>
+
                 <h3>v0.9.69</h3>
                 <ul>
                     <li>Moved the Lucide asset IDs into <code>icons.lua</code> in the Eazy UI repository.</li>
@@ -3798,7 +3807,7 @@ EZ:Notify({
                             <span class="logo-name">Eazy UI</span>
                         </div>
                         <p>Open source Roblox GUI library. One loadstring with a separately loaded icon list.</p>
-                        <span class="badge badge-green">v0.9.69</span>
+                        <span class="badge badge-green">v0.9.70</span>
                     </div>
                     <div class="footer-col">
                         <h5>Docs</h5>
@@ -3841,7 +3850,7 @@ EZ:Notify({
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <span>2026 Akira Dev. Eazy UI v0.9.69.</span>
+                    <span>2026 Akira Dev. Eazy UI v0.9.70.</span>
                     <span>Not affiliated with Roblox Corporation.</span>
                 </div>
             </footer>

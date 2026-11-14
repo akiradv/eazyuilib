@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.69
+    Eazy UI v0.9.70
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.69"
+EZ.Version = "0.9.70"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -5188,7 +5188,7 @@ function EZ:CreateWindow(options)
                 row.BorderSizePixel = 0
                 EZ_LayoutChild(page, row)
                 local lay = Instance.new("UIListLayout")
-                lay.Padding = UDim.new(0, 4); lay.Parent = row
+                lay.Padding = UDim.new(0, 4); lay.SortOrder = Enum.SortOrder.LayoutOrder; lay.Parent = row
                 local pad = Instance.new("UIPadding")
                 pad.PaddingLeft = UDim.new(0, 14); pad.PaddingRight = UDim.new(0, 14)
                 pad.PaddingTop = UDim.new(0, 12); pad.PaddingBottom = UDim.new(0, 12); pad.Parent = row
@@ -5196,30 +5196,38 @@ function EZ:CreateWindow(options)
                 if o.Title and o.Title ~= "" then
                     pt = Instance.new("TextLabel")
                     pt.Size = UDim2.new(1, 0, 0, 0); pt.AutomaticSize = Enum.AutomaticSize.Y
-                    pt.BackgroundTransparency = 1; pt.Text = EZ_TranslateText(o.Title)
+                    pt.BackgroundTransparency = 1; pt.Text = EZ_TranslateText(o.Title); pt.LayoutOrder = 1
                     pt.Font = EZ_Brand.FontMedium; pt.TextSize = 13; pt.TextColor3 = EZ_Theme.Text
                     pt.TextXAlignment = Enum.TextXAlignment.Left; pt.TextWrapped = true; pt.Parent = row
                     EZ_Paint(function() pt.TextColor3 = EZ_Theme.Text end)
                 end
-                if o.Content and o.Content ~= "" then
-                    cl = Instance.new("TextLabel")
-                    cl.Size = UDim2.new(1, 0, 0, 0); cl.AutomaticSize = Enum.AutomaticSize.Y
-                    cl.BackgroundTransparency = 1; cl.Text = EZ_TranslateText(o.Content)
-                    cl.Font = EZ_Brand.FontBody; cl.TextSize = 12; cl.TextColor3 = EZ_Theme.TextDim
-                    cl.TextXAlignment = Enum.TextXAlignment.Left; cl.TextWrapped = true; cl.Parent = row
-                    EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
-                end
                 local titleSource, contentSource = o.Title or "", o.Content or ""
+                local contentBinding
                 local function updateSearch()
                     EZ_SetSearchText(row, pt and pt.Text or "", cl and cl.Text or "", titleSource, contentSource)
                 end
+                local function createContentLabel()
+                    cl = Instance.new("TextLabel")
+                    cl.Size = UDim2.new(1, 0, 0, 0); cl.AutomaticSize = Enum.AutomaticSize.Y
+                    cl.BackgroundTransparency = 1; cl.Text = EZ_TranslateText(contentSource); cl.LayoutOrder = 2
+                    cl.Font = EZ_Brand.FontBody; cl.TextSize = 12; cl.TextColor3 = EZ_Theme.TextDim
+                    cl.TextXAlignment = Enum.TextXAlignment.Left; cl.TextWrapped = true; cl.Parent = row
+                    EZ_Paint(function() cl.TextColor3 = EZ_Theme.TextDim end)
+                    contentBinding = EZ_BindText(cl, "Text", contentSource, row, updateSearch)
+                end
                 if pt then EZ_BindText(pt, "Text", titleSource, row, updateSearch) end
-                local contentBinding = cl and EZ_BindText(cl, "Text", contentSource, row, updateSearch)
-                if not pt and not cl then updateSearch() end
+                if contentSource ~= "" then createContentLabel() elseif not pt then updateSearch() end
                 local obj = {}
                 function obj:Set(x)
+                    if EZ_Destroyed or not row.Parent then return end
                     contentSource = x or ""
-                    if contentBinding then EZ_SetTextSource(contentBinding, contentSource) else updateSearch() end
+                    if contentBinding then
+                        EZ_SetTextSource(contentBinding, contentSource)
+                    elseif contentSource ~= "" then
+                        createContentLabel()
+                    else
+                        updateSearch()
+                    end
                 end
                 obj._row = row
                 return obj
