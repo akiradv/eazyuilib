@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.70
+    Eazy UI v0.9.71
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.70"
+EZ.Version = "0.9.71"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -1171,13 +1171,23 @@ local function EZ_Snap(v, minimum, maximum, step)
     return EZ_Clamp(snapped, minimum, maximum)
 end
 
-local function EZ_FormatStep(value, step)
-    local decimals, scaled = 0, step
-    while decimals < 6 and math.abs(scaled - math.floor(scaled + 0.5)) > 0.000001 do
+local function EZ_NumberPrecision(number)
+    local decimals, scaled = 0, math.abs(number)
+    while decimals < 15 do
+        local difference = math.abs(scaled - math.floor(scaled + 0.5))
+        local tolerance = math.max(1, scaled) * 0.000000000000002
+        if difference <= tolerance and (scaled == 0 or scaled >= 0.5) then break end
         decimals = decimals + 1
         scaled = scaled * 10
     end
-    return string.format("%." .. decimals .. "f", value)
+    return decimals
+end
+
+local function EZ_FormatStep(value, step)
+    local decimals = math.max(EZ_NumberPrecision(step), EZ_NumberPrecision(value))
+    local text = string.format("%." .. decimals .. "f", value)
+    if value ~= 0 and tonumber(text) == 0 then return string.format("%.15g", value) end
+    return text
 end
 
 local EZ_SearchParents = {}
@@ -1205,9 +1215,12 @@ local function EZ_Upper(value)
 end
 local function EZ_SetSearchText(row, title, description, originalTitle, originalDescription)
     if not row then return end
-    row:SetAttribute("EZ_SearchTitle", tostring(title or ""))
-    local text = tostring(title or "") .. " " .. tostring(description or "") .. " " .. EZ_SearchOriginal(originalTitle) .. " " .. EZ_SearchOriginal(originalDescription)
-    if row:GetAttribute("EZ_SearchText") == text then return end
+    local displayTitle, displayDescription = tostring(title or ""), tostring(description or "")
+    local previousTitle, previousDescription = row:GetAttribute("EZ_SearchTitle"), row:GetAttribute("EZ_SearchDescription")
+    row:SetAttribute("EZ_SearchTitle", displayTitle)
+    row:SetAttribute("EZ_SearchDescription", displayDescription)
+    local text = displayTitle .. " " .. displayDescription .. " " .. EZ_SearchOriginal(originalTitle) .. " " .. EZ_SearchOriginal(originalDescription)
+    if row:GetAttribute("EZ_SearchText") == text and previousTitle == displayTitle and previousDescription == displayDescription then return end
     row:SetAttribute("EZ_SearchText", text)
     row:SetAttribute("EZ_SearchFolded", EZ_SearchText(text))
     local refresh = EZ_SearchRefresh[row]
@@ -2208,6 +2221,23 @@ local function EZ_ValidateKey(key, validator)
     return false
 end
 
+local function EZ_ValidateCachedKey(key, validator)
+    if not key or key == "" then return false end
+    local resolved, valid, cancelled = false, false, false
+    local start = tick()
+    local pending = task.spawn(function()
+        local result = EZ_ValidateKey(key, validator)
+        if cancelled or EZ_Destroyed or tick() - start >= 5 then return end
+        valid, resolved = result, true
+    end)
+    while not resolved and not EZ_Destroyed and tick() - start < 5 do task.wait(0.05) end
+    if not resolved then
+        cancelled = true
+        EZ_CancelTask(pending)
+    end
+    return resolved and valid
+end
+
 local function EZ_ShowLoadingScreen(title, subtitle, duration)
     local gui = Instance.new("ScreenGui")
     gui.Name = EZ_RandName("Loading")
@@ -2581,15 +2611,15 @@ local function EZ_ShowKeyScreen(options, validator, callback)
             if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
             local resolved = false
             local result = false
+            local start = tick()
             validationTask = task.defer(function()
-                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
+                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent or tick() - start >= 5 then return end
                 local value = EZ_ValidateKey(key, validator)
-                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
+                if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent or tick() - start >= 5 then return end
                 result = value
                 resolved = true
                 validationTask = nil
             end)
-            local start = tick()
             while not resolved and generation == validationGeneration and not EZ_Destroyed and gui.Parent and tick() - start < 5 do task.wait(0.05) end
             if generation ~= validationGeneration or EZ_Destroyed or not gui.Parent then return end
             submitting = false
@@ -2739,7 +2769,7 @@ function EZ:Notify(options)
 
     local function render()
         if EZ_Destroyed then return end
-        local destroyNotify
+        local destroyNotify, entry
         local holder = Instance.new("Frame")
         holder.Name = "EZ_Notification"
         holder.Size = UDim2.fromOffset(0, measure().height)
@@ -2832,8 +2862,10 @@ function EZ:Notify(options)
             ibpad.PaddingLeft = UDim.new(0, 8); ibpad.PaddingRight = UDim.new(0, 8); ibpad.Parent = inputBox
             inputBox.Focused:Connect(function() ibst.Color = EZ_Theme.BorderHover end)
             local function submitInput()
-                if EZ_Destroyed then return end
+                if EZ_Destroyed or not entry or entry.closed or entry.inputRunning then return end
+                entry.inputRunning = true
                 EZ_SafeCall(inputCallback, inputBox.Text)
+                entry.inputRunning = false
                 if options.CloseOnInput ~= false then destroyNotify("Input") end
             end
             inputBox.FocusLost:Connect(function(enter)
@@ -2896,6 +2928,8 @@ function EZ:Notify(options)
                 btn.MouseEnter:Connect(function() EZ_Animate(bst, EZ_Ease.Fast, { Color = EZ_Theme.BorderHover }):Play() end)
                 btn.MouseLeave:Connect(function() EZ_Animate(bst, EZ_Ease.Fast, { Color = EZ_Theme.Border }):Play() end)
                 btn.Activated:Connect(function()
+                    if EZ_Destroyed or not entry or entry.closed or entry.actionRunning then return end
+                    entry.actionRunning = true
                     EZ_SafeCall(btnData.Callback)
                     destroyNotify("Action")
                 end)
@@ -2914,7 +2948,7 @@ function EZ:Notify(options)
             EZ_AddRadius(timer, 1)
             EZ_Paint(function() timer.BackgroundColor3 = styleColor() end, holder)
         end
-        local entry = { holder = holder, card = card }
+        entry = { holder = holder, card = card }
         entry.resize = function(width)
             if not holder.Parent then return end
             local metrics = measure(width)
@@ -3085,7 +3119,7 @@ function EZ:CreateWindow(options)
         local keyOptions = { Title = options.KeySystem.Title, Subtitle = options.KeySystem.Subtitle, Note = options.KeySystem.Note, FileName = EZ_KeyFile, Duration = EZ_KeyDuration }
         local savedKey = EZ_LoadKey(EZ_KeyFile)
         if EZ_Destroyed then return nil, "Library was destroyed" end
-        local savedKeyValid = savedKey and EZ_ValidateKey(savedKey, options.KeySystem.validator)
+        local savedKeyValid = savedKey and EZ_ValidateCachedKey(savedKey, options.KeySystem.validator)
         if EZ_Destroyed then return nil, "Library was destroyed" end
         if not savedKeyValid then
             local resolved, success = false, false
@@ -3114,6 +3148,8 @@ function EZ:CreateWindow(options)
     EZ_Window.ConfigId = EZ_ConfigId
     EZ_Window.AutoSave = options.AutoSave ~= false
     EZ_Window._pendingSaves = {}
+    EZ_Window._pendingColorUpdates = {}
+    EZ_Window._configRevision = 0
     EZ_Window._elementFlags = {}
     EZ_Window._applying = false
     EZ_Window._hasLoadedConfig = false
@@ -3186,7 +3222,7 @@ function EZ:CreateWindow(options)
                 el:Set(value, false)
             elseif el.Type == "slider" then
                 if type(value) ~= "number" then error("expected a number") end
-                el:Set(value, false)
+                el:Set(value, false, true)
             elseif el.Type == "input" or el.Type == "textarea" then
                 if type(value) ~= "string" then error("expected text") end
                 el:Set(value, false)
@@ -3789,6 +3825,13 @@ function EZ:CreateWindow(options)
             if not globalResults then return 0 end
             clearGlobalResults()
             local total, order, groupCount = 0, 0, 0
+            local function resultTitle(row)
+                local title = row:GetAttribute("EZ_SearchTitle") or ""
+                if title:match("%S") then return title end
+                local description = row:GetAttribute("EZ_SearchDescription") or ""
+                local summary = description:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+                return summary
+            end
             local function addGroup(title)
                 order = order + 1
                 groupCount = groupCount + 1
@@ -3812,7 +3855,7 @@ function EZ:CreateWindow(options)
                 label.Visible = true
             end
             local function addResult(data, row, section)
-                local title = row:GetAttribute("EZ_SearchTitle") or ""
+                local title = resultTitle(row)
                 if title == "" then return end
                 total = total + 1
                 order = order + 1
@@ -3874,7 +3917,7 @@ function EZ:CreateWindow(options)
                     local sectionMatch = section and (section.header:GetAttribute("EZ_SearchFolded") or ""):find(query, 1, true) ~= nil
                     local rowMatch = (row:GetAttribute("EZ_SearchFolded") or ""):find(query, 1, true) ~= nil
                     if row.Parent and row.Visible and sectionVisible and not row:GetAttribute("EZ_SearchSkip") and (sectionMatch or rowMatch) then
-                        if (row:GetAttribute("EZ_SearchTitle") or "") ~= "" then
+                        if resultTitle(row) ~= "" then
                             table.insert(found, { row = row, section = section })
                             if section then sectionsWithItems[section] = true end
                         end
@@ -5563,16 +5606,14 @@ function EZ:CreateWindow(options)
                     obj.Value = v
                     refreshVisual()
                 end
-                local function applyFinal(silent)
+                local function applyFinal(silent, forceCallback)
                     if silent then lastCallbackValue = obj.Value; return end
-                    if not silent then
-                        if obj.Value ~= lastCallbackValue then
-                            lastCallbackValue = obj.Value
-                            EZ_SafeCall(cb, obj.Value)
-                            if obj.Flag and EZ_Window.AutoSave then
-                                EZ_Window.ConfigData[id] = { type = "slider", value = obj.Value }
-                                EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
-                            end
+                    if forceCallback or obj.Value ~= lastCallbackValue then
+                        lastCallbackValue = obj.Value
+                        EZ_SafeCall(cb, obj.Value)
+                        if obj.Flag and EZ_Window.AutoSave then
+                            EZ_Window.ConfigData[id] = { type = "slider", value = obj.Value }
+                            EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
                         end
                     end
                 end
@@ -5655,9 +5696,9 @@ function EZ:CreateWindow(options)
                         editBtn.Visible = true
                     end)
                 end)
-                function obj:Set(n, silent)
+                function obj:Set(n, silent, forceCallback)
                     applyVisual(tonumber(n) or mn)
-                    applyFinal(silent)
+                    applyFinal(silent, forceCallback == true)
                 end
                 applyVisual(obj.Value)
                 obj.Default, lastCallbackValue = obj.Value, obj.Value
@@ -6428,23 +6469,41 @@ function EZ:CreateWindow(options)
                     if updateScheduled then return end
                     updateScheduled = true
                     local generation = colorGeneration
-                    task.delay(0.06, function()
-                        if EZ_Destroyed or not row.Parent or generation ~= colorGeneration then return end
+                    local function flush(detachedCallback)
+                        if not updateScheduled or generation ~= colorGeneration then return end
                         updateScheduled = false
-                        local col = obj.Value
-                        EZ_SafeCall(cb, col)
-                        if obj.Flag and EZ_Window.AutoSave then
+                        if EZ_Window._pendingColorUpdates[obj] == flush then EZ_Window._pendingColorUpdates[obj] = nil end
+                        if EZ_Destroyed or not row.Parent then return end
+                        local col, saveName, revision = obj.Value, nil, EZ_Window._configRevision
+                        local function scheduleColorSave()
+                            if not obj.Flag or not EZ_Window.AutoSave then return false end
+                            local current = obj.Value
                             EZ_Window.ConfigData[id] = {
                                 type = "color",
                                 value = {
-                                    math.floor(col.R * 255 + 0.5),
-                                    math.floor(col.G * 255 + 0.5),
-                                    math.floor(col.B * 255 + 0.5),
+                                    math.floor(current.R * 255 + 0.5),
+                                    math.floor(current.G * 255 + 0.5),
+                                    math.floor(current.B * 255 + 0.5),
                                 }
                             }
-                            EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
+                            return EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
                         end
-                    end)
+                        local originalName = EZ_Window.CurrentConfig
+                        if scheduleColorSave() then saveName = originalName end
+                        local function notifyColor()
+                            EZ_SafeCall(cb, col)
+                            -- Callbacks may normalize values. Preserve the final state unless
+                            -- an explicit config operation took ownership in the meantime.
+                            if saveName and not EZ_Destroyed and row.Parent and EZ_Window.CurrentConfig == saveName and EZ_Window._configRevision == revision then
+                                scheduleColorSave()
+                            end
+                        end
+                        -- A user callback may yield forever. Forced flushes start it in a
+                        -- separate task so saving or destroying the window can still finish.
+                        if detachedCallback then task.spawn(notifyColor) else notifyColor() end
+                    end
+                    EZ_Window._pendingColorUpdates[obj] = flush
+                    task.delay(0.06, flush)
                 end
 
                 local function svFromPtr(x, y)
@@ -6495,7 +6554,7 @@ function EZ:CreateWindow(options)
                 end)
 
                 hexBox.FocusLost:Connect(function(enter)
-                    if not enter then return end
+                    if not enter then refreshUI(); return end
                     local hex = hexBox.Text:match("^#?(%x%x%x%x%x%x)$")
                     if hex then
                         local r = tonumber(hex:sub(1, 2), 16)
@@ -6543,6 +6602,7 @@ function EZ:CreateWindow(options)
                 function obj:Set(color, silent)
                     colorGeneration = colorGeneration + 1
                     updateScheduled = false
+                    EZ_Window._pendingColorUpdates[obj] = nil
                     color = color or Color3.new(1, 1, 1)
                     h, s, v = color:ToHSV()
                     refreshUI()
@@ -6719,6 +6779,40 @@ function EZ:CreateWindow(options)
             return data
         end
 
+        function EZ_Window:_FlushPendingColorUpdates(sharedCounts)
+            -- Share per-picker limits with nested flushes: a callback can call
+            -- FlushSaves or Destroy while other color pickers are still pending.
+            local counts = self._colorFlushCounts
+            if not counts then
+                counts = sharedCounts or {}
+                self._colorFlushCounts, self._colorFlushDepth = counts, 0
+            end
+            local flushed = 0
+            self._colorFlushDepth = self._colorFlushDepth + 1
+            while not EZ_Destroyed do
+                local selected, flush
+                for obj, callback in pairs(self._pendingColorUpdates) do
+                    if (counts[obj] or 0) < 32 then selected, flush = obj, callback; break end
+                end
+                if not selected then break end
+                counts[selected] = (counts[selected] or 0) + 1
+                flushed = flushed + 1
+                EZ_SafeCall(flush, true)
+            end
+            if flushed > 0 and next(self._pendingColorUpdates) and not EZ_Destroyed then
+                warn("[Eazy UI] Color callbacks kept scheduling updates while flushing.")
+                -- Even if a callback repeatedly queues itself, preserve the latest value.
+                for obj in pairs(self._pendingColorUpdates) do
+                    if obj.Flag and self.AutoSave then self:_ScheduleSave(self.CurrentConfig); break end
+                end
+            end
+            self._colorFlushDepth = self._colorFlushDepth - 1
+            if self._colorFlushDepth == 0 then
+                self._colorFlushCounts, self._colorFlushDepth = nil, nil
+            end
+            return flushed
+        end
+
         function EZ_Window:_CancelPendingSave(name)
             local pending = self._pendingSaves[name]
             if pending and pending.timer then pcall(task.cancel, pending.timer) end
@@ -6745,7 +6839,13 @@ function EZ:CreateWindow(options)
             return true
         end
 
-        function EZ_Window:FlushSaves()
+        function EZ_Window:_RefreshPendingCurrentSnapshot()
+            if self._applying or EZ_Destroyed then return end
+            local pending = self._pendingSaves[self.CurrentConfig]
+            if pending then pending.data = self:_BuildConfigData() end
+        end
+
+        function EZ_Window:_FlushSaveSnapshots()
             if EZ_Destroyed then return false, "Window was destroyed" end
             local names = {}
             for name in pairs(self._pendingSaves) do table.insert(names, name) end
@@ -6760,15 +6860,25 @@ function EZ:CreateWindow(options)
             return true
         end
 
+        function EZ_Window:FlushSaves()
+            if EZ_Destroyed then return false, "Window was destroyed" end
+            self:_FlushPendingColorUpdates()
+            self:_RefreshPendingCurrentSnapshot()
+            return self:_FlushSaveSnapshots()
+        end
+
         function EZ_Window:SaveConfig(configName)
             if self._applying or EZ_Destroyed then return false, "Window is applying a config or destroyed" end
             configName = configName or self.CurrentConfig
             if not EZ_ValidConfigName(configName) then return false, "Invalid config name" end
+            self:_FlushPendingColorUpdates()
+            if self._applying or EZ_Destroyed then return false, "Window is applying a config or destroyed" end
             local data = self:_BuildConfigData()
             local previousPending = self._pendingSaves[configName]
             local ok, err = EZ_SaveConfig(EZ_ConfigId, configName, data)
             if not ok then return false, err end
             if self._pendingSaves[configName] == previousPending then self:_CancelPendingSave(configName) end
+            self._configRevision = self._configRevision + 1
             self.ConfigData = data
             self.CurrentConfig = configName
             if self._configDropdown then self._configDropdown:SetValues(EZ_ListConfigs(EZ_ConfigId)) end
@@ -6783,6 +6893,7 @@ function EZ:CreateWindow(options)
             if not flushed then return false, flushErr end
             local data, err = EZ_LoadConfig(EZ_ConfigId, configName)
             if not data then return false, err end
+            self._configRevision = self._configRevision + 1
             self.CurrentConfig = configName
             self.ConfigData = EZ_Copy(data)
             self._hasLoadedConfig = true
@@ -6798,15 +6909,16 @@ function EZ:CreateWindow(options)
             if EZ_Destroyed then return false, "Window was destroyed" end
             configName = configName or self.CurrentConfig
             if not EZ_ValidConfigName(configName) then return false, "Invalid config name" end
+            self._configRevision = self._configRevision + 1
             self:_CancelPendingSave(configName)
             self.ConfigData = {}
             self.CurrentConfig = configName
             self._applying = true
             for _, el in ipairs(self.Elements) do
-                if el.Default ~= nil then
+                if el.Default ~= nil or el.Type == "dropdown" then
                     if el.Type == "keybind" then el.Mods = el.DefaultMods or "" end
                     local default = (el.Type == "multi" or el.Type == "range") and EZ_Copy(el.Default) or el.Default
-                    local ok, err = pcall(el.Set, el, default, false)
+                    local ok, err = pcall(el.Set, el, default, false, el.Type == "slider" and true or nil)
                     if not ok then warn("[Eazy UI] Reset failed for " .. tostring(el.Id) .. ": " .. tostring(err)) end
                 end
             end
@@ -6817,8 +6929,12 @@ function EZ:CreateWindow(options)
         function EZ_Window:DeleteConfig(configName)
             if EZ_Destroyed then return false, "Window was destroyed" end
             configName = configName or self.CurrentConfig
+            if not EZ_ValidConfigName(configName) then return false, "Invalid config name" end
+            self:_FlushPendingColorUpdates()
+            if EZ_Destroyed then return false, "Window was destroyed" end
             local ok, err = EZ_DeleteConfig(EZ_ConfigId, configName)
             if not ok then return false, err end
+            self._configRevision = self._configRevision + 1
             self:_CancelPendingSave(configName)
             if self.CurrentConfig == configName then self.CurrentConfig = "default"; self.ConfigData = {} end
             if self._selectedConfig == configName then self._selectedConfig = nil end
@@ -7069,6 +7185,7 @@ function EZ:CreateWindow(options)
             local name = EZ_GetAutoloadName(EZ_ConfigId) or "default"
             local saved, err = EZ_LoadConfig(EZ_ConfigId, name)
             if not saved then return false, err end
+            self._configRevision = self._configRevision + 1
             self.ConfigData = EZ_Copy(saved)
             self.CurrentConfig = name
             self._hasLoadedConfig = true
@@ -7105,10 +7222,55 @@ function EZ:Destroy()
             end
         end
     end
+    -- A callback in one window can change a picker in another window that
+    -- was already visited. Drain all windows before writing any snapshots.
+    local shutdownColorCounts = {}
+    for _ = 1, 32 do
+        local madeProgress = false
+        for _, window in ipairs(EZ_Windows) do
+            if window._FlushPendingColorUpdates and next(window._pendingColorUpdates or {}) then
+                if window:_FlushPendingColorUpdates(shutdownColorCounts) > 0 then madeProgress = true end
+            end
+        end
+        if not madeProgress then break end
+    end
+    -- Executor writes can yield. If a callback updates a color while a write
+    -- is in progress, drain the new callback and snapshot before finishing.
+    local failedWindows = {}
+    for _ = 1, 32 do
+        local madeProgress = false
+        for _, window in ipairs(EZ_Windows) do
+            if window._FlushPendingColorUpdates and next(window._pendingColorUpdates or {}) then
+                if window:_FlushPendingColorUpdates(shutdownColorCounts) > 0 then madeProgress = true end
+            end
+        end
+        for _, window in ipairs(EZ_Windows) do
+            if window._FlushSaveSnapshots and not failedWindows[window] and next(window._pendingSaves or {}) then
+                madeProgress = true
+                if window._RefreshPendingCurrentSnapshot then window:_RefreshPendingCurrentSnapshot() end
+                local ok, err = window:_FlushSaveSnapshots()
+                if not ok then
+                    failedWindows[window] = true
+                    warn("[Eazy UI] Could not flush pending saves: " .. tostring(err))
+                end
+            end
+        end
+        if not madeProgress then break end
+    end
     for _, window in ipairs(EZ_Windows) do
-        if window.FlushSaves then
-            local ok, err = window:FlushSaves()
+        if next(window._pendingColorUpdates or {}) then
+            warn("[Eazy UI] Color callbacks kept scheduling updates during destruction.")
+            for obj in pairs(window._pendingColorUpdates) do
+                if obj.Flag and window.AutoSave then window:_ScheduleSave(window.CurrentConfig); break end
+            end
+        end
+        if window._FlushSaveSnapshots and not failedWindows[window] and next(window._pendingSaves or {}) then
+            if window._RefreshPendingCurrentSnapshot then window:_RefreshPendingCurrentSnapshot() end
+            local ok, err = window:_FlushSaveSnapshots()
             if not ok then warn("[Eazy UI] Could not flush pending saves: " .. tostring(err)) end
+        end
+        if not failedWindows[window] and next(window._pendingSaves or {}) then
+            warn("[Eazy UI] Some pending saves remained during destruction.")
         end
         for name in pairs(window._pendingSaves or {}) do window:_CancelPendingSave(name) end
     end
