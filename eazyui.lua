@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.71
+    Eazy UI v0.9.72
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.71"
+EZ.Version = "0.9.72"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -573,6 +573,37 @@ local function EZ_SafeCall(callback, ...)
     return ok, result
 end
 
+
+
+
+
+local function EZ_SafeUserCall(callback, ...)
+    if type(callback) ~= "function" then return true end
+    local caller = coroutine.running()
+    if not caller or not coroutine.isyieldable() then return EZ_SafeCall(callback, ...) end
+    local args = table.pack(...)
+    local finished, waiting = false, false
+    local callOk, result
+    local started, startErr = pcall(task.spawn, function()
+        callOk, result = pcall(callback, table.unpack(args, 1, args.n))
+        if not callOk then warn("[Eazy UI] Callback failed: " .. tostring(result)) end
+        finished = true
+        if waiting and coroutine.status(caller) == "suspended" then
+            local ok, err = pcall(task.spawn, caller)
+            if not ok then warn("[Eazy UI] Could not resume callback caller: " .. tostring(err)) end
+        end
+    end)
+    if not started then
+        warn("[Eazy UI] Callback isolation unavailable; running directly: " .. tostring(startErr))
+        return EZ_SafeCall(callback, table.unpack(args, 1, args.n))
+    end
+    if not finished then
+        waiting = true
+        repeat coroutine.yield() until finished
+    end
+    return callOk, result
+end
+
 local function EZ_Copy(value)
     if type(value) ~= "table" then return value end
     local copy = {}
@@ -1090,8 +1121,8 @@ local function EZ_LoadIconList()
         if EZ_Destroyed then return end
         local icons, count = {}, 0
         if ok and type(source) == "string" and #source <= 2 * 1024 * 1024 then
-            -- icons.lua is a generated data table. Read its literal asset IDs instead
-            -- of executing remote code, so a bad response cannot run as a script.
+
+
             for name, asset in source:gmatch('%[%s*"([%w_%-]+)"%s*%]%s*=%s*"(rbxassetid://%d+)"') do
                 icons[name:lower()] = asset
                 count = count + 1
@@ -2864,7 +2895,7 @@ function EZ:Notify(options)
             local function submitInput()
                 if EZ_Destroyed or not entry or entry.closed or entry.inputRunning then return end
                 entry.inputRunning = true
-                EZ_SafeCall(inputCallback, inputBox.Text)
+                EZ_SafeUserCall(inputCallback, inputBox.Text)
                 entry.inputRunning = false
                 if options.CloseOnInput ~= false then destroyNotify("Input") end
             end
@@ -2930,7 +2961,7 @@ function EZ:Notify(options)
                 btn.Activated:Connect(function()
                     if EZ_Destroyed or not entry or entry.closed or entry.actionRunning then return end
                     entry.actionRunning = true
-                    EZ_SafeCall(btnData.Callback)
+                    EZ_SafeUserCall(btnData.Callback)
                     destroyNotify("Action")
                 end)
             end
@@ -2984,7 +3015,7 @@ function EZ:Notify(options)
             for i, e in ipairs(EZ_NotifyVisible) do
                 if e == entry then table.remove(EZ_NotifyVisible, i); break end
             end
-            EZ_SafeCall(onClose, reason or "Closed")
+            EZ_SafeUserCall(onClose, reason or "Closed")
             if holder.Parent then
                 if EZ_Destroyed then
                     holder:Destroy()
@@ -3021,7 +3052,7 @@ function EZ:Notify(options)
                 end
             end)
         end
-        EZ_SafeCall(onOpen)
+        EZ_SafeUserCall(onOpen)
     end
 
     table.insert(EZ_NotifyQueue, { render = render, height = measure().height, measure = measure })
@@ -4077,7 +4108,7 @@ function EZ:CreateWindow(options)
                         scopeWidth = scopeButtonWidth, rowWidth = rowWidth }
                     clear.Visible = hasText
                     if stackedSearchControls then
-                        -- On very narrow layouts, give the editable text its own row.
+
                         local inputLeft = showSearchIcon and 30 or 6
                         searchIcon.Visible = showSearchIcon
                         searchIcon.Position = UDim2.fromOffset(10, 8)
@@ -4094,7 +4125,7 @@ function EZ:CreateWindow(options)
                         searchIcon.Visible = true
                         searchIcon.Position = UDim2.fromOffset(10, 10)
                         searchBox.Position = UDim2.fromOffset(30, 0)
-                        -- Do not reserve the clear button's space when it is hidden.
+
                         local clearWidth = hasText and 34 or 0
                         searchBox.Size = UDim2.new(1, -(30 + scopeButtonWidth + 4 + clearWidth), 1, 0)
                         searchScopeButton.AnchorPoint = Vector2.new(1, 0.5)
@@ -4212,7 +4243,7 @@ function EZ:CreateWindow(options)
                     hintWidth = cachedHintWidth or 0
                     scopeButtonWidth = math.clamp((cachedScopeWidth or 0) + 14, 42, 84)
                     neededSearchWidth = 30 + hintWidth + 8 + scopeButtonWidth
-                    -- Keep room for the tab title; stack the header before the search becomes cramped.
+
                     if availableWidth < neededSearchWidth + 120 + 8 then stacked = true end
                 end
                 pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
@@ -4657,7 +4688,7 @@ function EZ:CreateWindow(options)
             end
 
             if state then
-                -- Keep the existing fade and slight shrink when minimizing.
+
                 frame.Visible = true
                 frame:SetAttribute("EZ_FadeFactor", 0.92)
                 frame:SetAttribute("EZ_ScaleTweening", true)
@@ -4672,7 +4703,7 @@ function EZ:CreateWindow(options)
             local function restoreAtFullScale(normalize)
                 if version ~= minimizeVersion or not frame.Parent or EZ_Window.Minimized then return end
                 if normalize then
-                    -- The scale is reset while hidden, so the text never grows during fade-in.
+
                     frame.Visible = false
                     frame.GroupTransparency = 1
                     windowScale.Scale = EZ_Window.UIScale
@@ -4687,8 +4718,8 @@ function EZ:CreateWindow(options)
 
             local scaleDiff = math.abs(windowScale.Scale - EZ_Window.UIScale)
             if frame.Visible and frame.GroupTransparency < 0.9999 and scaleDiff > 0.000001 then
-                -- A fast reversal can interrupt the shrink while visible. Fade out at the
-                -- current size first, then reset the scale while transparent.
+
+
                 local prepareDuration = EZ_ReducedMotion and 0.02 or 0.06
                 frame:SetAttribute("EZ_FadeFactor", windowScale.Scale / EZ_Window.UIScale)
                 frame:SetAttribute("EZ_ScaleTweening", true)
@@ -4696,7 +4727,7 @@ function EZ:CreateWindow(options)
                 fadeTween:Play()
                 task.delay(prepareDuration, function() restoreAtFullScale(true) end)
             elseif frame.Visible and scaleDiff <= 0.000001 then
-                -- If no shrink has happened yet, reverse opacity without a flash.
+
                 restoreAtFullScale(false)
             else
                 restoreAtFullScale(true)
@@ -5349,7 +5380,7 @@ function EZ:CreateWindow(options)
                     obj.Value = state and true or false
                     renderTween()
                     if not silent then
-                        if not obj.Disabled then EZ_SafeCall(cb, obj.Value) end
+                        if not obj.Disabled then EZ_SafeUserCall(cb, obj.Value) end
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "toggle", value = obj.Value }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -5362,9 +5393,9 @@ function EZ:CreateWindow(options)
                 EZ_Connect(hitbox, hitbox.InputBegan, function(i)
                     if obj.Disabled then return end
                     if i.UserInputType == Enum.UserInputType.MouseButton2 then
-                        EZ_SafeCall(rightCb, obj)
+                        EZ_SafeUserCall(rightCb, obj)
                     elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
-                        EZ_SafeCall(middleCb, obj)
+                        EZ_SafeUserCall(middleCb, obj)
                     end
                 end)
                 EZ_InstallDisabled(obj, row, o, function(disabled)
@@ -5486,20 +5517,20 @@ function EZ:CreateWindow(options)
                             pressTween:Play()
                         end
                     end)
-                    EZ_SafeCall(cb)
+                    EZ_SafeUserCall(cb)
                 end
                 act.Activated:Connect(function() obj:Fire() end)
-                act.MouseButton2Click:Connect(function() if not obj.Disabled then EZ_SafeCall(rightCb, obj) end end)
+                act.MouseButton2Click:Connect(function() if not obj.Disabled then EZ_SafeUserCall(rightCb, obj) end end)
                 EZ_Connect(act, act.InputBegan, function(i)
-                    if not obj.Disabled and i.UserInputType == Enum.UserInputType.MouseButton3 then EZ_SafeCall(middleCb, obj) end
+                    if not obj.Disabled and i.UserInputType == Enum.UserInputType.MouseButton3 then EZ_SafeUserCall(middleCb, obj) end
                 end)
                 EZ_Connect(hitbox, hitbox.Activated, function() obj:Fire() end)
                 EZ_Connect(hitbox, hitbox.InputBegan, function(i)
                     if obj.Disabled then return end
                     if i.UserInputType == Enum.UserInputType.MouseButton2 then
-                        EZ_SafeCall(rightCb, obj)
+                        EZ_SafeUserCall(rightCb, obj)
                     elseif i.UserInputType == Enum.UserInputType.MouseButton3 then
-                        EZ_SafeCall(middleCb, obj)
+                        EZ_SafeUserCall(middleCb, obj)
                     end
                 end)
                 function obj:SetTitle(t)
@@ -5610,7 +5641,7 @@ function EZ:CreateWindow(options)
                     if silent then lastCallbackValue = obj.Value; return end
                     if forceCallback or obj.Value ~= lastCallbackValue then
                         lastCallbackValue = obj.Value
-                        EZ_SafeCall(cb, obj.Value)
+                        EZ_SafeUserCall(cb, obj.Value)
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "slider", value = obj.Value }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -5821,7 +5852,7 @@ function EZ:CreateWindow(options)
                         if obj.MinValue ~= lastCallbackMin or obj.MaxValue ~= lastCallbackMax then
                             lastCallbackMin = obj.MinValue
                             lastCallbackMax = obj.MaxValue
-                            EZ_SafeCall(cb, { obj.MinValue, obj.MaxValue })
+                            EZ_SafeUserCall(cb, { obj.MinValue, obj.MaxValue })
                             if obj.Flag and EZ_Window.AutoSave then
                                 EZ_Window.ConfigData[id] = { type = "range", value = { obj.MinValue, obj.MaxValue } }
                                 EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -5851,7 +5882,7 @@ function EZ:CreateWindow(options)
                     lastCallbackMin, lastCallbackMax = obj.MinValue, obj.MaxValue
                     refreshVisual()
                     if not silent then
-                        EZ_SafeCall(cb, { obj.MinValue, obj.MaxValue })
+                        EZ_SafeUserCall(cb, { obj.MinValue, obj.MaxValue })
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "range", value = { obj.MinValue, obj.MaxValue } }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6029,7 +6060,7 @@ function EZ:CreateWindow(options)
                             end
                             if not found then table.insert(obj.Value, v) end
                             updateTrigger()
-                            EZ_SafeCall(cb, EZ_Copy(obj.Value))
+                            EZ_SafeUserCall(cb, EZ_Copy(obj.Value))
                             if obj.Flag and EZ_Window.AutoSave then
                                 EZ_Window.ConfigData[id] = { type = "multi", value = EZ_Copy(obj.Value) }
                                 EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6048,7 +6079,7 @@ function EZ:CreateWindow(options)
                     updateTrigger()
                     if EZ_DropdownCurrent == entry and entry.refreshTheme then entry.refreshTheme() end
                     if not silent then
-                        EZ_SafeCall(cb, multi and EZ_Copy(obj.Value) or obj.Value)
+                        EZ_SafeUserCall(cb, multi and EZ_Copy(obj.Value) or obj.Value)
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = multi and "multi" or "dropdown", value = multi and EZ_Copy(obj.Value) or obj.Value }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6111,7 +6142,7 @@ function EZ:CreateWindow(options)
                     obj.Value = t or ""
                     box.Text = obj.Value
                     if not silent then
-                        EZ_SafeCall(cb, obj.Value)
+                        EZ_SafeUserCall(cb, obj.Value)
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "input", value = t }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6186,7 +6217,7 @@ function EZ:CreateWindow(options)
                     obj.Value = t or ""
                     box.Text = obj.Value
                     if not silent then
-                        EZ_SafeCall(cb, obj.Value)
+                        EZ_SafeUserCall(cb, obj.Value)
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "textarea", value = t }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6491,15 +6522,15 @@ function EZ:CreateWindow(options)
                         local originalName = EZ_Window.CurrentConfig
                         if scheduleColorSave() then saveName = originalName end
                         local function notifyColor()
-                            EZ_SafeCall(cb, col)
-                            -- Callbacks may normalize values. Preserve the final state unless
-                            -- an explicit config operation took ownership in the meantime.
+                            EZ_SafeUserCall(cb, col)
+
+
                             if saveName and not EZ_Destroyed and row.Parent and EZ_Window.CurrentConfig == saveName and EZ_Window._configRevision == revision then
                                 scheduleColorSave()
                             end
                         end
-                        -- A user callback may yield forever. Forced flushes start it in a
-                        -- separate task so saving or destroying the window can still finish.
+
+
                         if detachedCallback then task.spawn(notifyColor) else notifyColor() end
                     end
                     EZ_Window._pendingColorUpdates[obj] = flush
@@ -6607,7 +6638,7 @@ function EZ:CreateWindow(options)
                     h, s, v = color:ToHSV()
                     refreshUI()
                     if not silent then
-                        if EZ_Window._applying then EZ_SafeCall(cb, obj.Value) else fire() end
+                        if EZ_Window._applying then EZ_SafeUserCall(cb, obj.Value) else fire() end
                     end
                 end
                 function obj:Get()
@@ -6671,7 +6702,7 @@ function EZ:CreateWindow(options)
                     obj.Value = key
                     kl.Text = key and (obj.Mods .. key.Name) or EZ_Locale.None
                     if not silent then
-                        EZ_SafeCall(onChanged, key, obj.Mods)
+                        EZ_SafeUserCall(onChanged, key, obj.Mods)
                         if obj.Flag and EZ_Window.AutoSave then
                             EZ_Window.ConfigData[id] = { type = "keybind", value = key and key.Name or nil, mods = obj.Mods }
                             EZ_Window:_ScheduleSave(EZ_Window.CurrentConfig)
@@ -6705,7 +6736,7 @@ function EZ:CreateWindow(options)
                     end
                     if EZ_CapturingKeybind or processed then return end
                     if obj.Value and input.KeyCode == obj.Value and not UserInputService:GetFocusedTextBox() and EZ_CurrentModifiers(input.KeyCode) == obj.Mods then
-                        EZ_SafeCall(onTriggered, obj.Value, obj.Mods)
+                        EZ_SafeUserCall(onTriggered, obj.Value, obj.Mods)
                     end
                 end)
                 kl.MouseEnter:Connect(function() if not listening then klst.Color = EZ_Theme.BorderHover end end)
@@ -6756,12 +6787,28 @@ function EZ:CreateWindow(options)
 
         function EZ_Window:_BuildConfigData()
             local data = EZ_Copy(self.ConfigData or {})
+            local previousSize = type(data._meta) == "table" and data._meta.windowSize or nil
             data._meta = { theme = EZ_CurrentThemeName, language = EZ_CurrentLanguage, transparency = EZ_GlobalTransparency, autoSave = self.AutoSave, minimizeMode = self.MinimizeMode, sidebarCollapsed = not self._sidebarOpen, minimizeKeyFormat = 2, uiScale = self.UIScale, reducedMotion = EZ_ReducedMotion }
             data._meta.accent = { math.floor(EZ_Theme.Accent.R * 255 + 0.5), math.floor(EZ_Theme.Accent.G * 255 + 0.5), math.floor(EZ_Theme.Accent.B * 255 + 0.5) }
             data._meta.searchScope = self:GetSearchScope()
-            if self.Frame then
-                local savedSize = (shrinkPhase and expandedSize) or self.Frame.Size
-                data._meta.windowSize = { math.floor(savedSize.X.Offset), math.floor(savedSize.Y.Offset) }
+
+
+
+            local ok, width, height = pcall(function()
+                local size = (shrinkPhase and expandedSize) or (self.Frame and self.Frame.Size)
+                if size then return math.floor(size.X.Offset), math.floor(size.Y.Offset) end
+            end)
+            if ok and width ~= nil and height ~= nil then
+                self._lastConfigWindowSize = { width, height }
+                self._warnedWindowSize = false
+                data._meta.windowSize = { width, height }
+            else
+                local last = self._lastConfigWindowSize or previousSize
+                if type(last) == "table" then data._meta.windowSize = EZ_Copy(last) end
+                if not ok and not self._warnedWindowSize then
+                    self._warnedWindowSize = true
+                    warn("[Eazy UI] Window size unavailable; keeping the last known size when possible.")
+                end
             end
             for _, el in ipairs(self.Elements) do
                 if el.Type == "color" then
@@ -6780,8 +6827,8 @@ function EZ:CreateWindow(options)
         end
 
         function EZ_Window:_FlushPendingColorUpdates(sharedCounts)
-            -- Share per-picker limits with nested flushes: a callback can call
-            -- FlushSaves or Destroy while other color pickers are still pending.
+
+
             local counts = self._colorFlushCounts
             if not counts then
                 counts = sharedCounts or {}
@@ -6801,7 +6848,7 @@ function EZ:CreateWindow(options)
             end
             if flushed > 0 and next(self._pendingColorUpdates) and not EZ_Destroyed then
                 warn("[Eazy UI] Color callbacks kept scheduling updates while flushing.")
-                -- Even if a callback repeatedly queues itself, preserve the latest value.
+
                 for obj in pairs(self._pendingColorUpdates) do
                     if obj.Flag and self.AutoSave then self:_ScheduleSave(self.CurrentConfig); break end
                 end
@@ -6823,10 +6870,15 @@ function EZ:CreateWindow(options)
             if self._applying or EZ_Destroyed or not self.AutoSave then return false end
             configName = configName or self.CurrentConfig
             if not EZ_ValidConfigName(configName) then return false, "Invalid config name" end
-            self:_CancelPendingSave(configName)
-            local pending = { data = self:_BuildConfigData() }
-            self._pendingSaves[configName] = pending
-            pending.timer = task.delay(1, function()
+
+
+            local built, data = pcall(self._BuildConfigData, self)
+            if not built then
+                warn("[Eazy UI] Could not prepare auto-save; previous snapshot retained: " .. tostring(data))
+                return false, tostring(data)
+            end
+            local pending = { data = data }
+            local scheduled, timer = pcall(task.delay, 1, function()
                 if EZ_Destroyed or self._pendingSaves[configName] ~= pending then return end
                 local ok, err = EZ_SaveConfig(EZ_ConfigId, configName, pending.data)
                 pending.timer = nil
@@ -6836,13 +6888,25 @@ function EZ:CreateWindow(options)
                     warn("[Eazy UI] Auto-save failed; pending snapshot retained: " .. tostring(err))
                 end
             end)
+            if not scheduled then
+                warn("[Eazy UI] Could not schedule auto-save; previous snapshot retained: " .. tostring(timer))
+                return false, tostring(timer)
+            end
+            pending.timer = timer
+            self:_CancelPendingSave(configName)
+            self._pendingSaves[configName] = pending
             return true
         end
 
         function EZ_Window:_RefreshPendingCurrentSnapshot()
-            if self._applying or EZ_Destroyed then return end
-            local pending = self._pendingSaves[self.CurrentConfig]
-            if pending then pending.data = self:_BuildConfigData() end
+            if self._applying or EZ_Destroyed then return true end
+            local configName = self.CurrentConfig
+            local pending = self._pendingSaves[configName]
+            if not pending then return true end
+            local ok, data = pcall(self._BuildConfigData, self)
+            if not ok then return false, tostring(data) end
+            if self._pendingSaves[configName] == pending then pending.data = data end
+            return true
         end
 
         function EZ_Window:_FlushSaveSnapshots()
@@ -6863,7 +6927,8 @@ function EZ:CreateWindow(options)
         function EZ_Window:FlushSaves()
             if EZ_Destroyed then return false, "Window was destroyed" end
             self:_FlushPendingColorUpdates()
-            self:_RefreshPendingCurrentSnapshot()
+            local refreshed, refreshErr = self:_RefreshPendingCurrentSnapshot()
+            if not refreshed then return false, refreshErr end
             return self:_FlushSaveSnapshots()
         end
 
@@ -6873,7 +6938,8 @@ function EZ:CreateWindow(options)
             if not EZ_ValidConfigName(configName) then return false, "Invalid config name" end
             self:_FlushPendingColorUpdates()
             if self._applying or EZ_Destroyed then return false, "Window is applying a config or destroyed" end
-            local data = self:_BuildConfigData()
+            local built, data = pcall(self._BuildConfigData, self)
+            if not built then return false, tostring(data) end
             local previousPending = self._pendingSaves[configName]
             local ok, err = EZ_SaveConfig(EZ_ConfigId, configName, data)
             if not ok then return false, err end
@@ -6896,6 +6962,7 @@ function EZ:CreateWindow(options)
             self._configRevision = self._configRevision + 1
             self.CurrentConfig = configName
             self.ConfigData = EZ_Copy(data)
+            self._lastConfigWindowSize = nil
             self._hasLoadedConfig = true
             self._applying = true
             local ok, result = pcall(EZ_ApplyConfigData, self.ConfigData, false)
@@ -7188,6 +7255,7 @@ function EZ:CreateWindow(options)
             self._configRevision = self._configRevision + 1
             self.ConfigData = EZ_Copy(saved)
             self.CurrentConfig = name
+            self._lastConfigWindowSize = nil
             self._hasLoadedConfig = true
             self._applying = true
             local ok, result = pcall(EZ_ApplyConfigData, self.ConfigData, true)
@@ -7222,8 +7290,8 @@ function EZ:Destroy()
             end
         end
     end
-    -- A callback in one window can change a picker in another window that
-    -- was already visited. Drain all windows before writing any snapshots.
+
+
     local shutdownColorCounts = {}
     for _ = 1, 32 do
         local madeProgress = false
@@ -7234,8 +7302,8 @@ function EZ:Destroy()
         end
         if not madeProgress then break end
     end
-    -- Executor writes can yield. If a callback updates a color while a write
-    -- is in progress, drain the new callback and snapshot before finishing.
+
+
     local failedWindows = {}
     for _ = 1, 32 do
         local madeProgress = false
@@ -7247,7 +7315,10 @@ function EZ:Destroy()
         for _, window in ipairs(EZ_Windows) do
             if window._FlushSaveSnapshots and not failedWindows[window] and next(window._pendingSaves or {}) then
                 madeProgress = true
-                if window._RefreshPendingCurrentSnapshot then window:_RefreshPendingCurrentSnapshot() end
+                if window._RefreshPendingCurrentSnapshot then
+                    local refreshed, refreshErr = window:_RefreshPendingCurrentSnapshot()
+                    if not refreshed then warn("[Eazy UI] Could not refresh save; flushing previous snapshot: " .. tostring(refreshErr)) end
+                end
                 local ok, err = window:_FlushSaveSnapshots()
                 if not ok then
                     failedWindows[window] = true
@@ -7265,7 +7336,10 @@ function EZ:Destroy()
             end
         end
         if window._FlushSaveSnapshots and not failedWindows[window] and next(window._pendingSaves or {}) then
-            if window._RefreshPendingCurrentSnapshot then window:_RefreshPendingCurrentSnapshot() end
+            if window._RefreshPendingCurrentSnapshot then
+                local refreshed, refreshErr = window:_RefreshPendingCurrentSnapshot()
+                if not refreshed then warn("[Eazy UI] Could not refresh save; flushing previous snapshot: " .. tostring(refreshErr)) end
+            end
             local ok, err = window:_FlushSaveSnapshots()
             if not ok then warn("[Eazy UI] Could not flush pending saves: " .. tostring(err)) end
         end
