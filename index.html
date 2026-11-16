@@ -6,7 +6,7 @@
         <title>Eazy UI</title>
         <meta
             name="description"
-            content="Documentation for Eazy UI v0.9.70, a Roblox GUI library by Akira Dev."
+            content="Documentation for Eazy UI v0.9.76, a Roblox GUI library by Akira Dev."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,7 +23,7 @@
                 <a href="#about" class="logo">
                     <span class="logo-mark"><img src="assets/logonobg.png" alt="" width="20" height="24" /></span>
                     <span class="logo-name">Eazy UI</span>
-                    <span class="version">v0.9.70</span>
+                    <span class="version">v0.9.76</span>
                 </a>
                 <span class="logo-sub">docs</span>
             </div>
@@ -152,7 +152,7 @@
                     <h1>Eazy UI</h1>
                     <p class="lead">One loadstring. A separate Lucide icon list.</p>
                     <div class="hero-badges">
-                        <span class="badge badge-green">v0.9.70</span>
+                        <span class="badge badge-green">v0.9.76</span>
                         <span class="badge">One loadstring</span>
                         <span class="badge">Open source</span>
                         <span class="badge">MIT</span>
@@ -205,14 +205,14 @@ Main:AddToggle({
                 <div class="page-hero">
                     <span class="eyebrow">Introducing</span>
                     <h1>Features</h1>
-                    <p class="lead">Everything included in v0.9.70.</p>
+                    <p class="lead">Everything included in v0.9.76.</p>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
                         <h3>Responsive desktop &amp; mobile</h3>
                         <p>
-                            Draggable, resizable window with viewport-aware layout, a compact sidebar and a draggable
-                            reopen button on touch devices.
+                            Draggable, resizable window with viewport-aware layout, overlay navigation and adaptive
+                            controls on small touch screens, plus a draggable reopen button.
                         </p>
                     </div>
                     <div class="feature-card">
@@ -1048,10 +1048,12 @@ Window:SetSidebarCollapsed(false)</code></pre>
                 </div>
                 <h3>Interface scale &amp; reduced animations</h3>
                 <p>
-                    The interface scale defaults to <code>1</code> and is clamped from <code>0.8</code> to
+                    The selected interface scale defaults to <code>1</code> and is clamped from <code>0.8</code> to
                     <code>1.2</code>. The built-in settings slider shows 80–120% in five-percent steps; the API also
-                    accepts values between those steps. Viewport limits still apply. Fade remains the default minimize
-                    animation; reduced motion makes transitions shorter without changing notification durations.
+                    accepts values between those steps. On small touch viewports and very small desktop viewports, the
+                    interface is automatically rendered at 85% of the selected scale. <code>GetScale()</code> still
+                    reports the selected value, not the combined scale. Viewport limits still apply. Fade remains the
+                    default minimize animation; reduced motion makes transitions shorter without changing notification durations.
                 </p>
                 <div class="code-block">
                     <div class="code-header">
@@ -1103,11 +1105,22 @@ Window:SetTransparency(0.25)</code></pre>
                 <p>
                     The sidebar can expand or collapse and shows the local player’s display name, username and avatar
                     when available, with a fallback when they are unavailable. Its widths, font and initial state are
-                    configurable. Compact layout can collapse it automatically, and selecting a tab closes the expanded
-                    sidebar on compact screens. Sections can flow into two independently stacked columns when there is
-                    enough room and switch to one column on touch or narrower screens. Resizing the window, changing
-                    the sidebar width and filtering results reflow the layout. When search is cleared, the previous
-                    collapsed section state is restored. Exact rendering depends on the Roblox client and device.
+                    configurable. On detected mobile layouts, the tab name and a search icon move into the title bar,
+                    leaving more room for controls. Tap the icon to open search; closing it clears the filter. Selecting
+                    a global result closes the compact search automatically. Detection uses touch availability and a
+                    shortest usable viewport dimension of at most 600 pixels. The optional Windows desktop hint
+                    (<code>GuiService.IsWindows</code>, deprecated) preserves the desktop header when available; Studio
+                    can still emulate mobile. Detection is heuristic, so other touch-enabled computers with small windows
+                    may use the mobile header. The initial window is slightly narrower on small viewports, while its height
+                    fits the available screen. When there is room, the sidebar stays beside the page; on narrow touch
+                    screens, it can overlay the page instead of squeezing it. Select a tab or
+                    tap outside the overlay to close it. Search can still be disabled with
+                    <code>SearchEnabled = false</code> or used through <code>Window:SetSearch</code>.
+                    Sections use one column on narrow screens and can form two columns on sufficiently wide small
+                    viewports, with at least 300 logical pixels per column (or a larger configured minimum). Inputs,
+                    dropdowns and buttons use an inline layout when there is room and stack when needed. Resizing,
+                    rotating and filtering reflow the layout. When search is cleared, the previous collapsed section
+                    state is restored. Exact rendering depends on the Roblox client and device.
                 </p>
                 <h3>Layout options</h3>
                 <p>
@@ -1549,8 +1562,11 @@ ok, err = Window:FlushSaves()</code></pre>
                     Config names must be nonempty, at most 80 characters, and cannot be <code>_autoload</code>, contain
                     <code>..</code>, path separators, control characters or <code>: * ? " &lt; &gt; |</code>. Saved
                     metadata includes the theme name, accent color, language, transparency, autosave preference,
-                    minimize mode, sidebar state, window size, interface scale, reduced motion and search scope.
-                    Custom theme definitions and translation tables must be registered again when the script starts.
+                    minimize mode, sidebar state, preferred window size, interface scale, reduced motion and search scope.
+                    A window temporarily clamped to a small viewport keeps its preferred dimensions for larger viewports.
+                    Older saved window sizes receive a one-time width adjustment on small viewports; subsequent saves
+                    record a versioned size to avoid repeated shrinking. Custom theme definitions and translation tables
+                    must be registered again when the script starts.
                 </p>
                 <div class="callout callout-warn">
                     <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3396,6 +3412,45 @@ EZ:Notify({
                     <p class="lead">Release history.</p>
                 </div>
 
+                <h3>v0.9.76</h3>
+                <ul>
+                    <li>Restored the compact titlebar on detected mobile layouts, with the active tab name and a search action at the top.</li>
+                    <li>Kept the desktop header unchanged and retained the smaller automatic mobile scale.</li>
+                    <li>Preserved automatic loading, saving and preferred window dimensions.</li>
+                </ul>
+
+                <h3>v0.9.75</h3>
+                <ul>
+                    <li>Kept the active tab title and search in the content header on mobile, matching the desktop design.</li>
+                    <li>Applied a modest automatic scale to small viewports and slightly reduced the initial mobile width.</li>
+                    <li>Preserved autoload, autosave, the chosen scale and preferred window dimensions across resizing, rotation and reloads.</li>
+                    <li>Kept adaptive navigation and controls when the available width requires them.</li>
+                </ul>
+
+                <h3>v0.9.74</h3>
+                <ul>
+                    <li>Moved the active tab title and search action into the title bar on short touch windows and small compact viewports.</li>
+                    <li>Freed the separate header area for controls and kept the profile accessible in the expanded sidebar.</li>
+                    <li>Preserved automatic config loading, saved window sizes and user-selected scale.</li>
+                </ul>
+
+                <h3>v0.9.73</h3>
+                <ul>
+                    <li>Reworked small touch-screen layouts to give the controls more usable space.</li>
+                    <li>Added an overlay sidebar and a compact search button for short windows.</li>
+                    <li>Enabled readable two-column sections on sufficiently wide landscape phones and improved touch targets.</li>
+                </ul>
+
+                <h3>v0.9.72</h3>
+                <ul>
+                    <li>Isolated user callbacks when possible and protected config snapshots and pending saves from certain failures.</li>
+                </ul>
+
+                <h3>v0.9.71</h3>
+                <ul>
+                    <li>Fixed issues involving notifications, config resets, slider precision, color input, key prompts and compatibility.</li>
+                </ul>
+
                 <h3>v0.9.70</h3>
                 <ul>
                     <li>Fixed <code>Paragraph:Set(text)</code> when <code>Content</code> starts empty or is omitted.</li>
@@ -3807,7 +3862,7 @@ EZ:Notify({
                             <span class="logo-name">Eazy UI</span>
                         </div>
                         <p>Open source Roblox GUI library. One loadstring with a separately loaded icon list.</p>
-                        <span class="badge badge-green">v0.9.70</span>
+                        <span class="badge badge-green">v0.9.76</span>
                     </div>
                     <div class="footer-col">
                         <h5>Docs</h5>
@@ -3850,7 +3905,7 @@ EZ:Notify({
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <span>2026 Akira Dev. Eazy UI v0.9.70.</span>
+                    <span>2026 Akira Dev. Eazy UI v0.9.76.</span>
                     <span>Not affiliated with Roblox Corporation.</span>
                 </div>
             </footer>
