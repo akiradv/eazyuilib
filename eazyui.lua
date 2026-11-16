@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.75
+    Eazy UI v0.9.76
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.75"
+EZ.Version = "0.9.76"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -3534,6 +3534,15 @@ function EZ:CreateWindow(options)
         frame.GroupTransparency = 1
         EZ_Animate(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
 
+        local windowsDesktop = false
+        pcall(function() windowsDesktop = GuiService.IsWindows == true end)
+        if windowsDesktop then
+            pcall(function() if RunService:IsStudio() then windowsDesktop = false end end)
+        end
+        local function EZ_UseMobileHeader()
+            return EZ_Window._mobile and not windowsDesktop
+        end
+
         local titlebar = Instance.new("Frame")
         titlebar.Size = UDim2.new(1, 0, 0, EZ_TITLEBAR_HEIGHT)
         titlebar.BackgroundTransparency = 1
@@ -3618,11 +3627,60 @@ function EZ:CreateWindow(options)
         titleVersion.TextColor3 = EZ_Theme.TextDim
         titleVersion.Parent = titlebar
         EZ_Paint(function() titleVersion.TextColor3 = EZ_Theme.TextDim end, titleVersion)
+        local mobileTabTitle = Instance.new("TextLabel")
+        mobileTabTitle.Name = "EZ_CompactTabTitle"
+        mobileTabTitle.BackgroundTransparency = 1
+        mobileTabTitle.Text = ""
+        mobileTabTitle.Font = EZ_Brand.Font
+        mobileTabTitle.TextSize = 15
+        mobileTabTitle.TextColor3 = EZ_Theme.Text
+        mobileTabTitle.TextXAlignment = Enum.TextXAlignment.Left
+        mobileTabTitle.TextTruncate = Enum.TextTruncate.AtEnd
+        mobileTabTitle.Active = false
+        mobileTabTitle.Visible = false
+        mobileTabTitle.Parent = titlebar
+
+        local mobileTitleDivider = Instance.new("Frame")
+        mobileTitleDivider.Name = "EZ_CompactTitleDivider"
+        mobileTitleDivider.Size = UDim2.fromOffset(1, 20)
+        mobileTitleDivider.BackgroundColor3 = EZ_Theme.Border
+        mobileTitleDivider.BorderSizePixel = 0
+        mobileTitleDivider.Active = false
+        mobileTitleDivider.Visible = false
+        mobileTitleDivider.Parent = titlebar
+        EZ_RegTrans(mobileTitleDivider, 1)
+        EZ_Paint(function()
+            mobileTabTitle.TextColor3 = EZ_Theme.Text
+            mobileTitleDivider.BackgroundColor3 = EZ_Theme.Border
+        end, titlebar)
+
         local function updateTitleVersion()
-            titleVersion.Position = UDim2.new(1, -140, 0.5, -10)
-            titleVersion.Size = UDim2.fromOffset(52, 20)
-            titleVersion.Visible = frame.Size.X.Offset >= 210
-            tholder.Size = UDim2.new(1, titleVersion.Visible and -190 or -150, 1, 0)
+            if EZ_UseMobileHeader() then
+                local controlsWidth = searchEnabled and 128 or 84
+                local right = math.max(46, frame.Size.X.Offset - controlsWidth - 6)
+                local available = math.max(0, right - 46)
+                local versionWidth = available >= 250 and 52 or 0
+                local brandWidth = math.min(148, math.max(0, (available - versionWidth - 18) * 0.42))
+                local dividerX = 46 + brandWidth + versionWidth + 8
+                local headingX = dividerX + 10
+                local headingWidth = math.max(0, right - headingX)
+                tholder.Size = UDim2.new(0, brandWidth, 1, 0)
+                titleVersion.Position = UDim2.new(0, 46 + brandWidth + 4, 0.5, -10)
+                titleVersion.Size = UDim2.fromOffset(52, 20)
+                titleVersion.Visible = versionWidth > 0
+                mobileTitleDivider.Position = UDim2.new(0, dividerX, 0.5, -10)
+                mobileTitleDivider.Visible = headingWidth > 0 and not EZ_Window.Minimized
+                mobileTabTitle.Position = UDim2.fromOffset(headingX, 0)
+                mobileTabTitle.Size = UDim2.new(0, headingWidth, 1, 0)
+                mobileTabTitle.Visible = headingWidth > 0 and not EZ_Window.Minimized
+            else
+                titleVersion.Position = UDim2.new(1, -140, 0.5, -10)
+                titleVersion.Size = UDim2.fromOffset(52, 20)
+                titleVersion.Visible = frame.Size.X.Offset >= 210
+                tholder.Size = UDim2.new(1, titleVersion.Visible and -190 or -150, 1, 0)
+                mobileTitleDivider.Visible = false
+                mobileTabTitle.Visible = false
+            end
         end
         updateTitleVersion()
 
@@ -3843,8 +3901,9 @@ function EZ:CreateWindow(options)
             end
         end
         local searchHeight = 0
-        local searchBox, searchEmpty, searchScopeButton, globalResults, pageHeading
+        local searchBox, searchEmpty, searchScopeButton, globalResults, pageHeading, compactSearchToggle
         local updateSearchLayout, updateSearchControls, selectTab
+        local mobileSearchHeader, compactSearchOpen = false, false
         local searchValue = ""
         local searchGlobal = searchEnabled and (options.SearchScope == "global" or options.SearchScope == "all") or false
         local globalGroupPool, globalResultPool = {}, {}
@@ -4007,7 +4066,12 @@ function EZ:CreateWindow(options)
                         local target, targetRow, targetSection = entry.data, entry.row, entry.section
                         if EZ_Destroyed or not target or not targetRow or not target.Page.Parent or not targetRow.Parent then return end
                         searchValue = ""
+                        if mobileSearchHeader and compactSearchOpen then
+                            compactSearchOpen = false
+                            if searchBox and UserInputService:GetFocusedTextBox() == searchBox then searchBox:ReleaseFocus() end
+                        end
                         if searchBox then searchBox.Text = "" end
+                        if mobileSearchHeader and updateSearchLayout then updateSearchLayout(EZ_Window._compact) end
                         if updateSearchControls then updateSearchControls() end
                         if selectTab then selectTab(target) end
                         if targetSection and targetSection.setCollapsed then targetSection.setCollapsed(false) end
@@ -4105,6 +4169,57 @@ function EZ:CreateWindow(options)
             pageHeading.Parent = content
 
             EZ_Paint(function() pageHeading.TextColor3 = EZ_Theme.Text end, content)
+
+            local compactSearchRing, compactSearchHandle
+            if searchEnabled then
+                compactSearchToggle = Instance.new("TextButton")
+                compactSearchToggle.Name = "EZ_CompactSearchToggle"
+                compactSearchToggle.AnchorPoint = Vector2.new(1, 0.5)
+                compactSearchToggle.Position = UDim2.new(1, -84, 0.5, 0)
+                compactSearchToggle.Size = UDim2.fromOffset(44, 44)
+                compactSearchToggle.BackgroundColor3 = EZ_Theme.CardHover
+                compactSearchToggle.BackgroundTransparency = 1
+                compactSearchToggle.Text = ""
+                compactSearchToggle.Font = EZ_Brand.FontBody
+                compactSearchToggle.TextSize = 22
+                compactSearchToggle.TextColor3 = EZ_Theme.TextDim
+                compactSearchToggle.AutoButtonColor = false
+                compactSearchToggle.Active = true
+                compactSearchToggle.Visible = false
+                compactSearchToggle.Parent = titlebar
+                EZ_AddRadius(compactSearchToggle, "Theme")
+
+                compactSearchRing = Instance.new("Frame")
+                compactSearchRing.Name = "EZ_SearchToggleRing"
+                compactSearchRing.AnchorPoint = Vector2.new(0.5, 0.5)
+                compactSearchRing.Position = UDim2.new(0.5, -2, 0.5, -2)
+                compactSearchRing.Size = UDim2.fromOffset(13, 13)
+                compactSearchRing.BackgroundTransparency = 1
+                compactSearchRing.Active = false
+                compactSearchRing.BorderSizePixel = 0
+                compactSearchRing.Parent = compactSearchToggle
+                EZ_AddRadius(compactSearchRing, 7)
+                local compactSearchStroke = Instance.new("UIStroke")
+                compactSearchStroke.Thickness = 1.5
+                compactSearchStroke.Color = EZ_Theme.TextDim
+                compactSearchStroke.Parent = compactSearchRing
+
+                compactSearchHandle = Instance.new("Frame")
+                compactSearchHandle.Name = "EZ_SearchToggleHandle"
+                compactSearchHandle.Position = UDim2.new(0.5, 2, 0.5, 4)
+                compactSearchHandle.Size = UDim2.fromOffset(7, 2)
+                compactSearchHandle.Rotation = 45
+                compactSearchHandle.BackgroundColor3 = EZ_Theme.TextDim
+                compactSearchHandle.Active = false
+                compactSearchHandle.BorderSizePixel = 0
+                compactSearchHandle.Parent = compactSearchToggle
+                EZ_Paint(function()
+                    compactSearchToggle.BackgroundColor3 = EZ_Theme.CardHover
+                    compactSearchToggle.TextColor3 = EZ_Theme.TextDim
+                    compactSearchStroke.Color = EZ_Theme.TextDim
+                    compactSearchHandle.BackgroundColor3 = EZ_Theme.TextDim
+                end, compactSearchToggle)
+            end
 
             local searchBar
             local searchBarWidth, scopeButtonWidth = 0, 42
@@ -4304,6 +4419,10 @@ function EZ:CreateWindow(options)
                 end)
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     searchValue = searchBox.Text
+                    if mobileSearchHeader and searchValue ~= "" and not compactSearchOpen then
+                        compactSearchOpen = true
+                        if updateSearchLayout then updateSearchLayout(EZ_Window._compact) end
+                    end
                     updateSearchControls()
                     EZ_CloseDropdown()
                     applySearch(true)
@@ -4320,6 +4439,9 @@ function EZ:CreateWindow(options)
                 local sidebarWidth = EZ_ContentSidebarWidth()
                 local contentWidth = math.max(0, frame.Size.X.Offset - sidebarWidth)
                 local availableWidth = math.max(0, contentWidth - EZ_PagePadding * 2)
+                mobileSearchHeader = EZ_UseMobileHeader()
+                pageHeading.Visible = not mobileSearchHeader
+                if mobileSearchHeader and searchValue ~= "" then compactSearchOpen = true end
                 local stacked = (compact and (EZ_Window._layoutAutoScale or 1) >= 1) or contentWidth < EZ_PagePadding * 2 + EZ_MinColumnWidth * 1.5
                 local hintWidth, neededSearchWidth = 0, 0
                 if searchBar then
@@ -4338,15 +4460,29 @@ function EZ:CreateWindow(options)
                     neededSearchWidth = 30 + hintWidth + 8 + scopeButtonWidth
                     if availableWidth < neededSearchWidth + 120 + 8 then stacked = true end
                 end
-                pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
-                pageHeading.TextSize = stacked and 16 or 18
+                if compactSearchToggle then
+                    compactSearchToggle.Visible = mobileSearchHeader and not (EZ_Window.Minimized and EZ_Window.MinimizeMode == "shrink")
+                    compactSearchToggle.Text = compactSearchOpen and "×" or ""
+                    compactSearchRing.Visible = not compactSearchOpen
+                    compactSearchHandle.Visible = not compactSearchOpen
+                end
+                if mobileSearchHeader then
+                    stacked = true
+                    pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, 6)
+                    pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding - (compactSearchToggle and 48 or 0), 0, 28)
+                    pageHeading.TextSize = 16
+                else
+                    pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
+                    pageHeading.TextSize = stacked and 16 or 18
+                end
                 if searchBar then
+                    searchBar.Visible = not mobileSearchHeader or compactSearchOpen
                     searchBar.AnchorPoint = stacked and Vector2.new(0, 0) or Vector2.new(1, 0)
-                    searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
+                    searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, mobileSearchHeader and 4 or 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
                     local widthOffset
                     if stacked then
                         searchBarWidth = availableWidth
-                        pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
+                        if not mobileSearchHeader then pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24) end
                     else
                         local preferred = contentWidth * 0.48 - EZ_PagePadding / 2
                         searchBarWidth = math.min(math.max(preferred, neededSearchWidth), availableWidth - 128)
@@ -4358,12 +4494,12 @@ function EZ:CreateWindow(options)
                     local barHeight = stackedSearchControls and (EZ_Window._mobile and 72 or 62) or (EZ_Window._mobile and 40 or 34)
                     searchBar.Size = stacked and UDim2.new(1, -2 * EZ_PagePadding, 0, barHeight) or UDim2.new(0.48, widthOffset, 0, barHeight)
                     updateSearchControls()
-                else
+                elseif not mobileSearchHeader then
                     pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
                 end
-                local bottom = pageHeading.Position.Y.Offset + pageHeading.Size.Y.Offset
-                if searchBar then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
-                local nextHeight = bottom + EZ_HeaderGap
+                local bottom = mobileSearchHeader and 0 or pageHeading.Position.Y.Offset + pageHeading.Size.Y.Offset
+                if searchBar and searchBar.Visible then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
+                local nextHeight = bottom > 0 and bottom + EZ_HeaderGap or 0
                 if searchHeight ~= nextHeight then
                     searchHeight = nextHeight
                     if searchEmpty then
@@ -4383,16 +4519,34 @@ function EZ:CreateWindow(options)
                     end
                 end
             end
+            if compactSearchToggle then
+                compactSearchToggle.Activated:Connect(function()
+                    if not mobileSearchHeader then return end
+                    if EZ_OverlaySidebar() and EZ_Window._sidebarOpen and EZ_Window.SetSidebarCollapsed then EZ_Window:SetSidebarCollapsed(true) end
+                    compactSearchOpen = not compactSearchOpen
+                    if not compactSearchOpen then
+                        if UserInputService:GetFocusedTextBox() == searchBox then searchBox:ReleaseFocus() end
+                        if searchValue ~= "" then EZ_Window:SetSearch("") end
+                    end
+                    updateSearchLayout(EZ_Window._compact)
+                    if compactSearchOpen and searchBox and searchBox.Parent then searchBox:CaptureFocus() end
+                end)
+            end
             updateSearchLayout(EZ_Window._compact)
         end
         local function updatePageHeading(data)
             if not pageHeading or not data then return end
             pageHeading.Text = data.Title
+            mobileTabTitle.Text = data.Title
         end
         function EZ_Window:SetSearch(value)
             if EZ_Destroyed then return false, "Window was destroyed" end
             searchValue = tostring(value or "")
             if searchBox then searchBox.Text = searchValue end
+            if mobileSearchHeader and searchValue ~= "" and not compactSearchOpen then
+                compactSearchOpen = true
+                if updateSearchLayout then updateSearchLayout(self._compact) end
+            end
             if updateSearchControls then updateSearchControls() end
             EZ_CloseDropdown()
             applySearch(true)
@@ -4459,7 +4613,9 @@ function EZ:CreateWindow(options)
         end
         local function updateSidebarVertical()
             local height = math.max(0, frame.Size.Y.Offset - EZ_TITLEBAR_HEIGHT)
-            local showProfile = height >= 104
+            local scale = tonumber(frame:GetAttribute("EZ_Scale")) or EZ_Window.UIScale
+            local shortMobile = EZ_UseMobileHeader() and frame.Size.Y.Offset * scale <= 420
+            local showProfile = height >= 104 and not (shortMobile and not EZ_Window._sidebarOpen)
             local tabsTop = 6
             local bottom = showProfile and 68 or 6
             tabsContainer.Position = UDim2.fromOffset(0, tabsTop)
@@ -4939,6 +5095,7 @@ function EZ:CreateWindow(options)
         end)
 
         local titleControls = { minbtn, menuBtn }
+        if compactSearchToggle then table.insert(titleControls, compactSearchToggle) end
         EZ_MakeDraggable(frame, titlebar, windowInteraction, titleControls)
         EZ_MakeResizable(frame, titlebar, windowInteraction, titleControls, EZ_BaseSize)
         pcall(function()
