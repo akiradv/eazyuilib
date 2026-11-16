@@ -1,11 +1,11 @@
 --[[
-    Eazy UI v0.9.72
+    Eazy UI v0.9.73
     Open-source Roblox GUI library with minimal dependencies.
     Join our discord!: https://discord.gg/9VE4PXFDSg
 ]]
 
 local EZ = {}
-EZ.Version = "0.9.72"
+EZ.Version = "0.9.73"
 local EZ_Destroyed = false
 
 local TweenService = game:GetService("TweenService")
@@ -1736,9 +1736,20 @@ local function EZ_ViewportUsable()
     return Vector2.new(math.max(1, vp.X - inset.X - bottom.X), math.max(1, vp.Y - inset.Y - bottom.Y)), inset, bottom
 end
 
+local function EZ_MobileViewport(usable)
+    return UserInputService.TouchEnabled and math.min(usable.X, usable.Y) <= 600
+end
+
+local function EZ_ViewportMargin(usable, frame)
+    if not EZ_MobileViewport(usable) then return 24 end
+    local padding = frame and math.max(0, tonumber(frame:GetAttribute("EZ_ViewportPadding")) or 0) or 0
+    local limit = math.max(8, math.min(usable.X, usable.Y) - 1)
+    return math.min(math.max(8, padding * 2), limit)
+end
+
 local function EZ_ApplyResponsiveScale(frame, baseSize)
     local usable, inset, bottom = EZ_ViewportUsable()
-    local margin = 24
+    local margin = EZ_ViewportMargin(usable, frame)
     local scale = math.clamp(tonumber(frame:GetAttribute("EZ_UserScale")) or 1, 0.8, 1.2)
     local maxW, maxH = math.max(1, (usable.X - margin) / scale), math.max(1, (usable.Y - margin) / scale)
     local desiredW = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredWidth") or frame.Size.X.Offset) or baseSize.X
@@ -1965,7 +1976,8 @@ local function EZ_MakeResizable(frame, titlebar, interaction, controls)
                  i.UserInputType == Enum.UserInputType.MouseMovement)) then return end
         local usable = EZ_ViewportUsable()
         local scale = frame:GetAttribute("EZ_Scale") or 1
-        local maxW, maxH = math.max(1, (usable.X - 8) / scale), math.max(1, (usable.Y - 8) / scale)
+        local margin = EZ_MobileViewport(usable) and EZ_ViewportMargin(usable, frame) or 8
+        local maxW, maxH = math.max(1, (usable.X - margin) / scale), math.max(1, (usable.Y - margin) / scale)
         local minW, minH = EZ_ResponsiveMinimum(EZ_MIN_SIZE.X, maxW), EZ_ResponsiveMinimum(EZ_MIN_SIZE.Y, maxH)
         local d = i.Position - startPoint
         local w, hgt, dx, dy = startSize.X, startSize.Y, 0, 0
@@ -3311,7 +3323,8 @@ function EZ:CreateWindow(options)
             if type(meta.windowSize) == "table" and EZ_Window.Frame then
                 local usable = EZ_ViewportUsable()
                 local scale = EZ_Window.Frame:GetAttribute("EZ_Scale") or 1
-                local maxW, maxH = math.max(1, (usable.X - 8) / scale), math.max(1, (usable.Y - 8) / scale)
+                local margin = EZ_MobileViewport(usable) and EZ_ViewportMargin(usable, EZ_Window.Frame) or 8
+                local maxW, maxH = math.max(1, (usable.X - margin) / scale), math.max(1, (usable.Y - margin) / scale)
                 local w = EZ_Clamp(tonumber(meta.windowSize[1]) or 660, EZ_ResponsiveMinimum(EZ_MIN_SIZE.X, maxW), maxW)
                 local h = EZ_Clamp(tonumber(meta.windowSize[2]) or 470, EZ_ResponsiveMinimum(EZ_MIN_SIZE.Y, maxH), maxH)
                 if EZ_Window._applyWindowSize then
@@ -3413,6 +3426,7 @@ function EZ:CreateWindow(options)
             EZ_UpdateNotifyPosition()
             local usable = EZ_ViewportUsable()
             local previous = EZ_Window._compact
+            EZ_Window._mobile = EZ_MobileViewport(usable)
             EZ_Window._compact = UserInputService.TouchEnabled or usable.X < 700 or frame.Size.X.Offset < 560
             if updateResponsiveLayout then
                 if previous ~= nil and not previous and EZ_Window._compact then EZ_Window._sidebarOpen = false end
@@ -3740,6 +3754,28 @@ function EZ:CreateWindow(options)
         content.ClipsDescendants = true
         content.Parent = frame
 
+        local sidebarBackdrop = Instance.new("TextButton")
+        sidebarBackdrop.Name = "EZ_MobileSidebarBackdrop"
+        sidebarBackdrop.BackgroundColor3 = Color3.new(0, 0, 0)
+        sidebarBackdrop.BackgroundTransparency = 0.5
+        sidebarBackdrop.BorderSizePixel = 0
+        sidebarBackdrop.Text = ""
+        sidebarBackdrop.AutoButtonColor = false
+        sidebarBackdrop.Active = true
+        sidebarBackdrop.ZIndex = 2
+        sidebarBackdrop.Visible = false
+        sidebarBackdrop.Parent = frame
+        sidebarBackdrop.Activated:Connect(function()
+            if EZ_Window.SetSidebarCollapsed then EZ_Window:SetSidebarCollapsed(true) end
+        end)
+
+        local function EZ_ContentSidebarWidth()
+            if EZ_Window._mobile then return EZ_CollapsedSidebarWidth end
+            local open = EZ_Window._sidebarOpen
+            if open == nil then open = not EZ_Window._compact end
+            return open and EZ_ExpandedSidebarWidth or EZ_CollapsedSidebarWidth
+        end
+
         local registry = {}
         local activeData = nil
         function EZ_Window:_refreshTabTransparency()
@@ -3753,6 +3789,7 @@ function EZ:CreateWindow(options)
         local searchHeight = 0
         local searchBox, searchEmpty, searchScopeButton, globalResults, pageHeading
         local updateSearchLayout, updateSearchControls, selectTab
+        local shortSearchHeader, compactSearchOpen = false, false
         local searchValue = ""
         local searchGlobal = searchEnabled and (options.SearchScope == "global" or options.SearchScope == "all") or false
         local globalGroupPool, globalResultPool = {}, {}
@@ -4014,6 +4051,57 @@ function EZ:CreateWindow(options)
 
             EZ_Paint(function() pageHeading.TextColor3 = EZ_Theme.Text end, content)
 
+            local compactSearchToggle, compactSearchRing, compactSearchHandle
+            if searchEnabled then
+                compactSearchToggle = Instance.new("TextButton")
+                compactSearchToggle.Name = "EZ_CompactSearchToggle"
+                compactSearchToggle.AnchorPoint = Vector2.new(1, 0)
+                compactSearchToggle.Position = UDim2.new(1, -EZ_PagePadding, 0, 0)
+                compactSearchToggle.Size = UDim2.fromOffset(44, 44)
+                compactSearchToggle.BackgroundColor3 = EZ_Theme.CardHover
+                compactSearchToggle.BackgroundTransparency = 1
+                compactSearchToggle.Text = ""
+                compactSearchToggle.Font = EZ_Brand.FontBody
+                compactSearchToggle.TextSize = 22
+                compactSearchToggle.TextColor3 = EZ_Theme.TextDim
+                compactSearchToggle.AutoButtonColor = false
+                compactSearchToggle.Active = true
+                compactSearchToggle.Visible = false
+                compactSearchToggle.Parent = content
+                EZ_AddRadius(compactSearchToggle, "Theme")
+
+                compactSearchRing = Instance.new("Frame")
+                compactSearchRing.Name = "EZ_SearchToggleRing"
+                compactSearchRing.AnchorPoint = Vector2.new(0.5, 0.5)
+                compactSearchRing.Position = UDim2.new(0.5, -2, 0.5, -2)
+                compactSearchRing.Size = UDim2.fromOffset(13, 13)
+                compactSearchRing.BackgroundTransparency = 1
+                compactSearchRing.Active = false
+                compactSearchRing.BorderSizePixel = 0
+                compactSearchRing.Parent = compactSearchToggle
+                EZ_AddRadius(compactSearchRing, 7)
+                local compactSearchStroke = Instance.new("UIStroke")
+                compactSearchStroke.Thickness = 1.5
+                compactSearchStroke.Color = EZ_Theme.TextDim
+                compactSearchStroke.Parent = compactSearchRing
+
+                compactSearchHandle = Instance.new("Frame")
+                compactSearchHandle.Name = "EZ_SearchToggleHandle"
+                compactSearchHandle.Position = UDim2.new(0.5, 2, 0.5, 4)
+                compactSearchHandle.Size = UDim2.fromOffset(7, 2)
+                compactSearchHandle.Rotation = 45
+                compactSearchHandle.BackgroundColor3 = EZ_Theme.TextDim
+                compactSearchHandle.Active = false
+                compactSearchHandle.BorderSizePixel = 0
+                compactSearchHandle.Parent = compactSearchToggle
+                EZ_Paint(function()
+                    compactSearchToggle.BackgroundColor3 = EZ_Theme.CardHover
+                    compactSearchToggle.TextColor3 = EZ_Theme.TextDim
+                    compactSearchStroke.Color = EZ_Theme.TextDim
+                    compactSearchHandle.BackgroundColor3 = EZ_Theme.TextDim
+                end, compactSearchToggle)
+            end
+
             local searchBar
             local searchBarWidth, scopeButtonWidth = 0, 42
             local stackedSearchControls, showSearchIcon = false, true
@@ -4100,40 +4188,43 @@ function EZ:CreateWindow(options)
                 searchScopeButton.Parent = searchBar
                 updateSearchControls = function()
                     local hasText = searchValue ~= ""
+                    local mobile = EZ_Window._mobile == true
                     local rowWidth = stackedSearchControls and searchBarWidth or nil
-                    if appliedSearchControls and appliedSearchControls.hasText == hasText and
+                    if appliedSearchControls and appliedSearchControls.hasText == hasText and appliedSearchControls.mobile == mobile and
                        appliedSearchControls.stacked == stackedSearchControls and appliedSearchControls.showIcon == showSearchIcon and
                        appliedSearchControls.scopeWidth == scopeButtonWidth and appliedSearchControls.rowWidth == rowWidth then return end
-                    appliedSearchControls = { hasText = hasText, stacked = stackedSearchControls, showIcon = showSearchIcon,
+                    appliedSearchControls = { hasText = hasText, mobile = mobile, stacked = stackedSearchControls, showIcon = showSearchIcon,
                         scopeWidth = scopeButtonWidth, rowWidth = rowWidth }
                     clear.Visible = hasText
                     if stackedSearchControls then
-
                         local inputLeft = showSearchIcon and 30 or 6
+                        local inputHeight = mobile and 36 or 30
+                        local buttonTop = mobile and 36 or 32
+                        local buttonHeight = mobile and 36 or 28
                         searchIcon.Visible = showSearchIcon
-                        searchIcon.Position = UDim2.fromOffset(10, 8)
+                        searchIcon.Position = UDim2.fromOffset(10, math.floor((inputHeight - 14) / 2))
                         searchBox.Position = UDim2.fromOffset(inputLeft, 0)
-                        searchBox.Size = UDim2.new(1, -(inputLeft + 6), 0, 30)
+                        searchBox.Size = UDim2.new(1, -(inputLeft + 6), 0, inputHeight)
                         local buttonLimit = math.max(1, (searchBarWidth - 12) / (hasText and 2 or 1))
                         searchScopeButton.AnchorPoint = Vector2.new(0, 0)
-                        searchScopeButton.Position = UDim2.fromOffset(4, 32)
-                        searchScopeButton.Size = UDim2.fromOffset(math.min(scopeButtonWidth, buttonLimit), 28)
+                        searchScopeButton.Position = UDim2.fromOffset(4, buttonTop)
+                        searchScopeButton.Size = UDim2.fromOffset(math.min(scopeButtonWidth, buttonLimit), buttonHeight)
                         clear.AnchorPoint = Vector2.new(1, 0)
-                        clear.Position = UDim2.new(1, -4, 0, 32)
-                        clear.Size = UDim2.fromOffset(math.min(34, buttonLimit), 28)
+                        clear.Position = UDim2.new(1, -4, 0, buttonTop)
+                        clear.Size = UDim2.fromOffset(math.min(mobile and 40 or 34, buttonLimit), buttonHeight)
                     else
+                        local barHeight = mobile and 40 or 34
                         searchIcon.Visible = true
-                        searchIcon.Position = UDim2.fromOffset(10, 10)
+                        searchIcon.Position = UDim2.fromOffset(10, math.floor((barHeight - 14) / 2))
                         searchBox.Position = UDim2.fromOffset(30, 0)
-
-                        local clearWidth = hasText and 34 or 0
+                        local clearWidth = hasText and (mobile and 40 or 34) or 0
                         searchBox.Size = UDim2.new(1, -(30 + scopeButtonWidth + 4 + clearWidth), 1, 0)
                         searchScopeButton.AnchorPoint = Vector2.new(1, 0.5)
                         searchScopeButton.Position = UDim2.new(1, -clearWidth, 0.5, 0)
-                        searchScopeButton.Size = UDim2.fromOffset(scopeButtonWidth, 28)
+                        searchScopeButton.Size = UDim2.fromOffset(scopeButtonWidth, mobile and 40 or 28)
                         clear.AnchorPoint = Vector2.new(1, 0)
                         clear.Position = UDim2.new(1, 0, 0, 0)
-                        clear.Size = UDim2.fromOffset(34, 34)
+                        clear.Size = UDim2.fromOffset(mobile and 40 or 34, barHeight)
                     end
                 end
                 updateScopeText()
@@ -4209,6 +4300,10 @@ function EZ:CreateWindow(options)
                 end)
                 searchBox:GetPropertyChangedSignal("Text"):Connect(function()
                     searchValue = searchBox.Text
+                    if shortSearchHeader and searchValue ~= "" and not compactSearchOpen then
+                        compactSearchOpen = true
+                        if updateSearchLayout then updateSearchLayout(EZ_Window._compact) end
+                    end
                     updateSearchControls()
                     EZ_CloseDropdown()
                     applySearch(true)
@@ -4222,12 +4317,13 @@ function EZ:CreateWindow(options)
                 EZ_Window.GlobalSearchResults = globalResults
             end
             updateSearchLayout = function(compact)
-                local sidebarOpen = EZ_Window._sidebarOpen
-                if sidebarOpen == nil then sidebarOpen = not compact end
-                local sidebarWidth = sidebarOpen and EZ_ExpandedSidebarWidth or EZ_CollapsedSidebarWidth
+                local sidebarWidth = EZ_ContentSidebarWidth()
                 local contentWidth = math.max(0, frame.Size.X.Offset - sidebarWidth)
                 local availableWidth = math.max(0, contentWidth - EZ_PagePadding * 2)
-                local stacked = compact or contentWidth < EZ_PagePadding * 2 + EZ_MinColumnWidth * 1.5
+                local scale = tonumber(frame:GetAttribute("EZ_Scale")) or EZ_Window.UIScale
+                shortSearchHeader = EZ_Window._mobile and frame.Size.Y.Offset * scale <= 420
+                if shortSearchHeader and searchValue ~= "" then compactSearchOpen = true end
+                local stacked = (compact and not EZ_Window._mobile) or contentWidth < EZ_PagePadding * 2 + EZ_MinColumnWidth * 1.5
                 local hintWidth, neededSearchWidth = 0, 0
                 if searchBar then
                     local hint, hintFont, hintSize = searchBox.PlaceholderText, searchBox.Font, searchBox.TextSize
@@ -4243,18 +4339,31 @@ function EZ:CreateWindow(options)
                     hintWidth = cachedHintWidth or 0
                     scopeButtonWidth = math.clamp((cachedScopeWidth or 0) + 14, 42, 84)
                     neededSearchWidth = 30 + hintWidth + 8 + scopeButtonWidth
-
                     if availableWidth < neededSearchWidth + 120 + 8 then stacked = true end
                 end
-                pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
-                pageHeading.TextSize = stacked and 16 or 18
+                if compactSearchToggle then
+                    compactSearchToggle.Visible = shortSearchHeader
+                    compactSearchToggle.Text = compactSearchOpen and "×" or ""
+                    compactSearchRing.Visible = not compactSearchOpen
+                    compactSearchHandle.Visible = not compactSearchOpen
+                end
+                if shortSearchHeader then
+                    stacked = true
+                    pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, 6)
+                    pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding - (compactSearchToggle and 48 or 0), 0, 28)
+                    pageHeading.TextSize = 16
+                else
+                    pageHeading.Position = UDim2.fromOffset(EZ_PagePadding, stacked and 6 or (searchEnabled and 21 or 16))
+                    pageHeading.TextSize = stacked and 16 or 18
+                end
                 if searchBar then
+                    searchBar.Visible = not shortSearchHeader or compactSearchOpen
                     searchBar.AnchorPoint = stacked and Vector2.new(0, 0) or Vector2.new(1, 0)
-                    searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
+                    searchBar.Position = stacked and UDim2.fromOffset(EZ_PagePadding, shortSearchHeader and 46 or 34) or UDim2.new(1, -EZ_PagePadding, 0, 18)
                     local widthOffset
                     if stacked then
                         searchBarWidth = availableWidth
-                        pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
+                        if not shortSearchHeader then pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24) end
                     else
                         local preferred = contentWidth * 0.48 - EZ_PagePadding / 2
                         searchBarWidth = math.min(math.max(preferred, neededSearchWidth), availableWidth - 128)
@@ -4263,14 +4372,15 @@ function EZ:CreateWindow(options)
                     end
                     stackedSearchControls = searchBarWidth < math.max(145, neededSearchWidth)
                     showSearchIcon = searchBarWidth >= 100 and (not stackedSearchControls or hintWidth <= searchBarWidth - 36)
-                    local barHeight = stackedSearchControls and 62 or 34
+                    local barHeight = stackedSearchControls and (EZ_Window._mobile and 72 or 62) or (EZ_Window._mobile and 40 or 34)
                     searchBar.Size = stacked and UDim2.new(1, -2 * EZ_PagePadding, 0, barHeight) or UDim2.new(0.48, widthOffset, 0, barHeight)
                     updateSearchControls()
-                else
+                elseif not shortSearchHeader then
                     pageHeading.Size = UDim2.new(1, -2 * EZ_PagePadding, 0, 24)
                 end
                 local bottom = pageHeading.Position.Y.Offset + pageHeading.Size.Y.Offset
-                if searchBar then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
+                if compactSearchToggle and compactSearchToggle.Visible then bottom = math.max(bottom, 44) end
+                if searchBar and searchBar.Visible then bottom = math.max(bottom, searchBar.Position.Y.Offset + searchBar.Size.Y.Offset) end
                 local nextHeight = bottom + EZ_HeaderGap
                 if searchHeight ~= nextHeight then
                     searchHeight = nextHeight
@@ -4291,6 +4401,18 @@ function EZ:CreateWindow(options)
                     end
                 end
             end
+            if compactSearchToggle then
+                compactSearchToggle.Activated:Connect(function()
+                    if not shortSearchHeader then return end
+                    compactSearchOpen = not compactSearchOpen
+                    if not compactSearchOpen then
+                        if UserInputService:GetFocusedTextBox() == searchBox then searchBox:ReleaseFocus() end
+                        if searchValue ~= "" then EZ_Window:SetSearch("") end
+                    end
+                    updateSearchLayout(EZ_Window._compact)
+                    if compactSearchOpen and searchBox and searchBox.Parent then searchBox:CaptureFocus() end
+                end)
+            end
             updateSearchLayout(EZ_Window._compact)
         end
         local function updatePageHeading(data)
@@ -4301,6 +4423,10 @@ function EZ:CreateWindow(options)
             if EZ_Destroyed then return false, "Window was destroyed" end
             searchValue = tostring(value or "")
             if searchBox then searchBox.Text = searchValue end
+            if shortSearchHeader and searchValue ~= "" and not compactSearchOpen then
+                compactSearchOpen = true
+                if updateSearchLayout then updateSearchLayout(self._compact) end
+            end
             if updateSearchControls then updateSearchControls() end
             EZ_CloseDropdown()
             applySearch(true)
@@ -4376,7 +4502,15 @@ function EZ:CreateWindow(options)
             spad.PaddingRight = UDim.new(0, 8)
             userCard.Visible = showProfile
         end
-        local lastResponsiveCompact, lastTwoColumns
+        local lastResponsiveCompact, lastResponsiveMobile, lastTwoColumns
+        local function EZ_CanUseTwoColumns(sidebarWidth)
+            local width = frame.Size.X.Offset - sidebarWidth
+            if not EZ_Window._compact then return width >= EZ_ColumnThreshold end
+            if not EZ_Window._mobile then return false end
+            local usable = EZ_ViewportUsable()
+            local minimum = EZ_PagePadding * 2 + EZ_ColumnGap + math.max(EZ_MinColumnWidth, 300) * 2
+            return usable.X > usable.Y and width >= minimum
+        end
         local sidebarTweens = {}
         local function layoutTransition(object, properties, animated)
             if animated then
@@ -4392,10 +4526,18 @@ function EZ:CreateWindow(options)
             table.clear(sidebarTweens)
             local collapsed = not EZ_Window._sidebarOpen
             local width = collapsed and EZ_CollapsedSidebarWidth or EZ_ExpandedSidebarWidth
+            local contentSidebarWidth = EZ_ContentSidebarWidth()
             updateTitleVersion()
             local sideSize = UDim2.new(0, width, 1, -EZ_TITLEBAR_HEIGHT)
-            local contentPosition = UDim2.new(0, width, 0, EZ_TITLEBAR_HEIGHT)
-            local contentSize = UDim2.new(1, -width, 1, -EZ_TITLEBAR_HEIGHT)
+            local contentPosition = UDim2.new(0, contentSidebarWidth, 0, EZ_TITLEBAR_HEIGHT)
+            local contentSize = UDim2.new(1, -contentSidebarWidth, 1, -EZ_TITLEBAR_HEIGHT)
+            sidebarBackdrop.Position, sidebarBackdrop.Size = contentPosition, contentSize
+            sidebarBackdrop.Visible = EZ_Window._mobile and not collapsed
+            sidebarSurface.ZIndex = EZ_Window._mobile and 3 or 1
+            sidebar.ZIndex = EZ_Window._mobile and 4 or 1
+            sline.ZIndex = EZ_Window._mobile and 5 or 1
+            minbtn.Size = UDim2.fromOffset(EZ_Window._mobile and 40 or 30, EZ_Window._mobile and 40 or 30)
+            minbtn.Position = EZ_Window._mobile and UDim2.new(1, -44, 0.5, -20) or UDim2.new(1, -40, 0.5, -15)
             layoutTransition(sidebar, { Size = sideSize }, animated)
             layoutTransition(sidebarSurface, { Size = sideSize }, animated)
             layoutTransition(contentSurface, { Position = contentPosition, Size = contentSize }, animated)
@@ -4413,10 +4555,10 @@ function EZ:CreateWindow(options)
             EZ_SetIconImage(menuGlyph, collapsed and "panel-left-open" or "panel-left-close")
             if updateSearchLayout then updateSearchLayout(EZ_Window._compact) end
             for _, d in ipairs(registry) do updateSidebarTab(d, collapsed) end
-            local twoColumns = not EZ_Window._compact and frame.Size.X.Offset - width >= EZ_ColumnThreshold
+            local twoColumns = EZ_CanUseTwoColumns(contentSidebarWidth)
             EZ_Window._twoColumns = twoColumns
-            if lastResponsiveCompact ~= EZ_Window._compact or lastTwoColumns ~= twoColumns then
-                lastResponsiveCompact, lastTwoColumns = EZ_Window._compact, twoColumns
+            if lastResponsiveCompact ~= EZ_Window._compact or lastResponsiveMobile ~= EZ_Window._mobile or lastTwoColumns ~= twoColumns then
+                lastResponsiveCompact, lastResponsiveMobile, lastTwoColumns = EZ_Window._compact, EZ_Window._mobile, twoColumns
                 for _, update in ipairs(EZ_Window._responsiveItems) do update(EZ_Window._compact, twoColumns) end
             end
         end
@@ -4435,16 +4577,18 @@ function EZ:CreateWindow(options)
             updateTitleVersion()
             if EZ_DropdownCurrent and EZ_DropdownCurrent.windowFrame == frame then EZ_CloseDropdown() end
             local usable = EZ_ViewportUsable()
+            local mobile = EZ_MobileViewport(usable)
             local compact = UserInputService.TouchEnabled or usable.X < 700 or frame.Size.X.Offset < 560
-            if compact ~= EZ_Window._compact then
-                EZ_Window._compact = compact
-                if compact then EZ_Window._sidebarOpen = false end
+            if compact ~= EZ_Window._compact or mobile ~= EZ_Window._mobile then
+                local wasCompact = EZ_Window._compact
+                EZ_Window._compact, EZ_Window._mobile = compact, mobile
+                if compact and not wasCompact then EZ_Window._sidebarOpen = false end
                 updateResponsiveLayout()
             else
                 if updateSearchLayout then updateSearchLayout(compact) end
-                local width = EZ_Window._sidebarOpen and EZ_ExpandedSidebarWidth or EZ_CollapsedSidebarWidth
+                local width = EZ_ContentSidebarWidth()
                 updateSidebarVertical()
-                if (not compact and frame.Size.X.Offset - width >= EZ_ColumnThreshold) ~= EZ_Window._twoColumns then updateResponsiveLayout() end
+                if EZ_CanUseTwoColumns(width) ~= EZ_Window._twoColumns then updateResponsiveLayout() end
             end
         end)
 
@@ -4636,7 +4780,7 @@ function EZ:CreateWindow(options)
                 shrinkTween = nil
                 local usable = EZ_ViewportUsable()
                 local scale = frame:GetAttribute("EZ_Scale") or 1
-                frame.Size = UDim2.fromOffset(width, math.min(EZ_TITLEBAR_HEIGHT, math.max(1, (usable.Y - 24) / scale)))
+                frame.Size = UDim2.fromOffset(width, math.min(EZ_TITLEBAR_HEIGHT, math.max(1, (usable.Y - EZ_ViewportMargin(usable, frame)) / scale)))
                 hideShrinkContents()
                 shrinkPhase = "collapsed"
             else
@@ -4650,7 +4794,8 @@ function EZ:CreateWindow(options)
             shrinkTween = nil
             local usable = EZ_ViewportUsable()
             local scale = frame:GetAttribute("EZ_Scale") or 1
-            local maxW, maxH = math.max(1, (usable.X - 24) / scale), math.max(1, (usable.Y - 24) / scale)
+            local margin = EZ_ViewportMargin(usable, frame)
+            local maxW, maxH = math.max(1, (usable.X - margin) / scale), math.max(1, (usable.Y - margin) / scale)
             local previous = expandedSize or frame.Size
             local wantedW = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredWidth") or previous.X.Offset) or EZ_BaseSize.X
             local wantedH = frame:GetAttribute("EZ_UserResized") and (frame:GetAttribute("EZ_DesiredHeight") or previous.Y.Offset) or EZ_BaseSize.Y
@@ -4829,17 +4974,60 @@ function EZ:CreateWindow(options)
             end)
         end)
 
+        local EZ_MobileTextWidths = setmetatable({}, { __mode = "k" })
+        local function EZ_MobileInlineRow(row, title, description, titleShare)
+            if not EZ_Window._mobile then return false end
+            local width = row.AbsoluteSize.X / EZ_FrameVisualScale(frame)
+            if width < 400 then return false end
+            local available = width * (titleShare or 0.6) - 22
+            local function fits(label)
+                if not label then return true end
+                local text = tostring(label.Text or "")
+                local cached = EZ_MobileTextWidths[label]
+                if not cached or cached.text ~= text or cached.size ~= label.TextSize or cached.font ~= label.Font then
+                    local ok, bounds = pcall(function()
+                        return TextService:GetTextSize(text, label.TextSize, label.Font, Vector2.new(100000, 1000))
+                    end)
+                    local measured = ok and bounds and tonumber(bounds.X)
+                    local width = measured and (measured > 0 or text == "") and measured or #text * label.TextSize * 0.6
+                    cached = { text = text, size = label.TextSize, font = label.Font, width = width }
+                    EZ_MobileTextWidths[label] = cached
+                end
+                return cached.width <= available
+            end
+            return fits(title) and fits(description)
+        end
+
+        local function EZ_ResponsiveSliderTarget(cap)
+            local function update()
+                cap.Position = UDim2.fromOffset(14, EZ_Window._mobile and 18 or 25)
+                cap.Size = UDim2.new(1, -28, 0, EZ_Window._mobile and 44 or 34)
+            end
+            table.insert(EZ_Window._responsiveItems, update)
+            update()
+        end
+
         local function EZ_ResponsiveRow(row, title, description, control)
             local function update(compact)
                 local hasDescription = description ~= nil
-                if compact then
-                    row.Size = UDim2.new(1, 0, 0, hasDescription and 92 or 76)
+                local mobile = compact and EZ_Window._mobile
+                local inline = mobile and EZ_MobileInlineRow(row, title, description)
+                if inline then
+                    row.Size = UDim2.new(1, 0, 0, 52)
+                    title.Position = UDim2.fromOffset(14, hasDescription and 9 or 0)
+                    title.Size = UDim2.new(0.6, -22, hasDescription and 0 or 1, hasDescription and 16 or 0)
+                    if description then description.Size = UDim2.new(0.6, -22, 0, 14) end
+                    control.AnchorPoint = Vector2.new(1, 0.5)
+                    control.Position = UDim2.new(1, -14, 0.5, 0)
+                    control.Size = UDim2.new(0.4, -14, 0, 44)
+                elseif compact then
+                    row.Size = UDim2.new(1, 0, 0, (hasDescription and 92 or 76) + (mobile and 4 or 0))
                     title.Position = UDim2.fromOffset(14, hasDescription and 9 or 5)
                     title.Size = UDim2.new(1, -28, 0, hasDescription and 16 or 22)
                     if description then description.Size = UDim2.new(1, -28, 0, 14) end
                     control.AnchorPoint = Vector2.new(0, 0)
                     control.Position = UDim2.fromOffset(14, hasDescription and 49 or 33)
-                    control.Size = UDim2.new(1, -28, 0, 36)
+                    control.Size = UDim2.new(1, -28, 0, mobile and 44 or 36)
                 else
                     row.Size = UDim2.new(1, 0, 0, 46)
                     title.Position = UDim2.fromOffset(14, hasDescription and 9 or 0)
@@ -4851,6 +5039,15 @@ function EZ:CreateWindow(options)
                 end
             end
             table.insert(EZ_Window._responsiveItems, update)
+            row:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+                if EZ_Window._mobile then update(EZ_Window._compact) end
+            end)
+            title:GetPropertyChangedSignal("Text"):Connect(function()
+                if EZ_Window._mobile then update(EZ_Window._compact) end
+            end)
+            if description then description:GetPropertyChangedSignal("Text"):Connect(function()
+                if EZ_Window._mobile then update(EZ_Window._compact) end
+            end) end
             update(EZ_Window._compact)
         end
 
@@ -5063,7 +5260,7 @@ function EZ:CreateWindow(options)
                         for _, slot in ipairs(group.slots) do
                             if slot.Visible then visibleCount = visibleCount + 1 end
                         end
-                        local split = not compact and twoColumns and visibleCount > 1
+                        local split = twoColumns and visibleCount > 1
                         group.visibleCount = visibleCount
                         group.split = split
                         left.Size = split and UDim2.new(0.5, -EZ_ColumnGap / 2, 0, 0) or UDim2.new(1, 0, 0, 0)
@@ -5447,35 +5644,45 @@ function EZ:CreateWindow(options)
                 local buttonColorTween, buttonStrokeTween
                 local measuredText, measuredWidth
                 updateButtonLayout = function(compact)
-                    local height = compact and (description and 92 or 76) or 46
-                    if row.Size.Y.Offset ~= height then row.Size = UDim2.new(1, 0, 0, height) end
-                    act.AnchorPoint = compact and Vector2.new(1, 0) or Vector2.new(1, 0.5)
-                    act.Position = compact and UDim2.new(1, -14, 0, description and 49 or 33) or UDim2.new(1, -14, 0.5, 0)
-                    title.Position = UDim2.fromOffset(14, compact and (description and 9 or 5) or (description and 9 or 0))
+                    local mobile = compact and EZ_Window._mobile
                     local available = row.AbsoluteSize.X / EZ_FrameVisualScale(frame)
+                    if available > 0 and act.Text ~= measuredText then
+                        measuredText = act.Text
+                        local ok, bounds = pcall(function()
+                            return TextService:GetTextSize(act.Text, act.TextSize, act.Font, Vector2.new(100000, 1000))
+                        end)
+                        measuredWidth = ok and bounds and tonumber(bounds.X) or (#act.Text * act.TextSize * 0.55)
+                    end
+                    local desired = math.max(72, math.ceil(measuredWidth or 0) + 24)
+                    local inline = mobile and EZ_MobileInlineRow(row, title, description, 0.55) and desired <= available * 0.45 - 14
+                    local stacked = compact and not inline
+                    local height = compact and (stacked and ((description and 92 or 76) + (mobile and 4 or 0)) or 52) or 46
+                    if row.Size.Y.Offset ~= height then row.Size = UDim2.new(1, 0, 0, height) end
+                    act.AnchorPoint = stacked and Vector2.new(1, 0) or Vector2.new(1, 0.5)
+                    act.Position = stacked and UDim2.new(1, -14, 0, description and 49 or 33) or UDim2.new(1, -14, 0.5, 0)
+                    title.Position = UDim2.fromOffset(14, stacked and (description and 9 or 5) or (description and 9 or 0))
+                    local controlHeight = compact and (mobile and 44 or 36) or 30
                     if available > 0 then
-                        if act.Text ~= measuredText then
-                            measuredText = act.Text
-                            local ok, bounds = pcall(function()
-                                return TextService:GetTextSize(act.Text, act.TextSize, act.Font, Vector2.new(100000, 1000))
-                            end)
-                            measuredWidth = ok and bounds and tonumber(bounds.X) or (#act.Text * act.TextSize * 0.55)
-                        end
-                        local desired = math.max(72, math.ceil(measuredWidth) + 24)
-                        local limit = compact and (available - 28) or (available * 0.45 - 14)
+                        local limit = stacked and (available - 28) or (available * 0.45 - 14)
                         local width = math.min(desired, math.max(0, limit))
-                        act.Size = UDim2.fromOffset(width, compact and 36 or 30)
-                        title.Size = compact and UDim2.new(1, -28, 0, description and 16 or 22) or UDim2.new(1, -(width + 36), description and 0 or 1, description and 16 or 0)
-                        if description then description.Size = UDim2.new(1, compact and -28 or -(width + 36), 0, 14) end
+                        act.Size = UDim2.fromOffset(width, controlHeight)
+                        title.Size = stacked and UDim2.new(1, -28, 0, description and 16 or 22) or UDim2.new(1, -(width + 36), description and 0 or 1, description and 16 or 0)
+                        if description then description.Size = UDim2.new(1, stacked and -28 or -(width + 36), 0, 14) end
                     else
-                        act.Size = compact and UDim2.new(1, -28, 0, 36) or UDim2.new(0.4, -14, 0, 30)
-                        title.Size = compact and UDim2.new(1, -28, 0, description and 16 or 22) or UDim2.new(0.6, -22, description and 0 or 1, description and 16 or 0)
-                        if description then description.Size = UDim2.new(compact and 1 or 0.6, compact and -28 or -22, 0, 14) end
+                        act.Size = stacked and UDim2.new(1, -28, 0, controlHeight) or UDim2.new(0.4, -14, 0, controlHeight)
+                        title.Size = stacked and UDim2.new(1, -28, 0, description and 16 or 22) or UDim2.new(0.6, -22, description and 0 or 1, description and 16 or 0)
+                        if description then description.Size = UDim2.new(stacked and 1 or 0.6, stacked and -28 or -22, 0, 14) end
                     end
                 end
                 table.insert(EZ_Window._responsiveItems, updateButtonLayout)
                 row:GetPropertyChangedSignal("AbsoluteSize"):Connect(function() updateButtonLayout(EZ_Window._compact) end)
                 act:GetPropertyChangedSignal("Text"):Connect(function() updateButtonLayout(EZ_Window._compact) end)
+                title:GetPropertyChangedSignal("Text"):Connect(function()
+                    if EZ_Window._mobile then updateButtonLayout(EZ_Window._compact) end
+                end)
+                if description then description:GetPropertyChangedSignal("Text"):Connect(function()
+                    if EZ_Window._mobile then updateButtonLayout(EZ_Window._compact) end
+                end) end
                 updateButtonLayout(EZ_Window._compact)
                 EZ_Paint(function()
                     if buttonColorTween then pcall(function() buttonColorTween:Cancel() end); buttonColorTween = nil end
@@ -5619,6 +5826,7 @@ function EZ:CreateWindow(options)
                 cap.AutoButtonColor = false
                 cap.ZIndex = 2
                 cap.Parent = row
+                EZ_ResponsiveSliderTarget(cap)
                 local function fmt(n) return EZ_FormatStep(n, st) end
                 local function refreshVisual()
                     local r = (mx - mn) == 0 and 0 or (obj.Value - mn) / (mx - mn)
@@ -5820,6 +6028,7 @@ function EZ:CreateWindow(options)
                 cap.AutoButtonColor = false
                 cap.ZIndex = 3
                 cap.Parent = row
+                EZ_ResponsiveSliderTarget(cap)
                 local function fmt(n) return EZ_FormatStep(n, st) end
                 local function refreshVisual()
                     local rMin = (mx - mn) == 0 and 0 or (obj.MinValue - mn) / (mx - mn)
